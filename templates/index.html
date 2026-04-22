@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}JO4 Dev — Digital Infrastructure & Automation for Real Estate{% endblock %}
+
+{% block content %}
+
+<!-- ==============================================================
+     HERO SECTION
+============================================================== -->
+<section class="hero" aria-label="Hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+
+      <div class="hero-eyebrow">
+        <span class="eyebrow">Real Estate Technology</span>
+      </div>
+
+      <h1 class="display-hero hero-headline">
+        Digital Infrastructure<br>
+        &amp; Automation for<br>
+        <span class="accent-line">Real Estate.</span>
+      </h1>
+
+      <p class="lead-text hero-lead">
+        Custom portals, automated CRM systems, and intelligent lead
+        pipelines built for agencies that refuse to run on spreadsheets.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom">
+          Schedule a Consultation
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4"/>
+          </svg>
+        </a>
+        <a href="{{ url_for('portfolio.projects') }}" class="btn-ghost-custom">
+          View Our Work <span class="arrow">→</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="hero-scroll-indicator" aria-hidden="true">
+    <span>Scroll</span>
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 3v10M4 9l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ==============================================================
+     STATS STRIP
+============================================================== -->
+<!-- <div class="stats-strip">
+  <div style="max-width:1280px; margin:0 auto;">
+    <div class="row row-cols-2 row-cols-md-4 g-0">
+      <div class="col" data-aos="fade-up" data-aos-delay="0">
+        <div class="stat-item">
+          <div class="stat-number">12<span>+</span></div>
+          <div class="stat-label">Agencies Automated</div>
+        </div>
+      </div>
+      <div class="col" data-aos="fade-up" data-aos-delay="80">
+        <div class="stat-item">
+          <div class="stat-number">40<span>k+</span></div>
+          <div class="stat-label">Leads Processed</div>
+        </div>
+      </div>
+      <div class="col" data-aos="fade-up" data-aos-delay="160">
+        <div class="stat-item">
+          <div class="stat-number">99<span>%</span></div>
+          <div class="stat-label">Uptime SLA</div>
+        </div>
+      </div>
+      <div class="col" data-aos="fade-up" data-aos-delay="240">
+        <div class="stat-item">
+          <div class="stat-number">3<span>x</span></div>
+          <div class="stat-label">Avg. Lead Response</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<!-- ==============================================================
+     SERVICES SECTION
+============================================================== -->
+<section class="services-section section-full" aria-labelledby="services-heading">
+  <div class="section" style="padding-top: var(--section-py); padding-bottom: var(--section-py); padding-left: 0; padding-right: 0;">
+
+    <div class="section-header" data-aos="fade-up">
+      <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">What We Build</span>
+      <h2 class="display-section" id="services-heading">
+        The stack that powers<br>modern agencies.
+      </h2>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 gap-cards g-4">
+
+      <!-- Card 1: Web Architecture -->
+      <div class="col" data-aos="fade-up" data-aos-delay="0">
+        <div class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Layers / architecture icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+              <line x1="12" y1="22" x2="12" y2="15.5"/>
+              <polyline points="22 8.5 12 15.5 2 8.5"/>
+            </svg>
+          </div>
+          <h3>Web Architecture</h3>
+          <p>
+            Bespoke property portals, client-facing dashboards, and secure
+            multi-tenant applications engineered from the ground up for
+            scale, not bolted onto a SaaS template.
+          </p>
+          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
+            See examples
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 6h8M6 2l4 4-4 4"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 2: Secure Hosting -->
+      <div class="col" data-aos="fade-up" data-aos-delay="100">
+        <div class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Shield icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <h3>Secure Hosting</h3>
+          <p>
+            Managed VPS deployment with automated SSL, isolated database
+            backups, and uptime monitoring. Your client data stays yours
+            no shared infrastructure, no data-mining platforms.
+          </p>
+          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
+            Infrastructure details
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 6h8M6 2l4 4-4 4"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 3: Business Automation -->
+      <div class="col" data-aos="fade-up" data-aos-delay="200">
+        <div class="service-card">
+          <div class="service-icon" aria-hidden="true">
+            <!-- Zap / automation icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <h3>Business Automation</h3>
+          <p>
+            CRM integrations, automated lead scoring, WhatsApp/email
+            follow-up pipelines, and ERP inventory sync so your agents
+            close deals instead of copying data between systems.
+          </p>
+          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
+            Automation demos
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 6h8M6 2l4 4-4 4"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================
+     PROOF / DIFFERENTIATOR STRIP
+============================================================== -->
+<section aria-label="Why JO4 Dev">
+  <div class="section">
+    <div class="row align-items-center g-5">
+
+      <!-- Left: headline -->
+      <div class="col-lg-5" data-aos="fade-up">
+        <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">The difference</span>
+        <h2 class="display-section">
+          We don't sell plans.<br>
+          We deliver<br>
+          <span class="text-accent">working systems.</span>
+        </h2>
+      </div>
+
+      <!-- Right: feature list -->
+      <div class="col-lg-6 offset-lg-1" data-aos="fade-up" data-aos-delay="120">
+        <div class="d-flex flex-column gap-4">
+
+          <div class="d-flex gap-4 align-items-start">
+            <div class="service-icon flex-shrink-0" style="margin-bottom:0;" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; margin-bottom: 6px;">Full source code ownership</h4>
+              <p style="font-size:0.88rem; color: var(--color-text-secondary); margin:0; line-height:1.7;">No vendor lock-in. You own every line of code on delivery.</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="d-flex gap-4 align-items-start">
+            <div class="service-icon flex-shrink-0" style="margin-bottom:0;" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; margin-bottom: 6px;">Built on proven open-source stack</h4>
+              <p style="font-size:0.88rem; color: var(--color-text-secondary); margin:0; line-height:1.7;">Python / Flask backend, PostgreSQL, no proprietary black boxes.</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="d-flex gap-4 align-items-start">
+            <div class="service-icon flex-shrink-0" style="margin-bottom:0;" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; margin-bottom: 6px;">Single point of contact</h4>
+              <p style="font-size:0.88rem; color: var(--color-text-secondary); margin:0; line-height:1.7;">No account managers passing messages. Direct access to the engineer building your system.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================
+     BOTTOM CTA BAND
+============================================================== -->
+<section aria-label="Call to action" style="border-top: 1px solid var(--color-border-subtle); border-bottom: 1px solid var(--color-border-subtle); background: var(--color-surface-1);">
+  <div class="section" style="text-align: center; padding-top: clamp(72px,10vw,120px); padding-bottom: clamp(72px,10vw,120px);">
+
+    <span class="eyebrow" style="justify-content: center; margin-bottom: 24px;" data-aos="fade-up">
+      Ready to start
+    </span>
+
+    <h2 class="display-section" style="max-width: 700px; margin: 0 auto 24px;" data-aos="fade-up" data-aos-delay="60">
+      Your agency deserves<br>infrastructure that<br>
+      <span class="text-accent">scales with it.</span>
+    </h2>
+
+    <p class="lead-text" style="margin: 0 auto 44px; text-align: center;" data-aos="fade-up" data-aos-delay="120">
+      Book a free 30-minute discovery call. No pitch deck, no hard sell just
+      a direct conversation about what your agency needs.
+    </p>
+
+    <div data-aos="fade-up" data-aos-delay="180">
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="font-size: 0.92rem; padding: 18px 44px;">
+        Book Your Free Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

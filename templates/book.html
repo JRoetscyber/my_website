@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Book a Call — JO4 Dev{% endblock %}
+{% block meta_description %}Schedule a free 30-minute discovery call. No pitch deck, no hard sell — just a direct conversation about what your agency needs.{% endblock %}
+
+{% block content %}
+
+<!-- ==============================================================
+     THE SINGULARITY — BOOKING PAGE
+     Zero distractions. One action.
+============================================================== -->
+<section class="booking-page" aria-labelledby="booking-heading">
+
+  <!-- Eyebrow -->
+  <div class="booking-eyebrow" data-aos="fade-up">
+    <span class="eyebrow" style="justify-content: center;">Schedule a Session</span>
+  </div>
+
+  <!-- Headline -->
+  <h1 class="booking-headline" id="booking-heading" data-aos="fade-up" data-aos-delay="60">
+    30 minutes.<br>
+    <span class="text-accent">Zero obligation.</span>
+  </h1>
+
+  <!-- Subline -->
+  <p class="booking-sub" data-aos="fade-up" data-aos-delay="120">
+    Pick a time that works for you. We'll talk about your agency's current
+    process, where the bottlenecks are, and whether a custom system makes
+    sense for your operation.
+  </p>
+
+  <!-- ================================================================
+       CALENDLY EMBED WRAPPER
+       Replace the placeholder content inside with your Calendly snippet:
+
+  ================================================================ -->
+  <div class="calendly-embed-wrapper" data-aos="fade-up" data-aos-delay="180" id="calendlyWrapper">
+
+    <div class="calendly-inline-widget" data-url="https://calendly.com/jroetscyber/30min" data-resize="true"></div>
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+  </div>
+
+  <!-- Trust signals below the widget -->
+  <div style="margin-top: 40px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; justify-content: center;"
+       data-aos="fade-up" data-aos-delay="260">
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">No sales pressure</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">Straight technical talk</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">You get a plan, not a proposal</span>
+    </div>
+
+  </div>
+
+</section>
+
+{% endblock %}

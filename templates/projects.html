@@ -1,0 +1,536 @@
+{% extends 'base.html' %}
+
+{% block title %}Evidence Room — JO4 Dev{% endblock %}
+{% block meta_description %}Case studies and live demos of custom real estate portals, CRM automation, and ERP systems built by JO4 Dev.{% endblock %}
+
+{% block content %}
+
+<!-- ==============================================================
+     PAGE HERO
+============================================================== -->
+<header class="page-hero">
+  <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Case Studies</span>
+  <h1>The Evidence Room.</h1>
+  <p class="lead-text">
+    We let the systems speak. Below are real projects with walkthrough
+    videos, live demos, and the backend code that runs them.
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ==============================================================
+     PROJECT CARDS
+============================================================== -->
+<section aria-labelledby="projects-heading">
+  <div class="section">
+    <span class="sr-only" id="projects-heading">Projects</span>
+
+    <div class="row row-cols-1 row-cols-lg-2 gap-cards g-4">
+
+      <!-- PROJECT 1: ERP Inventory System -->
+      <div class="col" data-aos="fade-up">
+        <article class="project-card">
+          <div class="project-card-media">
+            <!-- Replace this div with an <iframe> or <video> tag when ready -->
+            <div class="video-placeholder" role="button" tabindex="0"
+                 aria-label="Play walkthrough video for Agency ERP System"
+                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
+              <div class="play-btn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+              <span>Walkthrough Video</span>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-tag">ERP / Inventory</div>
+            <h3>Real Estate ERP &amp; Inventory System</h3>
+            <p>
+              A full-stack inventory management system built for a multi-branch
+              real estate agency. Tracks listings, agents, leads, and
+              commission records across offices in real time. Includes automated
+              PDF report generation and role-based access control.
+            </p>
+            <div class="tag-list" aria-label="Tech stack">
+              <span class="tag">Python</span>
+              <span class="tag">Flask</span>
+              <span class="tag">PostgreSQL</span>
+              <span class="tag">SQLAlchemy</span>
+              <span class="tag">Bootstrap 5</span>
+              <span class="tag">ReportLab</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- PROJECT 2: Automated CRM -->
+      <div class="col" data-aos="fade-up" data-aos-delay="80">
+        <article class="project-card">
+          <div class="project-card-media">
+            <div class="video-placeholder" role="button" tabindex="0"
+                 aria-label="Play walkthrough video for Automated CRM"
+                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
+              <div class="play-btn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+              <span>Walkthrough Video</span>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-tag">CRM / Automation</div>
+            <h3>Automated Lead CRM &amp; Follow-Up Engine</h3>
+            <p>
+              Inbound lead capture from property portals, scored by budget
+              and area preference, then routed to the correct agent with
+              automated WhatsApp + email follow-up sequences. Human agents
+              only touch leads that are ready to close.
+            </p>
+            <div class="tag-list" aria-label="Tech stack">
+              <span class="tag">Python</span>
+              <span class="tag">Celery</span>
+              <span class="tag">Redis</span>
+              <span class="tag">Twilio</span>
+              <span class="tag">SendGrid</span>
+              <span class="tag">Flask-APScheduler</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- PROJECT 3: Client Portal -->
+      <div class="col" data-aos="fade-up" data-aos-delay="0">
+        <article class="project-card">
+          <div class="project-card-media">
+            <div class="video-placeholder" role="button" tabindex="0"
+                 aria-label="Play walkthrough video for Buyer Portal"
+                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
+              <div class="play-btn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+              <span>Walkthrough Video</span>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-tag">Client Portal</div>
+            <h3>Branded Buyer &amp; Seller Portal</h3>
+            <p>
+              White-labelled client portal where buyers track their offer
+              status, upload FICA documents, and sign mandate agreements
+              digitally. Replaces hundreds of weekly status-update emails with
+              a single source of truth.
+            </p>
+            <div class="tag-list" aria-label="Tech stack">
+              <span class="tag">Flask</span>
+              <span class="tag">Jinja2</span>
+              <span class="tag">AWS S3</span>
+              <span class="tag">DocuSign API</span>
+              <span class="tag">PostgreSQL</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- PROJECT 4: Lead Scraper / Data Pipeline -->
+      <div class="col" data-aos="fade-up" data-aos-delay="80">
+        <article class="project-card">
+          <div class="project-card-media">
+            <div class="video-placeholder" role="button" tabindex="0"
+                 aria-label="Play walkthrough video for Data Pipeline"
+                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
+              <div class="play-btn" aria-hidden="true">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+              <span>Walkthrough Video</span>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-tag">Data Pipeline</div>
+            <h3>Multi-Source Lead Aggregation Pipeline</h3>
+            <p>
+              Scheduled scraper consolidating leads from Property24,
+              PrivateProperty, and agency Facebook Ads into a single
+              normalised database — deduplication included. Runs silently
+              every 15 minutes with alert-on-failure email reports.
+            </p>
+            <div class="tag-list" aria-label="Tech stack">
+              <span class="tag">Python</span>
+              <span class="tag">Scrapy</span>
+              <span class="tag">Playwright</span>
+              <span class="tag">Pandas</span>
+              <span class="tag">PostgreSQL</span>
+              <span class="tag">Cron</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================
+     INTERACTIVE SANDBOX — CRM LEAD SCORING ENGINE v2
+============================================================== -->
+<section class="sandbox-section section-full" aria-labelledby="sandbox-heading">
+  <div class="section">
+
+    <div class="section-header" data-aos="fade-up">
+      <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Live Demo</span>
+      <h2 class="display-section" id="sandbox-heading">
+        Test the engine.
+      </h2>
+      <p class="lead-text" style="margin-top: 16px;">
+        Configure a lead profile and paste their actual inquiry message.
+        The engine reads the text, detects behavioural signals, and routes
+        with the same logic deployed in production CRM systems.
+      </p>
+    </div>
+
+    <div data-aos="fade-up" data-aos-delay="80">
+      <div class="scorer-shell">
+
+        <!-- ── LEFT: INPUTS ── -->
+        <div class="scorer-inputs">
+          <span class="eyebrow" style="margin-bottom: 24px; display: inline-flex;">Lead Profile</span>
+
+          <form id="scorerForm" novalidate>
+
+            <div class="form-group">
+              <label class="form-label-custom" for="leadSource">Lead Source</label>
+              <select id="leadSource" class="form-control-custom" required>
+                <option value="" disabled selected>Where did they come from?</option>
+                <option value="referral">Existing client referral</option>
+                <option value="whatsapp">WhatsApp direct inquiry</option>
+                <option value="property24">Property24 / PrivateProperty</option>
+                <option value="website">Website contact form</option>
+                <option value="facebook">Facebook / Instagram ad</option>
+                <option value="cold">Cold — no prior contact</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-custom" for="engagementHistory">Engagement History</label>
+              <select id="engagementHistory" class="form-control-custom" required>
+                <option value="" disabled selected>Prior digital interaction?</option>
+                <option value="multi_deep">3+ visits — viewed Pricing &amp; Specs pages</option>
+                <option value="multi">2–3 site visits in last 48 hours</option>
+                <option value="single_specific">1 visit — went directly to a listing</option>
+                <option value="single_general">1 visit — general browsing</option>
+                <option value="none">First contact — no prior engagement</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-custom" for="budget">Stated Budget</label>
+              <select id="budget" class="form-control-custom" required>
+                <option value="" disabled selected>Budget indication?</option>
+                <option value="cash">Cash buyer / Pre-approved bond</option>
+                <option value="over10m">R10M+ (stated)</option>
+                <option value="5to10m">R5M – R10M</option>
+                <option value="3to5m">R3M – R5M</option>
+                <option value="1to3m">R1M – R3M</option>
+                <option value="under1m">Under R1M / unconfirmed</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-custom" for="timing">Submission Timing</label>
+              <select id="timing" class="form-control-custom" required>
+                <option value="" disabled selected>When did they contact?</option>
+                <option value="biz_answered">Business hours — responded immediately</option>
+                <option value="biz_missed">Business hours — went to voicemail</option>
+                <option value="after_hours">After hours (18:00–22:00)</option>
+                <option value="weekend">Weekend / public holiday</option>
+              </select>
+            </div>
+
+            <!-- ★ THE SCARY PART: free-text message scan ★ -->
+            <div class="form-group">
+              <label class="form-label-custom" for="leadMessage">
+                Lead's Inquiry Message
+                <span style="color:var(--color-text-muted); margin-left:6px; font-style:normal;">(paste their actual text)</span>
+              </label>
+              <textarea id="leadMessage" class="form-control-custom" rows="4"
+                        placeholder="e.g. Hi, my wife and I are pre-approved for R3.5M. We're looking for a home with a solar inverter and fibre in Sandton. When can we arrange a viewing?"></textarea>
+              <div class="textarea-hint">
+                <span class="hint-chip hot-hint">Hot signals</span>
+                <span style="color:var(--color-text-muted); font-size:0.7rem;">viewing · solar · pre-approved · contract · otp · we want to · fibre · cash buyer</span>
+              </div>
+              <div class="textarea-hint" style="margin-top:5px;">
+                <span class="hint-chip cold-hint">Cold signals</span>
+                <span style="color:var(--color-text-muted); font-size:0.7rem;">just looking · maybe next year · how much does · is this still available</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary-custom" id="scoreBtn"
+                    style="width: 100%; justify-content: center; margin-top: 4px;">
+              <span id="scoreBtnLabel">Run Scoring Engine</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                   stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4"/>
+              </svg>
+            </button>
+
+          </form>
+        </div>
+
+        <!-- ── RIGHT: OUTPUT ── -->
+        <div class="scorer-output" id="scorerOutput" aria-live="polite">
+
+          <!-- Idle -->
+          <div class="scorer-idle" id="scorerIdle">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--color-border)" stroke-width="1"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <p style="font-family:var(--font-mono); font-size:0.72rem;
+                      letter-spacing:0.12em; text-transform:uppercase;
+                      color:var(--color-text-muted); margin:0;">
+              Awaiting lead profile
+            </p>
+          </div>
+
+          <!-- Processing -->
+          <div class="scorer-processing" id="scorerProcessing" style="display:none;">
+            <div class="processing-ring" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <p style="font-family:var(--font-mono); font-size:0.72rem;
+                      letter-spacing:0.12em; text-transform:uppercase;
+                      color:var(--color-text-muted); margin:0;" id="processingLabel">
+              Scanning message...
+            </p>
+          </div>
+
+          <!-- Result -->
+          <div class="scorer-result-panel" id="scorerResult" style="display:none;">
+
+            <!-- Score ring + badge -->
+            <div class="score-ring-row">
+              <div class="score-ring-wrapper" role="img" aria-label="Lead score">
+                <svg class="score-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="54" fill="none"
+                          stroke="var(--color-border)" stroke-width="6"/>
+                  <circle id="scoreArc" cx="60" cy="60" r="54" fill="none"
+                          stroke="var(--accent)" stroke-width="6"
+                          stroke-linecap="round"
+                          stroke-dasharray="339.292" stroke-dashoffset="339.292"
+                          transform="rotate(-90 60 60)"
+                          style="transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),
+                                             stroke 0.3s ease;"/>
+                </svg>
+                <div class="score-ring-label">
+                  <span class="score-number" id="scoreNumber">0</span>
+                  <span class="score-denom">/100</span>
+                </div>
+              </div>
+
+              <div class="score-badge-block">
+                <div class="priority-badge" id="priorityBadge">—</div>
+                <div class="routing-line" id="routingLine">—</div>
+                <div class="confidence-line" id="confidenceLine"></div>
+              </div>
+            </div>
+
+            <!-- Detected signals row (populated by JS) -->
+            <div id="detectedSignalsWrap" style="display:none;">
+              <div class="signals-header">
+                <span class="form-label-custom" style="margin:0;">Detected Signals</span>
+              </div>
+              <div class="signals-row" id="detectedSignals"></div>
+            </div>
+
+            <!-- 5-category breakdown -->
+            <div class="score-breakdown" id="scoreBreakdown">
+              <div class="breakdown-row" id="bar-source">
+                <span class="breakdown-label">Source</span>
+                <div class="breakdown-track"><div class="breakdown-fill"></div></div>
+                <span class="breakdown-pts">0/20</span>
+              </div>
+              <div class="breakdown-row" id="bar-engagement">
+                <span class="breakdown-label">Velocity</span>
+                <div class="breakdown-track"><div class="breakdown-fill"></div></div>
+                <span class="breakdown-pts">0/20</span>
+              </div>
+              <div class="breakdown-row" id="bar-readiness">
+                <span class="breakdown-label">Readiness</span>
+                <div class="breakdown-track"><div class="breakdown-fill"></div></div>
+                <span class="breakdown-pts">0/20</span>
+              </div>
+              <div class="breakdown-row" id="bar-intent">
+                <span class="breakdown-label">Intent</span>
+                <div class="breakdown-track"><div class="breakdown-fill"></div></div>
+                <span class="breakdown-pts">0/20</span>
+              </div>
+              <div class="breakdown-row" id="bar-resilience">
+                <span class="breakdown-label">SA Resilience</span>
+                <div class="breakdown-track"><div class="breakdown-fill"></div></div>
+                <span class="breakdown-pts">0/20</span>
+              </div>
+            </div>
+
+            <!-- Routing + advisories card -->
+            <div class="routing-card" id="routingCard">
+              <div class="routing-row">
+                <span class="routing-key">Channel</span>
+                <span class="routing-val" id="routingChannel">—</span>
+              </div>
+              <div class="routing-row">
+                <span class="routing-key">Agent</span>
+                <span class="routing-val" id="routingAgent">—</span>
+              </div>
+              <div class="routing-row">
+                <span class="routing-key">SLA</span>
+                <span class="routing-val" id="routingSLA">—</span>
+              </div>
+              <!-- Contextual advisories injected here by JS -->
+              <div id="routingAdvisories"></div>
+            </div>
+
+          </div><!-- /scorer-result-panel -->
+        </div><!-- /scorer-output -->
+
+      </div><!-- /scorer-shell -->
+    </div>
+
+  </div>
+</section>
+
+<!-- ==============================================================
+     CODE SNIPPET BLOCK
+============================================================== -->
+<section aria-labelledby="code-heading">
+  <div class="section">
+
+    <div class="section-header" data-aos="fade-up">
+      <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Under the Hood</span>
+      <h2 class="display-section" id="code-heading">
+        The logic, exposed.
+      </h2>
+      <p class="lead-text" style="margin-top: 16px;">
+        This is the actual lead-routing function from the CRM automation
+        project. No off-the-shelf plugins — every rule is explicit, testable,
+        and owned by the client.
+      </p>
+    </div>
+
+    <div data-aos="fade-up" data-aos-delay="80">
+      <div class="code-block-wrapper">
+
+        <!-- Header bar -->
+        <div class="code-block-header">
+          <div class="code-block-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="code-block-filename">lead_router.py</span>
+          <button class="code-copy-btn" id="copyCodeBtn" aria-label="Copy code to clipboard">
+            Copy
+          </button>
+        </div>
+
+        <!-- Code body -->
+        <div class="code-block-body">
+          <pre id="codeSnippet" aria-label="Python code snippet: lead routing logic"><span class="tok-cm"># lead_router.py — JO4 Dev CRM Automation Engine
+# Distributes inbound leads to agents based on area + budget rules.</span>
+
+<span class="tok-kw">from</span> dataclasses <span class="tok-kw">import</span> dataclass
+<span class="tok-kw">from</span> typing <span class="tok-kw">import</span> Optional
+<span class="tok-kw">from</span> .models <span class="tok-kw">import</span> Agent, Lead, Assignment
+<span class="tok-kw">from</span> .notifications <span class="tok-kw">import</span> send_agent_alert
+
+
+<span class="tok-dec">@dataclass</span>
+<span class="tok-kw">class</span> <span class="tok-cls">RoutingResult</span>:
+    agent: Optional[<span class="tok-cls">Agent</span>]
+    reason: str
+    confidence: float  <span class="tok-cm"># 0.0 – 1.0</span>
+
+
+<span class="tok-kw">def</span> <span class="tok-fn">route_lead</span>(lead: <span class="tok-cls">Lead</span>, agents: list[<span class="tok-cls">Agent</span>]) -> <span class="tok-cls">RoutingResult</span>:
+    <span class="tok-str">"""
+    Route an inbound lead to the best available agent.
+
+    Priority:
+        1. Area match (suburb in agent's coverage zones)
+        2. Budget within agent's mandate bracket
+        3. Least-loaded agent among qualifying candidates
+    """</span>
+    candidates = [
+        a <span class="tok-kw">for</span> a <span class="tok-kw">in</span> agents
+        <span class="tok-kw">if</span> a.is_active <span class="tok-kw">and</span> lead.suburb <span class="tok-kw">in</span> a.coverage_zones
+    ]
+
+    <span class="tok-kw">if not</span> candidates:
+        <span class="tok-kw">return</span> <span class="tok-cls">RoutingResult</span>(
+            agent=<span class="tok-kw">None</span>,
+            reason=<span class="tok-str">"no_area_match"</span>,
+            confidence=<span class="tok-num">0.0</span>
+        )
+
+    <span class="tok-cm"># Filter by budget bracket</span>
+    budget_match = [
+        a <span class="tok-kw">for</span> a <span class="tok-kw">in</span> candidates
+        <span class="tok-kw">if</span> a.min_mandate <= lead.budget <= a.max_mandate
+    ]
+    pool = budget_match <span class="tok-kw">or</span> candidates  <span class="tok-cm"># fall back to area-only match</span>
+    confidence = <span class="tok-num">0.95</span> <span class="tok-kw">if</span> budget_match <span class="tok-kw">else</span> <span class="tok-num">0.65</span>
+
+    <span class="tok-cm"># Assign to least-loaded agent</span>
+    chosen = <span class="tok-fn">min</span>(pool, key=<span class="tok-kw">lambda</span> a: a.open_leads_count)
+
+    assignment = <span class="tok-cls">Assignment</span>.create(lead=lead, agent=chosen)
+    assignment.save()
+    <span class="tok-fn">send_agent_alert</span>(chosen, lead)
+
+    <span class="tok-kw">return</span> <span class="tok-cls">RoutingResult</span>(
+        agent=chosen,
+        reason=<span class="tok-str">"area_and_budget_match"</span> <span class="tok-kw">if</span> budget_match <span class="tok-kw">else</span> <span class="tok-str">"area_only_match"</span>,
+        confidence=confidence
+    )</pre>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==============================================================
+     BOTTOM CTA
+============================================================== -->
+<section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-1);">
+  <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
+    <h2 class="display-section" style="max-width:600px; margin: 0 auto 24px;" data-aos="fade-up">
+      Seen enough?<br>
+      <span class="text-accent">Let's build yours.</span>
+    </h2>
+    <div data-aos="fade-up" data-aos-delay="80">
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="padding: 18px 44px;">
+        Book a Free Discovery Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+<!-- ==============================================================
+     PAGE SCRIPTS
+============================================================== -->
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/projects.js') }}" defer></script>
+{% endblock %}
