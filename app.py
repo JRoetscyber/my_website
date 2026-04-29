@@ -19,7 +19,13 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///jo4dev.db')
+
+# SQLite DB will be written to /app/instance/jo4dev.db inside the container.
+# The instance folder is mounted as a Docker named volume so it persists.
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'SQLALCHEMY_DATABASE_URI',
+    'sqlite:////app/instance/jo4dev.db'   # <-- 4 slashes = absolute path
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize DB with app
@@ -36,7 +42,6 @@ def load_user(user_id):
 
 @app.before_request
 def record_visit():
-    # Only record visits to static pages and main routes, ignore internal calls
     if request.endpoint and not request.path.startswith('/static') and not request.path.startswith('/admin'):
         try:
             visit = Analytics(
@@ -49,8 +54,11 @@ def record_visit():
             db.session.rollback()
 
 def init_db():
+    """Create all tables and seed default admin user."""
     with app.app_context():
         db.create_all()
+
+        # Migrate projects table if needed
         try:
             project_cols = {
                 row[1] for row in db.session.execute(text("PRAGMA table_info(projects)")).fetchall()
@@ -64,7 +72,7 @@ def init_db():
             print(f"Error migrating projects table: {e}")
             db.session.rollback()
 
-        # Insert a default 'admin' user if the login table is empty
+        # Seed default admin user if none exists
         try:
             admin_username = os.getenv('ADMIN_USERNAME', 'admin')
             admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
@@ -86,8 +94,7 @@ app.register_blueprint(admin_bp)
 
 @app.context_processor
 def inject_year():
-    current_year = datetime.now().year
-    return {'year': current_year}
+    return {'year': datetime.now().year}
 
 @app.route('/')
 def home():
@@ -97,33 +104,29 @@ def home():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('admin.admin'))
-    
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         user = User.query.filter_by(username=username).first()
-        
+
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             next_page = request.args.get('next')
             return redirect(next_page or url_for('admin.admin'))
         else:
             flash('Invalid username or password', 'danger')
-            
+
     return render_template('login.html')
 
 @app.route('/api/new-lead', methods=['POST'])
 def handle_new_lead():
-    """
-    Automated Lead Intake & Scoring API
-    Receives JSON from frontend, calculates score, and saves to DB.
-    """
+    """Automated Lead Intake & Scoring API."""
     try:
         data = request.json
         if not data:
             return jsonify({"status": "error", "message": "No data provided"}), 400
 
-        # 1. Prepare data for the scoring algorithm
         scoring_input = {
             "client_name": data.get('client_name'),
             "client_company": data.get('client_company'),
@@ -136,13 +139,11 @@ def handle_new_lead():
             "last_activity_date": datetime.now().strftime('%Y-%m-%d')
         }
 
-        # 2. Run the Senior Data Scientist's scoring algorithm
         analysis = calculate_lead_score(scoring_input)
-        
-        # 3. Create and Save the Lead record
+
         manual_status = data.get('status')
         final_status = manual_status if manual_status and manual_status != 'New' else analysis['classification']
-        
+
         new_lead = Lead(
             client_name=data.get('client_name'),
             client_company=data.get('client_company'),
@@ -150,12 +151,12 @@ def handle_new_lead():
             score=int(analysis['score']),
             status=final_status
         )
-        
+
         db.session.add(new_lead)
         db.session.commit()
 
         return jsonify({
-            "status": "success", 
+            "status": "success",
             "message": "Lead captured and scored successfully",
             "lead_id": new_lead.id,
             "automated_score": analysis['score'],
@@ -166,6 +167,8 @@ def handle_new_lead():
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+# Initialise the database when the module is imported (by gunicorn/wsgi)
 init_db()
 
 if __name__ == '__main__':

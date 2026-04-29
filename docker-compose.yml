@@ -5,18 +5,21 @@ services:
     build: .
     restart: always
     ports:
-      - "6010:6010" # Map container port 6010 to host port 6010
+      - "6010:6010"
     volumes:
-      - app-data:/app/instance # Persist the database file
+      - app-data:/app/instance  # Persist the SQLite database file
     env_file:
       - .env
-    # For Cloudflare Tunnel, you might not need to expose ports directly to the host
-    # but it's good for local testing. If Cloudflare is directly forwarding,
-    # then the host's 6010 port just needs to be accessible by cloudflared.
-    # On a Raspberry Pi, cloudflared often runs on the host directly.
+    # NOTE: Only one 'command' key allowed — the duplicate was silently
+    # overriding and causing the chmod to never run properly.
+    # The mkdir + chmod here runs AFTER the volume mounts, which is the
+    # correct place to ensure the directory is writable.
+    command: >
+      sh -c "mkdir -p /app/instance &&
+             chmod 777 /app/instance &&
+             gunicorn --workers=4 --bind=0.0.0.0:6010 wsgi:app"
 
 volumes:
   app-data:
-    # This volume will store your SQLite database (jo4dev.db)
-    # in a persistent location managed by Docker.
-    # The actual location on the host can be found with `docker volume inspect app-data`
+    # Stores jo4dev.db persistently across container restarts.
+    # Inspect location with: docker volume inspect my_website_app-data

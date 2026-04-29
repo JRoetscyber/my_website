@@ -16,12 +16,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code into the container
 COPY . .
 
-# Ensure the database directory exists
-RUN mkdir -p instance
+# Create instance directory and set open permissions so SQLite can write to it
+# even after Docker mounts the named volume over it
+RUN mkdir -p /app/instance && chmod 777 /app/instance
 
 # Expose the port the Flask app will run on
 EXPOSE 6010
 
-# Command to run the application using Gunicorn
-# Using 4 workers, binding to 0.0.0.0:6010, and using the wsgi.py module
-CMD ["gunicorn", "--workers=4", "--bind=0.0.0.0:6010", "wsgi:app"]
+# Use an entrypoint script so the instance dir permissions are fixed at runtime
+# (Docker volumes mount AFTER the image layers, so we fix perms on startup)
+CMD ["sh", "-c", "mkdir -p /app/instance && chmod 777 /app/instance && gunicorn --workers=4 --bind=0.0.0.0:6010 wsgi:app"]
