@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
@@ -21,6 +22,8 @@ class Project(db.Model):
     tech_stack = db.Column(db.Text) # Stored as comma-separated string
     description = db.Column(db.Text)
     code_snippet = db.Column(db.Text)
+    youtube_url = db.Column(db.String(500))
+    project_url = db.Column(db.String(500))
     media_path = db.Column(db.String(255))
     views = db.Column(db.Integer, default=0)
     deployed_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,7 +42,7 @@ class Analytics(db.Model):
     visitor_ip = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'login'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)

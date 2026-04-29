@@ -1,49 +1,56 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, logout_user
 from database import db, Lead, Project, AutomationLog, Analytics
 from datetime import datetime, timedelta
 from sqlalchemy import func
 import os
+from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/admin')
+@login_required
 def admin():
-    # Query all data for the admin sections
-    leads_list = Lead.query.order_by(Lead.created_at.desc()).all()
-    projects_list = Project.query.order_by(Project.deployed_at.desc()).all()
-    logs_list = AutomationLog.query.order_by(AutomationLog.timestamp.desc()).limit(10).all()
-    
-    # --- ANALYTICS CALCULATIONS ---
-    # 1. Total Portfolio Views (from Analytics table)
-    total_views = Analytics.query.count()
-    
-    # 2. Scripts Executed This Week
-    one_week_ago = datetime.utcnow() - timedelta(days=7)
-    scripts_this_week = AutomationLog.query.filter(AutomationLog.timestamp >= one_week_ago).count()
-    
-    # 3. Lead Conversion Rate
-    total_leads = len(leads_list)
-    closed_leads = Lead.query.filter_by(status='Closed').count()
-    conversion_rate = (closed_leads / total_leads * 100) if total_leads > 0 else 0
-    
-    # 4. Active Leads (total in pipeline)
-    active_leads_count = total_leads
-    
-    # 5. Top Pages (Dynamic)
-    top_pages_query = db.session.query(
-        Analytics.page_path, 
-        func.count(Analytics.id).label('count')
-    ).group_by(Analytics.page_path).order_by(func.count(Analytics.id).desc()).limit(5).all()
-    
-    # Convert to list of dicts for template
+    data_error = None
     top_pages = []
-    max_count = top_pages_query[0].count if top_pages_query else 1
-    for p in top_pages_query:
-        top_pages.append({
-            'path': p.page_path,
-            'count': p.count,
-            'percentage': (p.count / max_count * 100) if max_count > 0 else 0
-        })
+
+    try:
+        leads_list = Lead.query.order_by(Lead.created_at.desc()).all()
+        projects_list = Project.query.order_by(Project.deployed_at.desc()).all()
+        logs_list = AutomationLog.query.order_by(AutomationLog.timestamp.desc()).limit(10).all()
+
+        total_views = Analytics.query.count()
+
+        one_week_ago = datetime.utcnow() - timedelta(days=7)
+        scripts_this_week = AutomationLog.query.filter(AutomationLog.timestamp >= one_week_ago).count()
+
+        total_leads = len(leads_list)
+        closed_leads = Lead.query.filter_by(status='Closed').count()
+        conversion_rate = (closed_leads / total_leads * 100) if total_leads > 0 else 0
+        active_leads_count = total_leads
+
+        top_pages_query = db.session.query(
+            Analytics.page_path,
+            func.count(Analytics.id).label('count')
+        ).group_by(Analytics.page_path).order_by(func.count(Analytics.id).desc()).limit(5).all()
+
+        max_count = top_pages_query[0].count if top_pages_query else 1
+        for p in top_pages_query:
+            top_pages.append({
+                'path': p.page_path,
+                'count': p.count,
+                'percentage': (p.count / max_count * 100) if max_count > 0 else 0
+            })
+    except Exception as e:
+        db.session.rollback()
+        data_error = str(e)
+        leads_list = []
+        projects_list = []
+        logs_list = []
+        total_views = 0
+        scripts_this_week = 0
+        conversion_rate = 0
+        active_leads_count = 0
     
     return render_template('admin.html', 
                            leads=leads_list, 
@@ -53,9 +60,18 @@ def admin():
                            scripts_this_week=scripts_this_week,
                            conversion_rate=round(conversion_rate, 1),
                            active_leads_count=active_leads_count,
-                           top_pages=top_pages)
+                           top_pages=top_pages,
+                           data_error=data_error)
+
+@admin_bp.route('/admin/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
 
 @admin_bp.route('/admin/analytics_data')
+@login_required
 def analytics_data():
     try:
         # Get views per day for the last 30 days
@@ -83,6 +99,7 @@ def analytics_data():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/add_lead', methods=['POST'])
+@login_required
 def add_lead():
     try:
         data = request.json
@@ -100,6 +117,7 @@ def add_lead():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/add_project', methods=['POST'])
+@login_required
 def add_project():
     try:
         title = request.form.get('project_title')
@@ -107,14 +125,17 @@ def add_project():
         tech_stack = request.form.get('tech_stack')
         description = request.form.get('description')
         code_snippet = request.form.get('code_snippet')
+        youtube_url = request.form.get('youtube_url')
+        project_url = request.form.get('project_url')
         
         # Handle file upload
         media_file = request.files.get('media')
         media_path = ""
-        if media_file:
+        if media_file and media_file.filename:
             # Simple path for now, adjust as needed
-            filename = media_file.filename
+            filename = secure_filename(media_file.filename)
             save_path = os.path.join('static', 'assets', filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
             media_file.save(save_path)
             media_path = f'/static/assets/{filename}'
             
@@ -124,6 +145,8 @@ def add_project():
             tech_stack=tech_stack,
             description=description,
             code_snippet=code_snippet,
+            youtube_url=youtube_url,
+            project_url=project_url,
             media_path=media_path
         )
         db.session.add(new_project)
@@ -133,6 +156,7 @@ def add_project():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/run_script', methods=['POST'])
+@login_required
 def run_script():
     try:
         data = request.json
@@ -153,6 +177,7 @@ def run_script():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/delete_lead/<int:lead_id>', methods=['POST', 'DELETE'])
+@login_required
 def delete_lead(lead_id):
     try:
         lead = Lead.query.get_or_404(lead_id)
@@ -163,6 +188,7 @@ def delete_lead(lead_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/update_lead/<int:lead_id>', methods=['POST', 'PATCH'])
+@login_required
 def update_lead(lead_id):
     try:
         lead = Lead.query.get_or_404(lead_id)
@@ -179,6 +205,7 @@ def update_lead(lead_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/get_lead/<int:lead_id>')
+@login_required
 def get_lead(lead_id):
     try:
         lead = Lead.query.get_or_404(lead_id)
@@ -194,6 +221,7 @@ def get_lead(lead_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 @admin_bp.route('/admin/delete_project/<int:project_id>', methods=['POST', 'DELETE'])
+@login_required
 def delete_project(project_id):
     try:
         project = Project.query.get_or_404(project_id)

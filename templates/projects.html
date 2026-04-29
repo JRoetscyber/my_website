@@ -26,151 +26,62 @@
   <div class="section">
     <span class="sr-only" id="projects-heading">Projects</span>
 
+    {% if data_error %}
+    <div class="project-card" style="margin-bottom:24px;">
+      <div class="project-card-body">
+        <div class="project-tag">Database</div>
+        <h3>Project feed unavailable</h3>
+        <p>{{ data_error }}</p>
+      </div>
+    </div>
+    {% endif %}
+
     <div class="row row-cols-1 row-cols-lg-2 gap-cards g-4">
-
-      <!-- PROJECT 1: ERP Inventory System -->
-      <div class="col" data-aos="fade-up">
+      {% for project in projects %}
+      <div class="col" data-aos="fade-up" data-aos-delay="{{ 80 if loop.index is even else 0 }}">
         <article class="project-card">
           <div class="project-card-media">
-            <!-- Replace this div with an <iframe> or <video> tag when ready -->
-            <div class="video-placeholder" role="button" tabindex="0"
-                 aria-label="Play walkthrough video for Agency ERP System"
-                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
+            {% if project.media_path %}
+            <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image">
+            {% else %}
+            <div class="video-placeholder">
               <div class="play-btn" aria-hidden="true">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="5 3 19 12 5 21 5 3"/>
                 </svg>
               </div>
-              <span>Walkthrough Video</span>
+              <span>Project Preview</span>
             </div>
+            {% endif %}
           </div>
           <div class="project-card-body">
-            <div class="project-tag">ERP / Inventory</div>
-            <h3>Real Estate ERP &amp; Inventory System</h3>
-            <p>
-              A full-stack inventory management system built for a multi-branch
-              real estate agency. Tracks listings, agents, leads, and
-              commission records across offices in real time. Includes automated
-              PDF report generation and role-based access control.
-            </p>
-            <div class="tag-list" aria-label="Tech stack">
-              <span class="tag">Python</span>
-              <span class="tag">Flask</span>
-              <span class="tag">PostgreSQL</span>
-              <span class="tag">SQLAlchemy</span>
-              <span class="tag">Bootstrap 5</span>
-              <span class="tag">ReportLab</span>
+            <div class="project-tag">{{ project.category or 'Project' }}</div>
+            <h3>{{ project.title }}</h3>
+            <p>{{ project.description or 'No description added yet.' }}</p>
+            {% if project.project_url or project.youtube_url %}
+            <div class="uploaded-project-links">
+              {% if project.project_url %}
+              <a href="{{ project.project_url }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
+              {% endif %}
+              {% if project.youtube_url %}
+              <a href="{{ project.youtube_url }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
+              {% endif %}
             </div>
+            {% endif %}
           </div>
         </article>
       </div>
-
-      <!-- PROJECT 2: Automated CRM -->
-      <div class="col" data-aos="fade-up" data-aos-delay="80">
+      {% else %}
+      <div class="col-12">
         <article class="project-card">
-          <div class="project-card-media">
-            <div class="video-placeholder" role="button" tabindex="0"
-                 aria-label="Play walkthrough video for Automated CRM"
-                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
-              <div class="play-btn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </div>
-              <span>Walkthrough Video</span>
-            </div>
-          </div>
           <div class="project-card-body">
-            <div class="project-tag">CRM / Automation</div>
-            <h3>Automated Lead CRM &amp; Follow-Up Engine</h3>
-            <p>
-              Inbound lead capture from property portals, scored by budget
-              and area preference, then routed to the correct agent with
-              automated WhatsApp + email follow-up sequences. Human agents
-              only touch leads that are ready to close.
-            </p>
-            <div class="tag-list" aria-label="Tech stack">
-              <span class="tag">Python</span>
-              <span class="tag">Celery</span>
-              <span class="tag">Redis</span>
-              <span class="tag">Twilio</span>
-              <span class="tag">SendGrid</span>
-              <span class="tag">Flask-APScheduler</span>
-            </div>
+            <div class="project-tag">Portfolio</div>
+            <h3>No uploaded projects yet</h3>
+            <p>Add projects from the admin panel and they will appear here automatically.</p>
           </div>
         </article>
       </div>
-
-      <!-- PROJECT 3: Client Portal -->
-      <div class="col" data-aos="fade-up" data-aos-delay="0">
-        <article class="project-card">
-          <div class="project-card-media">
-            <div class="video-placeholder" role="button" tabindex="0"
-                 aria-label="Play walkthrough video for Buyer Portal"
-                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
-              <div class="play-btn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </div>
-              <span>Walkthrough Video</span>
-            </div>
-          </div>
-          <div class="project-card-body">
-            <div class="project-tag">Client Portal</div>
-            <h3>Branded Buyer &amp; Seller Portal</h3>
-            <p>
-              White-labelled client portal where buyers track their offer
-              status, upload FICA documents, and sign mandate agreements
-              digitally. Replaces hundreds of weekly status-update emails with
-              a single source of truth.
-            </p>
-            <div class="tag-list" aria-label="Tech stack">
-              <span class="tag">Flask</span>
-              <span class="tag">Jinja2</span>
-              <span class="tag">AWS S3</span>
-              <span class="tag">DocuSign API</span>
-              <span class="tag">PostgreSQL</span>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <!-- PROJECT 4: Lead Scraper / Data Pipeline -->
-      <div class="col" data-aos="fade-up" data-aos-delay="80">
-        <article class="project-card">
-          <div class="project-card-media">
-            <div class="video-placeholder" role="button" tabindex="0"
-                 aria-label="Play walkthrough video for Data Pipeline"
-                 onclick="this.innerHTML='<p style=\'color:var(--color-text-muted);font-size:0.85rem;padding:24px;text-align:center;\'>Drop your &lt;iframe&gt; embed here.</p>'">
-              <div class="play-btn" aria-hidden="true">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </div>
-              <span>Walkthrough Video</span>
-            </div>
-          </div>
-          <div class="project-card-body">
-            <div class="project-tag">Data Pipeline</div>
-            <h3>Multi-Source Lead Aggregation Pipeline</h3>
-            <p>
-              Scheduled scraper consolidating leads from Property24,
-              PrivateProperty, and agency Facebook Ads into a single
-              normalised database — deduplication included. Runs silently
-              every 15 minutes with alert-on-failure email reports.
-            </p>
-            <div class="tag-list" aria-label="Tech stack">
-              <span class="tag">Python</span>
-              <span class="tag">Scrapy</span>
-              <span class="tag">Playwright</span>
-              <span class="tag">Pandas</span>
-              <span class="tag">PostgreSQL</span>
-              <span class="tag">Cron</span>
-            </div>
-          </div>
-        </article>
-      </div>
+      {% endfor %}
 
     </div>
   </div>

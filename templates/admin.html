@@ -1,20 +1,529 @@
-              <!-- Top pages -->
-              <div style="margin-top:20px;">
-                <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:10px;">
-                  Top Pages
-                </div>
-                <div class="d-flex flex-column gap-2">
-                  {% for page in top_pages %}
-                  <div style="display:flex;align-items:center;gap:12px;">
-                    <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--color-text-secondary);min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ page.path }}</span>
-                    <div style="flex:1;height:3px;background:var(--color-border);border-radius:2px;overflow:hidden;">
-                      <div style="height:100%;width:{{ page.percentage }}%;background:var(--accent);border-radius:2px;"></div>
-                    </div>
-                    <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--color-text-muted);flex-shrink:0;">{{ page.count }}</span>
-                  </div>
-                  {% else %}
-                  <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--color-text-muted);">No traffic data available.</div>
-                  {% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - JO4 Dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <div>
+          <div class="sidebar-logo">JO4<span>.</span>DEV</div>
+          <div class="sidebar-tag">Control Center</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Workspace</div>
+        <button class="sidebar-nav-item active" data-section="analyticsSection" type="button">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-6"/></svg>
+          Analytics
+        </button>
+        <button class="sidebar-nav-item" data-section="leadsSection" type="button">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Leads
+          <span class="sidebar-nav-badge">{{ leads|length }}</span>
+        </button>
+        <button class="sidebar-nav-item" data-section="projectsSection" type="button">
+          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Projects
+          <span class="sidebar-nav-badge">{{ projects|length }}</span>
+        </button>
+        <button class="sidebar-nav-item" data-section="automationSection" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 2v6"/><path d="m4.93 4.93 4.24 4.24"/><path d="M2 12h6"/><path d="m4.93 19.07 4.24-4.24"/><path d="M12 16v6"/><path d="m14.83 14.83 4.24 4.24"/><path d="M16 12h6"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+          Automation
+        </button>
+        <div class="sidebar-section-label">System</div>
+        <a href="{{ url_for('admin.logout') }}" class="sidebar-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a>
+      </nav>
+
+      <div class="sidebar-status">
+        <div class="sidebar-status-row"><span class="status-indicator green"></span> Backend online</div>
+        <div class="sidebar-status-row"><span class="status-indicator amber"></span> Admin connected</div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <button class="topbar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+        </button>
+        <div class="topbar-breadcrumb">Admin / <span id="activeSectionName">Dashboard</span></div>
+        <div class="topbar-spacer"></div>
+        <div class="topbar-uptime"><span class="topbar-uptime-dot"></span>Live</div>
+        <div class="topbar-date" id="topbarDate"></div>
+        <a href="{{ url_for('admin.logout') }}" class="topbar-logout">Logout</a>
+      </header>
+
+      <div class="admin-content">
+        {% if data_error %}
+        <div class="widget-card mb-4">
+          <div class="widget-body text-danger">
+            Database warning: {{ data_error }}
+          </div>
+        </div>
+        {% endif %}
+
+        <section id="analyticsSection" class="mb-5">
+          <div class="row g-4">
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="stat-card">
+                <div class="stat-card-label">Portfolio Views</div>
+                <div class="stat-card-value" data-countup="{{ total_views }}">{{ total_views }}</div>
+                <div class="stat-card-delta">Across all public pages</div>
+                <div class="stat-card-icon">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
               </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="stat-card">
+                <div class="stat-card-label">Scripts This Week</div>
+                <div class="stat-card-value" data-countup="{{ scripts_this_week }}">{{ scripts_this_week }}</div>
+                <div class="stat-card-delta">Automations executed</div>
+                <div class="stat-card-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="stat-card">
+                <div class="stat-card-label">Conversion Rate</div>
+                <div class="stat-card-value" data-countup="{{ conversion_rate }}">{{ conversion_rate }}</div>
+                <div class="stat-card-delta">Closed vs Total leads</div>
+                <div class="stat-card-icon">
+                  <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+              <div class="stat-card">
+                <div class="stat-card-label">Active Leads</div>
+                <div class="stat-card-value" data-countup="{{ active_leads_count }}">{{ active_leads_count }}</div>
+                <div class="stat-card-delta">Pipeline volume</div>
+                <div class="stat-card-icon">
+                  <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
 
+          <div class="row g-4 mt-1">
+            <div class="col-12 col-xl-8">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-6"/></svg>
+                    Traffic Overview
+                  </div>
+                  <div class="widget-meta">Last 30 days</div>
+                </div>
+                <div class="widget-body">
+                  <div class="chart-wrapper">
+                    <canvas id="analyticsChart"></canvas>
+                    <div class="chart-placeholder-label">Views</div>
+                    <div class="chart-placeholder-sub">Loading analytics stream</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-4">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>
+                    Top Pages
+                  </div>
+                  <div class="widget-meta">Most visited</div>
+                </div>
+                <div class="widget-body">
+                  <div class="d-flex flex-column gap-3">
+                    {% for page in top_pages %}
+                    <div class="top-page-row">
+                      <span class="top-page-path" title="{{ page.path }}">{{ page.path }}</span>
+                      <div class="top-page-bar-container">
+                        <div class="top-page-bar" style="width:{{ page.percentage }}%;"></div>
+                      </div>
+                      <span class="top-page-count">{{ page.count }}</span>
+                    </div>
+                    {% else %}
+                    <div class="text-muted small font-monospace">No traffic data available.</div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="leadsSection" class="mb-5">
+          <div class="widget-card">
+            <div class="widget-header">
+              <div class="widget-title">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                Lead Pipeline
+              </div>
+              <div class="widget-meta">{{ leads|length }} records</div>
+            </div>
+            <div class="widget-body p-0">
+              <div class="table-responsive">
+                <table class="pipeline-table">
+                  <thead>
+                    <tr>
+                      <th>Client</th>
+                      <th>Project</th>
+                      <th>Score</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for lead in leads %}
+                    <tr>
+                      <td>
+                        <div class="client-name">{{ lead.client_name }}</div>
+                        <div class="client-company">{{ lead.client_company or 'No company listed' }}</div>
+                      </td>
+                      <td><span class="project-badge">{{ lead.target_project or 'General' }}</span></td>
+                      <td><span class="font-monospace">{{ lead.score or 0 }}</span></td>
+                      <td>
+                        {% set status_class = {
+                          'New':'status-new',
+                          'Contacted':'status-contacted',
+                          'Proposal Sent':'status-proposal',
+                          'Closed':'status-closed',
+                          'Lost':'status-lost'
+                        }.get(lead.status, 'status-new') %}
+                        <span class="status-badge {{ status_class }}">{{ lead.status }}</span>
+                      </td>
+                      <td><span class="text-muted small font-monospace">{{ lead.created_at.strftime('%Y-%m-%d') if lead.created_at else '-' }}</span></td>
+                      <td class="text-nowrap">
+                        <button class="tbl-action-btn btn-edit-lead" data-id="{{ lead.id }}" type="button">Edit</button>
+                        <button class="tbl-action-btn btn-delete-lead" data-id="{{ lead.id }}" type="button">Delete</button>
+                      </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                      <td colspan="6" class="p-4 text-muted">No leads captured yet.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="pipeline-add-row">
+                <button class="add-lead-btn" data-bs-toggle="modal" data-bs-target="#addLeadModal" type="button">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Add Lead
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="projectsSection" class="mb-5">
+          <div class="row g-4">
+            <div class="col-12 col-xl-5">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    Upload Project
+                  </div>
+                  <div class="widget-meta">Work page source</div>
+                </div>
+                <div class="widget-body">
+                  <form id="portfolioForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                      <label class="admin-form-label" for="project_title">Heading</label>
+                      <input class="admin-form-input" id="project_title" name="project_title" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label" for="project_tag">Project Tag</label>
+                      <input class="admin-form-input" id="project_tag" name="project_tag" placeholder="Website, CRM, Automation">
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label" for="description">Description</label>
+                      <textarea class="admin-form-input" id="description" name="description" placeholder="Short description for the work page." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label" for="youtube_url">YouTube Link</label>
+                      <input class="admin-form-input" id="youtube_url" name="youtube_url" type="url" placeholder="https://youtube.com/...">
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label" for="project_url">Website Link</label>
+                      <input class="admin-form-input" id="project_url" name="project_url" type="url" placeholder="https://your-project.com">
+                    </div>
+                    <div class="mb-3">
+                      <label class="admin-form-label">Tech Stack</label>
+                      <div class="tag-input-wrapper" id="techStackWrapper">
+                        <input class="tag-input-field" id="techStackInput" placeholder="Add tag and press Enter">
+                      </div>
+                      <input id="techStackValue" name="tech_stack" type="hidden">
+                    </div>
+                    <input id="code_snippet" name="code_snippet" type="hidden">
+                    <div class="mb-4">
+                      <label class="admin-form-label">Project Image</label>
+                      <div class="file-drop-zone" id="fileDropZone">
+                        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <div class="file-drop-label"><strong>Click to upload</strong> or drop image</div>
+                        <div class="file-drop-sub">JPG, PNG, WEBP</div>
+                        <div class="file-drop-filename" id="fileDropFilename"></div>
+                      </div>
+                      <input id="fileInput" name="media" type="file" accept="image/*" hidden>
+                    </div>
+                    <button class="deploy-btn" id="deployBtn" type="submit">
+                      Upload Project
+                      <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-7">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></svg>
+                    Published Projects
+                  </div>
+                  <div class="widget-meta">{{ projects|length }} items</div>
+                </div>
+                <div class="widget-body p-0">
+                  <div class="table-responsive">
+                    <table class="pipeline-table">
+                      <thead>
+                        <tr>
+                          <th>Project</th>
+                          <th>Links</th>
+                          <th>Deployed</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for project in projects %}
+                        <tr>
+                          <td>
+                            <div class="client-name">{{ project.title }}</div>
+                            <div class="client-company">{{ project.category or 'Project' }}</div>
+                          </td>
+                          <td>
+                            <div class="d-flex gap-2 flex-wrap">
+                              {% if project.project_url %}
+                              <a class="project-badge" href="{{ project.project_url }}" target="_blank" rel="noopener">Website</a>
+                              {% endif %}
+                              {% if project.youtube_url %}
+                              <a class="project-badge" href="{{ project.youtube_url }}" target="_blank" rel="noopener">YouTube</a>
+                              {% endif %}
+                              {% if not project.project_url and not project.youtube_url %}
+                              <span class="text-muted small">No links</span>
+                              {% endif %}
+                            </div>
+                          </td>
+                          <td><span class="text-muted small font-monospace">{{ project.deployed_at.strftime('%Y-%m-%d') if project.deployed_at else '-' }}</span></td>
+                          <td>
+                            <button class="tbl-action-btn btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
+                          </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                          <td colspan="4" class="p-4 text-muted">No projects uploaded yet.</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="automationSection">
+          <div class="row g-4">
+            <div class="col-12 col-xl-7">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/></svg>
+                    Automation Actions
+                  </div>
+                  <div class="widget-meta">Manual triggers</div>
+                </div>
+                <div class="widget-body d-grid gap-3">
+                  <button class="automation-btn" data-script="Lead Pipeline Refresh" data-sub="Re-index leads and scoring cache" type="button">
+                    <span class="automation-btn-icon">
+                      <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"/><path d="M20.49 15A9 9 0 0 1 6.36 18.36L1 14"/></svg>
+                    </span>
+                    <span class="automation-btn-text">
+                      <span class="automation-btn-label">Refresh Lead Pipeline</span>
+                      <span class="automation-btn-sub">Re-score and update activity</span>
+                    </span>
+                    <span class="exec-spinner"></span>
+                    <span class="automation-btn-arrow">-></span>
+                  </button>
+                  <button class="automation-btn" data-script="Analytics Snapshot" data-sub="Collect fresh traffic stats" type="button">
+                    <span class="automation-btn-icon">
+                      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-6"/></svg>
+                    </span>
+                    <span class="automation-btn-text">
+                      <span class="automation-btn-label">Run Analytics Snapshot</span>
+                      <span class="automation-btn-sub">Log reporting checkpoint</span>
+                    </span>
+                    <span class="exec-spinner"></span>
+                    <span class="automation-btn-arrow">-></span>
+                  </button>
+                  <button class="automation-btn" data-script="Project Sync" data-sub="Rebuild work-page source" type="button">
+                    <span class="automation-btn-icon">
+                      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    </span>
+                    <span class="automation-btn-text">
+                      <span class="automation-btn-label">Sync Project Registry</span>
+                      <span class="automation-btn-sub">Record latest work list</span>
+                    </span>
+                    <span class="exec-spinner"></span>
+                    <span class="automation-btn-arrow">-></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 col-xl-5">
+              <div class="widget-card">
+                <div class="widget-header">
+                  <div class="widget-title">
+                    <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                    System Log
+                  </div>
+                  <div class="widget-meta">Recent activity</div>
+                </div>
+                <div class="widget-body">
+                  <div class="system-log" id="systemLog">
+                    {% for log in logs %}
+                    <div class="log-entry">
+                      <span class="log-ts">{{ log.timestamp.strftime('%H:%M:%S') if log.timestamp else '--:--:--' }}</span>
+                      <span class="log-event">{{ log.script_name }}</span>
+                      <span class="log-status ok">[{{ log.status|upper }}]</span>
+                    </div>
+                    {% else %}
+                    <div class="log-entry">
+                      <span class="log-ts">--:--:--</span>
+                      <span class="log-event">No recent automation logs</span>
+                      <span class="log-status run">[IDLE]</span>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal fade" id="addLeadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Lead</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addLeadForm">
+            <div class="mb-3">
+              <label class="admin-form-label" for="client_name">Client Name</label>
+              <input class="admin-form-input" id="client_name" name="client_name" required>
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="client_company">Company</label>
+              <input class="admin-form-input" id="client_company" name="client_company">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="phone_number">Phone Number</label>
+              <input class="admin-form-input" id="phone_number" name="phone_number">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="project_type">Project Type</label>
+              <input class="admin-form-input" id="project_type" name="project_type" placeholder="Website, CRM, Portal">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="budget">Budget</label>
+              <input class="admin-form-input" id="budget" name="budget" type="number" min="0" step="0.01">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="contact_role">Contact Role</label>
+              <input class="admin-form-input" id="contact_role" name="contact_role" placeholder="Owner, Manager, Agent">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="status">Status</label>
+              <select class="admin-form-input" id="status" name="status">
+                <option>New</option>
+                <option>Contacted</option>
+                <option>Proposal Sent</option>
+                <option>Closed</option>
+                <option>Lost</option>
+              </select>
+            </div>
+            <button class="deploy-btn" type="submit">Save Lead</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editLeadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Lead</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editLeadForm">
+            <input id="editLeadId" type="hidden">
+            <div class="mb-3">
+              <label class="admin-form-label" for="editLeadName">Client Name</label>
+              <input class="admin-form-input" id="editLeadName" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="editLeadScore">Score</label>
+              <input class="admin-form-input" id="editLeadScore" type="number" min="0" max="100">
+            </div>
+            <div class="mb-3">
+              <label class="admin-form-label" for="editLeadStatus">Status</label>
+              <select class="admin-form-input" id="editLeadStatus">
+                <option>New</option>
+                <option>Contacted</option>
+                <option>Proposal Sent</option>
+                <option>Closed</option>
+                <option>Lost</option>
+              </select>
+            </div>
+            <button class="deploy-btn" type="submit">Update Lead</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
+</body>
+</html>
