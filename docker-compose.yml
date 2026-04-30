@@ -7,19 +7,6 @@ services:
     ports:
       - "6010:6010"
     volumes:
-      - app-data:/app/instance  # Persist the SQLite database file
+      - ./instance:/app/instance  # Maps your local folder to the container
     env_file:
       - .env
-    # NOTE: Only one 'command' key allowed — the duplicate was silently
-    # overriding and causing the chmod to never run properly.
-    # The mkdir + chmod here runs AFTER the volume mounts, which is the
-    # correct place to ensure the directory is writable.
-    command: >
-      sh -c "mkdir -p /app/instance &&
-             chmod 777 /app/instance &&
-             gunicorn --workers=4 --bind=0.0.0.0:6010 wsgi:app"
-
-volumes:
-  app-data:
-    # Stores jo4dev.db persistently across container restarts.
-    # Inspect location with: docker volume inspect my_website_app-data

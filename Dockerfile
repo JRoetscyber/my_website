@@ -1,28 +1,27 @@
-# Use a lightweight Python image for ARM architecture (Raspberry Pi)
-FROM python:3.11-slim-bookworm
+  GNU nano 8.4                                                                                        Dockerfile
+FROM python:3.10-slim
 
-# Set the working directory in the container
+# 1. Install the C++ compiler (g++) so greenlet can build properly
+RUN apt-get update && apt-get install -y g++
+
+# 2. Upgrade pip to the latest version (sometimes this helps find better packages)
+RUN pip install --upgrade pip
+
+# 3. Create your user (if you used the previous example)
+RUN useradd -m appuser
 WORKDIR /app
 
-# Copy the requirements file into the container
+# 4. Now install your Python packages
 COPY requirements.txt .
-
-# Install system dependencies required for building some Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code into the container
+# Copy the rest of your application code
 COPY . .
 
-# Create instance directory and set open permissions so SQLite can write to it
-# even after Docker mounts the named volume over it
-RUN mkdir -p /app/instance && chmod 777 /app/instance
+# Create the instance directory and give ownership to 'appuser'
+RUN mkdir -p /app/instance && chown -R appuser:appuser /app/instance
 
-# Expose the port the Flask app will run on
-EXPOSE 6010
+# Switch to the non-root user for security
+USER appuser
 
-# Use an entrypoint script so the instance dir permissions are fixed at runtime
-# (Docker volumes mount AFTER the image layers, so we fix perms on startup)
-CMD ["sh", "-c", "mkdir -p /app/instance && chmod 777 /app/instance && gunicorn --workers=4 --bind=0.0.0.0:6010 wsgi:app"]
+# Start Gunicorn directly
+CMD ["gunicorn", "--workers=4", "--bind=0.0.0.0:6010", "wsgi:app"]
