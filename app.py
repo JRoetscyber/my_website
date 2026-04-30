@@ -56,6 +56,9 @@ def record_visit():
 def init_db():
     """Create all tables and seed default admin user."""
     with app.app_context():
+        # Add this line to force the folder to exist before SQLite tries to write!
+        os.makedirs('/app/instance', exist_ok=True) 
+        
         db.create_all()
 
         # Migrate projects table if needed
