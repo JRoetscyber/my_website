@@ -1,4 +1,3 @@
-  GNU nano 8.4                                                                                        Dockerfile
 FROM python:3.10-slim
 
 # 1. Install the C++ compiler (g++) so greenlet can build properly
