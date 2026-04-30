@@ -50,7 +50,7 @@ def record_visit():
             )
             db.session.add(visit)
             db.session.commit()
-        except:
+        except Exception as e:
             db.session.rollback()
 
 def init_db():
@@ -172,5 +172,4 @@ def handle_new_lead():
 init_db()
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 6010))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=6010)
