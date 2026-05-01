@@ -134,7 +134,14 @@ def login():
 @app.route('/robots.txt')
 def robots_txt():
     """Serve the robots.txt file."""
-    return Response("User-agent: *\nAllow: /\n", mimetype='text/plain')
+    return Response(
+        "User-agent: *\nAllow: /\n\n"
+        "User-agent: GPTBot\nDisallow: /\n\n"
+        "User-agent: Google-Extended\nDisallow: /\n\n"
+        "User-agent: CCBot\nDisallow: /\n\n"
+        "User-agent: anthropic-ai\nDisallow: /\n",
+        mimetype='text/plain'
+    )
 
 @app.route('/sitemap.xml')
 def sitemap_xml():
