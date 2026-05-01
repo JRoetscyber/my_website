@@ -8,12 +8,15 @@
         <priority>0.8</priority>
     </url>
     {% endfor %}
+    
     {% for project in projects %}
+    {% if project.slug %}
     <url>
         <loc>{{ url_for('portfolio.project_detail', slug=project.slug, _external=True) }}</loc>
         <lastmod>{{ project.deployed_at.strftime('%Y-%m-%d') if project.deployed_at else now.strftime('%Y-%m-%d') }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
+    {% endif %}
     {% endfor %}
 </urlset>

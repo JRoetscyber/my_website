@@ -53,38 +53,46 @@ def record_visit():
             db.session.rollback()
 
 def init_db():
-    """Create all tables and seed default admin user."""
+    """Create all tables, migrate schema, and ensure all projects have slugs."""
+    from slugify import slugify  # Local import to avoid circular dependency
+    
     with app.app_context():
-        # Add this line to force the folder to exist before SQLite tries to write!
+        # Ensure the instance folder exists for the SQLite database
         os.makedirs('/app/instance', exist_ok=True) 
         
         db.create_all()
 
-        # Migrate projects table if needed
+        # Migrate projects table schema
         try:
             project_cols = {
                 row[1] for row in db.session.execute(text("PRAGMA table_info(projects)")).fetchall()
             }
+            
+            # Add missing columns if they don't exist
             if 'youtube_url' not in project_cols:
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN youtube_url TEXT"))
             if 'project_url' not in project_cols:
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN project_url TEXT"))
-            # Check for slug column
             if 'slug' not in project_cols:
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN slug VARCHAR(200)"))
-                # You might need to populate existing slugs here if you have data
-                # For example:
-                # from slugify import slugify
-                # for project in Project.query.all():
-                #     if not project.slug:
-                #         project.slug = slugify(project.title)
-                # db.session.commit()
+            
             db.session.commit()
+
+            # Fix data: Generate missing slugs for existing projects[cite: 3]
+            # This prevents sitemap BuildErrors caused by empty slug values[cite: 3]
+            projects_to_fix = Project.query.filter((Project.slug == None) | (Project.slug == '')).all()
+            if projects_to_fix:
+                print(f"Repairing {len(projects_to_fix)} project slugs...")
+                for project in projects_to_fix:
+                    if project.title:
+                        project.slug = slugify(project.title)
+                db.session.commit()
+
         except Exception as e:
             print(f"Error migrating projects table: {e}")
             db.session.rollback()
 
-        # Seed default admin user if none exists
+        # Seed default admin user if none exists[cite: 3]
         try:
             admin_username = os.getenv('ADMIN_USERNAME', 'admin')
             admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
@@ -98,7 +106,7 @@ def init_db():
         except Exception as e:
             print(f"Error initializing database user: {e}")
             db.session.rollback()
-
+            
 # Blueprints
 app.register_blueprint(portfolio_bp)
 app.register_blueprint(booking_bp)
@@ -136,7 +144,7 @@ def robots_txt():
     """Serve the robots.txt file from the root directory."""
     return send_from_directory(current_app.root_path, 'robots.txt', mimetype='text/plain')
 
-@app.route('/sitemap.xml')
+@app.route('/sitemap')
 def sitemap_xml():
     """Generate and serve the sitemap.xml file."""
     projects = Project.query.all()
