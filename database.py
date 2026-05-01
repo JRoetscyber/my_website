@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
+from sqlalchemy import event
+from slugify import slugify # Ensure you have 'python-slugify' installed: pip install python-slugify
 
 db = SQLAlchemy()
 
@@ -18,6 +20,7 @@ class Project(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(200), unique=True, nullable=False, index=True) # Added slug field
     category = db.Column(db.String(50))
     tech_stack = db.Column(db.Text) # Stored as comma-separated string
     description = db.Column(db.Text)
@@ -27,6 +30,36 @@ class Project(db.Model):
     media_path = db.Column(db.String(255))
     views = db.Column(db.Integer, default=0)
     deployed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.slug:
+            self.slug = self._generate_unique_slug(self.title)
+
+    def _generate_unique_slug(self, title):
+        if not title:
+            return ""
+        base_slug = slugify(title)
+        slug = base_slug
+        counter = 1
+        while Project.query.filter_by(slug=slug).first():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
+
+# Event listener to generate slug before insert
+@event.listens_for(Project, 'before_insert')
+def receive_before_insert(mapper, connection, target):
+    if not target.slug:
+        target.slug = target._generate_unique_slug(target.title)
+
+# Event listener to generate slug before update (if title changes and slug is not set)
+@event.listens_for(Project, 'before_update')
+def receive_before_update(mapper, connection, target):
+    # Check if the title has changed and slug is not explicitly set
+    if target.title != target._sa_instance_state.original.get('title') and not target.slug:
+        target.slug = target._generate_unique_slug(target.title)
+
 
 class AutomationLog(db.Model):
     __tablename__ = 'automation_logs'

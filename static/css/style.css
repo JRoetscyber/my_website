@@ -640,12 +640,13 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  overflow: hidden;
+  /* Removed overflow: hidden to prevent text slicing on expansion */
   box-shadow: var(--shadow-card);
   transition: transform var(--transition-slow), box-shadow var(--transition-slow);
-  height: 100%;
+  height: 100%; /* Keep height 100% to fill grid cell vertically if needed */
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .project-card:hover {
@@ -656,16 +657,71 @@ h1, h2, h3, h4, h5, h6 {
 .project-card-media {
   position: relative;
   background: var(--color-surface-3);
-  overflow: hidden;
-  display: contain;
+  /* Removed height/aspect-ratio constraints */
+  overflow: hidden; /* Keep overflow hidden for rounded corners of the media block */
+  display: flex; /* Use flex to center video placeholder */
   align-items: center;
   justify-content: center;
+}
+
+.project-details-toggle {
+  width: 100%;
+  padding: 14px 24px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color var(--transition-base), background var(--transition-base), border-color var(--transition-base);
+}
+
+.project-details-toggle:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface-3);
+  border-color: var(--accent);
+}
+
+.project-details-toggle .toggle-icon {
+  width: 18px;
+  height: 18px;
+  stroke: var(--color-text-secondary);
+  transition: transform var(--transition-base), stroke var(--transition-base);
+}
+
+.project-details-toggle:hover .toggle-icon {
+  stroke: var(--color-text-primary);
+}
+
+.project-card.is-expanded .project-details-toggle .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.project-card-body.hidden-body { /* Ensure this targets the hidden body specifically */
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* Animate these properties */
+}
+
+.project-card.is-expanded .project-card-body.hidden-body {
+  max-height: 500px; /* Adjust this value as needed to be larger than the max possible height of the content */
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease-in, transform 0.6s ease-in; /* Animate these properties */
 }
 
 .uploaded-project-image {
   width: 100%;
   height: auto;
-  object-fit: cover;
+  display: block;
 }
 
 .video-placeholder {
@@ -789,6 +845,112 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(0, 229, 204, 0.12);
 }
 
+/* Fix the Grid: Apply align-items: flex-start to the container */
+.row.gap-cards {
+  align-items: flex-start; /* Ensures cards align to the start of their grid/flex row, preventing stretching */
+}
+
+/* Skeleton Card Styles */
+.skeleton-card {
+  /* Inherits most styles from .project-card */
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  cursor: default; /* Indicate it's not interactive */
+  pointer-events: none; /* Prevent interaction */
+  transition: none; /* Disable hover transitions */
+}
+
+.skeleton-card:hover {
+  transform: none;
+  box-shadow: var(--shadow-card); /* Reset to default shadow */
+}
+
+.skeleton-media {
+  width: 100%;
+  padding-bottom: 0; /* Remove fixed aspect ratio for skeleton media */
+  height: 200px; /* Give a default height to skeleton media, or base on average image height */
+  background: var(--color-surface-3);
+  border-radius: 4px;
+}
+
+/* Ensure the dummy toggle button takes up space but is not visible */
+.project-details-toggle.dummy {
+  visibility: hidden;
+  height: 48px; /* Approximate height of your actual toggle button */
+  border-top: 1px solid var(--color-border); /* Match the real button's border */
+}
+
+.skeleton-card .project-card-body.hidden-body {
+  /* Override hidden-body default for skeleton, ensuring content is 'visible' for shimmer */
+  max-height: 500px; /* Ensure content is visible for skeleton cards, adjusted to match a potential expanded state */
+  overflow: hidden;
+  transition: none; /* Disable transitions */
+}
+
+.skeleton-tag {
+  height: 12px;
+  width: 60px;
+  background: var(--color-surface-3);
+  margin-bottom: 12px;
+  border-radius: 2px;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 80%;
+  background: var(--color-surface-3);
+  margin-bottom: 12px;
+  border-radius: 2px;
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 100%;
+  background: var(--color-surface-3);
+  margin-bottom: 8px;
+  border-radius: 2px;
+}
+
+.skeleton-text.short {
+  width: 70%;
+}
+
+/* Shimmer Animation */
+/* Apply shimmering effect to all skeleton elements */
+.skeleton-media,
+.skeleton-tag,
+.skeleton-title,
+.skeleton-text {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-surface-3); /* Base color for shimmering effect */
+}
+
+.skeleton-media::after,
+.skeleton-tag::after,
+.skeleton-title::after,
+.skeleton-text::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 229, 204, 0.04) 20%, /* Subtle shimmer light */
+    rgba(0, 229, 204, 0.08) 60%, /* Stronger shimmer light */
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
 /* ------------------------------------------------------------
    11. SANDBOX / INTERACTIVE FORM
    ------------------------------------------------------------ */

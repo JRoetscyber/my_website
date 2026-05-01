@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
@@ -9,8 +9,7 @@ from dotenv import load_dotenv
 from portfolio import portfolio_bp
 from booking import booking_bp
 from admin import admin_bp
-from database import db, User, Analytics, Lead
-from lead_score import calculate_lead_score
+from database import db, User, Analytics, Lead, Project # Added Project
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +69,16 @@ def init_db():
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN youtube_url TEXT"))
             if 'project_url' not in project_cols:
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN project_url TEXT"))
+            # Check for slug column
+            if 'slug' not in project_cols:
+                db.session.execute(text("ALTER TABLE projects ADD COLUMN slug VARCHAR(200)"))
+                # You might need to populate existing slugs here if you have data
+                # For example:
+                # from slugify import slugify
+                # for project in Project.query.all():
+                #     if not project.slug:
+                #         project.slug = slugify(project.title)
+                # db.session.commit()
             db.session.commit()
         except Exception as e:
             print(f"Error migrating projects table: {e}")
@@ -121,6 +130,24 @@ def login():
             flash('Invalid username or password', 'danger')
 
     return render_template('login.html')
+
+@app.route('/robots.txt')
+def robots_txt():
+    """Serve the robots.txt file."""
+    return Response("User-agent: *\nAllow: /\n", mimetype='text/plain')
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    """Generate and serve the sitemap.xml file."""
+    projects = Project.query.all()
+    # You can add other static URLs here if needed
+    static_urls = [
+        url_for('home', _external=True),
+        url_for('portfolio.projects', _external=True),
+        url_for('booking.book', _external=True)
+    ]
+    return render_template('sitemap.xml', projects=projects, static_urls=static_urls), 200, {'Content-Type': 'application/xml'}
+
 
 @app.route('/api/new-lead', methods=['POST'])
 def handle_new_lead():
