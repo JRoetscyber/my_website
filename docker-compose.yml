@@ -7,6 +7,7 @@ services:
     ports:
       - "6010:6010"
     volumes:
+      - .:/app
       - ./instance:/app/instance  # Maps your local folder to the container
     env_file:
       - .env
