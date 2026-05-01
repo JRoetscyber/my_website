@@ -1,6 +1,7 @@
 blinker
 click
 colorama
+slugify
 Flask
 Flask-Login
 Flask-SQLAlchemy
