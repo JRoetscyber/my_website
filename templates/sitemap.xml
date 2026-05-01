@@ -11,7 +11,7 @@
     {% for project in projects %}
     <url>
         <loc>{{ url_for('portfolio.project_detail', slug=project.slug, _external=True) }}</loc>
-        <lastmod>{{ project.deployed_at | datetimeformat('%Y-%m-%d') }}</lastmod>
+        <lastmod>{{ project.deployed_at.strftime('%Y-%m-%d') if project.deployed_at else now.strftime('%Y-%m-%d') }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
