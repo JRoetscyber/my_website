@@ -41,6 +41,6 @@ User-agent: ChatGPT-User
 Disallow: /
 
 # --------------------------------------------------
-# 3. XML Sitemap (Required Absolute URL)
+# 3. XML Sitemap (Absolute URL Required)
 # --------------------------------------------------
-Sitemap: https://jo4.co.za/sitemap.xml
+Sitemap: https://jo4.co.za/sitemap
