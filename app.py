@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response, send_from_directory, current_app
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
@@ -133,15 +133,8 @@ def login():
 
 @app.route('/robots.txt')
 def robots_txt():
-    """Serve the robots.txt file."""
-    return Response(
-        "User-agent: *\nAllow: /\n\n"
-        "User-agent: GPTBot\nDisallow: /\n\n"
-        "User-agent: Google-Extended\nDisallow: /\n\n"
-        "User-agent: CCBot\nDisallow: /\n\n"
-        "User-agent: anthropic-ai\nDisallow: /\n",
-        mimetype='text/plain'
-    )
+    """Serve the robots.txt file from the root directory."""
+    return send_from_directory(current_app.root_path, 'robots.txt', mimetype='text/plain')
 
 @app.route('/sitemap.xml')
 def sitemap_xml():
