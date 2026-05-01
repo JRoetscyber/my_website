@@ -1,6 +1,12 @@
+# --------------------------------------------------
+# 1. General Access for Standard Search Engines
+# --------------------------------------------------
 User-agent: *
 Allow: /
 
+# --------------------------------------------------
+# 2. Block AI Scrapers and Data Crawlers
+# --------------------------------------------------
 User-agent: GPTBot
 Disallow: /
 
@@ -34,4 +40,7 @@ Disallow: /
 User-agent: ChatGPT-User
 Disallow: /
 
+# --------------------------------------------------
+# 3. XML Sitemap (Required Absolute URL)
+# --------------------------------------------------
 Sitemap: https://jo4.co.za/sitemap.xml
