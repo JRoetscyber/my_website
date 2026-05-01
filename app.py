@@ -140,13 +140,21 @@ def robots_txt():
 def sitemap_xml():
     """Generate and serve the sitemap.xml file."""
     projects = Project.query.all()
+    
     # You can add other static URLs here if needed
     static_urls = [
         url_for('home', _external=True),
         url_for('portfolio.projects', _external=True),
         url_for('booking.book', _external=True)
     ]
-    return render_template('sitemap.xml', projects=projects, static_urls=static_urls), 200, {'Content-Type': 'application/xml'}
+    
+    # Passing now=datetime.now() prevents the HTTP 500 crash
+    return render_template(
+        'sitemap.xml', 
+        projects=projects, 
+        static_urls=static_urls,
+        now=datetime.now()
+    ), 200, {'Content-Type': 'application/xml'}
 
 
 @app.route('/api/new-lead', methods=['POST'])

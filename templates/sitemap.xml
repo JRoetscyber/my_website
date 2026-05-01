@@ -3,7 +3,7 @@
     {% for url in static_urls %}
     <url>
         <loc>{{ url }}</loc>
-        <lastmod>{{ "now()" | datetimeformat('%Y-%m-%d') }}</lastmod> {# Using current date for static pages #}
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
