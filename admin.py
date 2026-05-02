@@ -6,6 +6,7 @@ from sqlalchemy import func
 import os
 from werkzeug.utils import secure_filename
 
+
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/admin')
@@ -102,19 +103,36 @@ def analytics_data():
 @login_required
 def add_lead():
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({"status": "error", "message": "Invalid JSON"}), 400
+
+        # 1. Run the scoring engine on the incoming form data
+        score_result = calculate_lead_score(data)
+        
+        # 2. Extract the calculated score and classification
+        calculated_score = score_result['score']
+        lead_classification = score_result['classification'] # 'Hot', 'Warm', or 'Cold'
+
+        # 3. Save it to the database
         new_lead = Lead(
             client_name=data.get('client_name'),
             client_company=data.get('client_company'),
-            target_project=data.get('target_project'),
-            score=data.get('score', 50),
-            status=data.get('status', 'New')
+            project_type=data.get('project_type'),
+            budget=data.get('budget'),
+            contact_role=data.get('contact_role'),
+            score=calculated_score,             # Use the dynamically generated score
+            status=data.get('status', 'New') 
         )
+        
         db.session.add(new_lead)
         db.session.commit()
-        return jsonify({"status": "success", "message": "Lead added successfully"})
+        
+        return jsonify({"status": "success", "message": f"Lead added. Score: {calculated_score} ({lead_classification})"}), 201 
+
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 400
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @admin_bp.route('/admin/add_project', methods=['POST'])
 @login_required
