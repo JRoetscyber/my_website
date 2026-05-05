@@ -1,4 +1,5 @@
 import os
+import click
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response, send_from_directory, current_app
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,7 +11,8 @@ from lead_score import calculate_lead_score
 from portfolio import portfolio_bp
 from booking import booking_bp
 from admin import admin_bp
-from database import db, User, Analytics, Lead, Project # Added Project
+from database import db, User, Analytics, Lead, Project, make_slug # Added Project
+from legacy_leads import backfill_legacy_leads
 
 # Load environment variables
 load_dotenv()
@@ -55,13 +57,43 @@ def record_visit():
 
 def init_db():
     """Create all tables, migrate schema, and ensure all projects have slugs."""
-    from slugify import slugify  # Local import to avoid circular dependency
-    
     with app.app_context():
         # Ensure the instance folder exists for the SQLite database
         os.makedirs('/app/instance', exist_ok=True) 
         
         db.create_all()
+
+        # Migrate leads table schema
+        try:
+            lead_cols = {
+                row[1] for row in db.session.execute(text("PRAGMA table_info(leads)")).fetchall()
+            }
+
+            if 'project_type' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN project_type VARCHAR(100)"))
+            if 'budget' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN budget FLOAT"))
+            if 'contact_role' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN contact_role VARCHAR(100)"))
+            if 'phone_number' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN phone_number VARCHAR(50)"))
+            if 'whatsapp_engagement' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN whatsapp_engagement VARCHAR(50)"))
+            if 'explicit_score' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN explicit_score FLOAT"))
+            if 'implicit_score' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN implicit_score FLOAT"))
+            if 'urgency_score' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN urgency_score FLOAT"))
+            if 'loss_reason' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN loss_reason VARCHAR(255)"))
+            if 'last_activity_date' not in lead_cols:
+                db.session.execute(text("ALTER TABLE leads ADD COLUMN last_activity_date DATETIME"))
+
+            db.session.commit()
+        except Exception as e:
+            print(f"Error migrating leads table: {e}")
+            db.session.rollback()
 
         # Migrate projects table schema
         try:
@@ -86,7 +118,7 @@ def init_db():
                 print(f"Repairing {len(projects_to_fix)} project slugs...")
                 for project in projects_to_fix:
                     if project.title:
-                        project.slug = slugify(project.title)
+                        project.slug = make_slug(project.title)
                 db.session.commit()
 
         except Exception as e:
@@ -188,8 +220,9 @@ def handle_new_lead():
 
         analysis = calculate_lead_score(scoring_input)
 
+        valid_statuses = {'New', 'Contacted', 'Negotiating', 'Closed', 'Lost'}
         manual_status = data.get('status')
-        final_status = manual_status if manual_status and manual_status != 'New' else analysis['classification']
+        final_status = manual_status if manual_status in valid_statuses else 'New'
 
         new_lead = Lead(
             client_name=data.get('client_name'),
@@ -213,6 +246,13 @@ def handle_new_lead():
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.cli.command("backfill-legacy-leads")
+def backfill_legacy_leads_command():
+    """Populate missing lead scoring/status data for legacy CRM rows."""
+    updated = backfill_legacy_leads(app, verbose=False)
+    click.echo(f"Backfilled {updated} legacy leads.")
 
 
 # Initialise the database when the module is imported (by gunicorn/wsgi)

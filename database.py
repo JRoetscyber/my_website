@@ -2,19 +2,37 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
 from sqlalchemy import event
-from slugify import slugify # Ensure you have 'python-slugify' installed: pip install python-slugify
+import re
+import unicodedata
 
 db = SQLAlchemy()
+
+def make_slug(value):
+    value = str(value or '')
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = value.lower()
+    value = re.sub(r'[^a-z0-9]+', '-', value).strip('-')
+    return value or 'project'
 
 class Lead(db.Model):
     __tablename__ = 'leads'
     id = db.Column(db.Integer, primary_key=True)
     client_name = db.Column(db.String(100), nullable=False)
     client_company = db.Column(db.String(100))
+    project_type = db.Column(db.String(100))
+    budget = db.Column(db.Float)
+    contact_role = db.Column(db.String(100))
+    phone_number = db.Column(db.String(50))
+    whatsapp_engagement = db.Column(db.String(50))
     target_project = db.Column(db.String(100))
     score = db.Column(db.Integer)
+    explicit_score = db.Column(db.Float)
+    implicit_score = db.Column(db.Float)
+    urgency_score = db.Column(db.Float)
     status = db.Column(db.String(50), default='New') # 'New', 'Contacted', 'Proposal Sent', 'Closed'
+    loss_reason = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_activity_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Project(db.Model):
     __tablename__ = 'projects'
@@ -39,7 +57,7 @@ class Project(db.Model):
     def _generate_unique_slug(self, title):
         if not title:
             return ""
-        base_slug = slugify(title)
+        base_slug = make_slug(title)
         slug = base_slug
         counter = 1
         while Project.query.filter_by(slug=slug).first():

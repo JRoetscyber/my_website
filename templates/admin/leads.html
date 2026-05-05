@@ -1,0 +1,774 @@
+{% extends "admin/admin.html" %}
+
+{% block admin_title %}Leads - Admin Panel{% endblock %}
+{% block admin_heading %}Leads{% endblock %}
+
+{% block admin_head %}
+<style>
+  /* 5-column lead kanban — overrides admin.css default 4-col */
+  #powerLeadBoard {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  @media (max-width: 1399px) { #powerLeadBoard { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 767px)  { #powerLeadBoard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px)  { #powerLeadBoard { grid-template-columns: 1fr; } }
+
+  /* Quick filter buttons */
+  .lead-filter-btn {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 7px 16px;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    transition: all var(--transition-base);
+    cursor: pointer;
+  }
+  .lead-filter-btn:hover {
+    color: var(--color-text-secondary);
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.03);
+  }
+  .lead-filter-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* Rotting card highlight */
+  .lead-kanban-card.rotting-lead {
+    border-color: var(--status-red) !important;
+    box-shadow: 0 0 0 2px rgba(239,68,68,0.2), 0 18px 38px rgba(0,0,0,0.18);
+  }
+
+  /* Filter strip */
+  .leads-filter-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+{% set statuses = ['New', 'Contacted', 'Negotiating', 'Closed', 'Lost'] %}
+
+<!-- Header card: title, stats, filters -->
+<div class="widget-card mb-4">
+
+  <div class="lead-toolbar">
+    <div>
+      <div class="lead-toolbar-title">Lead Pipeline</div>
+      <div class="lead-toolbar-sub">Drag leads across stages · catch rotting opportunities · trigger WhatsApp follow-ups</div>
+    </div>
+    <button type="button" id="openCreateLeadModal" class="add-lead-btn">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 1v11M1 6.5h11"/></svg>
+      Add Lead
+    </button>
+  </div>
+
+  <div class="lead-summary-grid">
+    <div class="lead-summary-card">
+      <span class="lead-summary-label">New</span>
+      <span class="lead-summary-value">{{ leads | selectattr('display_status', 'equalto', 'New') | list | length }}</span>
+    </div>
+    <div class="lead-summary-card">
+      <span class="lead-summary-label">Contacted</span>
+      <span class="lead-summary-value">{{ leads | selectattr('display_status', 'equalto', 'Contacted') | list | length }}</span>
+    </div>
+    <div class="lead-summary-card">
+      <span class="lead-summary-label">Negotiating</span>
+      <span class="lead-summary-value">{{ leads | selectattr('display_status', 'equalto', 'Negotiating') | list | length }}</span>
+    </div>
+    <div class="lead-summary-card">
+      <span class="lead-summary-label">Lost / Dead</span>
+      <span class="lead-summary-value">{{ leads | selectattr('display_status', 'equalto', 'Lost') | list | length }}</span>
+    </div>
+  </div>
+
+  <div class="leads-filter-strip" id="leadQuickFilters">
+    <button type="button" data-filter="all" class="lead-filter-btn active">All</button>
+    <button type="button" data-filter="hot" class="lead-filter-btn">Hot Leads</button>
+    <button type="button" data-filter="cold" class="lead-filter-btn">Cold Leads</button>
+    <button type="button" data-filter="iot-erp" class="lead-filter-btn">IoT &amp; ERP</button>
+    <button type="button" data-filter="web-portals" class="lead-filter-btn">Web &amp; Portals</button>
+  </div>
+
+</div>
+
+<!-- Kanban board -->
+<div id="powerLeadBoard" class="kanban-board">
+  {% for stage in statuses %}
+  <section class="kanban-column" data-column="{{ stage }}">
+
+    <div class="kanban-column-head">
+      <div>
+        <div class="kanban-column-title">{{ 'Lost / Dead' if stage == 'Lost' else stage }}</div>
+        <div class="kanban-column-sub">
+          {% if stage == 'New' %}Fresh intake
+          {% elif stage == 'Contacted' %}Outbound running
+          {% elif stage == 'Negotiating' %}Deals in motion
+          {% elif stage == 'Closed' %}Won revenue
+          {% else %}Autopsy queue{% endif %}
+        </div>
+      </div>
+      <span class="kanban-column-count" data-count>{{ leads | selectattr('display_status', 'equalto', stage) | list | length }}</span>
+    </div>
+
+    <div class="kanban-dropzone" data-dropzone="{{ stage }}">
+      {% for lead in leads %}
+      {% set lead_status = lead.display_status or 'New' %}
+      {% if lead_status == stage %}
+      {% set score = lead.display_score %}
+      {% set classification = 'Hot' if score is not none and score >= 80 else 'Warm' if score is not none and score >= 50 else 'Cold' %}
+      {% set temp_class = 'lead-temp-hot' if classification == 'Hot' else 'lead-temp-warm' if classification == 'Warm' else 'lead-temp-cold' %}
+      <article
+        class="lead-kanban-card"
+        draggable="true"
+        data-id="{{ lead.id }}"
+        data-status="{{ lead_status }}"
+        data-classification="{{ classification }}"
+        data-project-type="{{ (lead.display_project_type or 'Unspecified')|lower }}"
+        data-last-activity="{{ lead.last_activity_date.isoformat() if lead.last_activity_date else '' }}"
+        data-company="{{ lead.client_company or '' }}"
+        data-name="{{ lead.client_name or lead.client_company or 'there' }}"
+        data-phone="{{ lead.phone_number or '' }}"
+        data-budget="{{ lead.budget or 0 }}"
+        data-contact-role="{{ lead.contact_role or 'Agent' }}"
+        data-whatsapp-engagement="{{ lead.whatsapp_engagement or 'Ignored' }}"
+        data-loss-reason="{{ lead.loss_reason or '' }}"
+      >
+        <div class="lead-card-topline">
+          <span class="lead-temp-badge {{ temp_class }}">{{ classification }}</span>
+          <span class="lead-score-pill">{% if score is not none %}{{ score }}{% else %}—{% endif %}</span>
+        </div>
+
+        <div class="lead-card-main">
+          <p class="lead-card-company">{{ lead.client_company or 'Unnamed company' }}</p>
+          <p class="lead-card-contact">{{ lead.client_name or 'No named contact' }}</p>
+          <p class="lead-card-project">{{ lead.display_project_type }}</p>
+        </div>
+
+        <div class="lead-card-metrics">
+          <span class="lead-budget">{{ "R{:,.0f}".format(lead.budget) if lead.budget else "Unknown" }}</span>
+          <span class="lead-role">{{ lead.contact_role or 'Agent' }}</span>
+        </div>
+
+        <div class="lead-card-meta">
+          <span>{{ lead_status }}</span>
+          <span>{{ lead.whatsapp_engagement or 'Ignored' }}</span>
+        </div>
+
+        <details class="lead-breakdown">
+          <summary>Score Breakdown</summary>
+          <div class="lead-breakdown-grid">
+            <div>
+              <span>Explicit</span>
+              <strong>{{ lead.explicit_score if lead.explicit_score is not none else '—' }}</strong>
+            </div>
+            <div>
+              <span>Implicit</span>
+              <strong>{{ lead.implicit_score if lead.implicit_score is not none else '—' }}</strong>
+            </div>
+            <div>
+              <span>Urgency</span>
+              <strong>{{ lead.urgency_score if lead.urgency_score is not none else '—' }}</strong>
+            </div>
+          </div>
+        </details>
+
+        <div class="lead-card-actions">
+          <button type="button" class="tbl-action-btn open-edit-lead">Edit</button>
+          <button type="button" class="tbl-action-btn send-whatsapp">WhatsApp</button>
+          <button type="button" class="tbl-action-btn btn-delete-lead delete-lead">Delete</button>
+        </div>
+      </article>
+      {% endif %}
+      {% endfor %}
+
+      <div class="kanban-empty" id="empty-{{ stage }}">Drop leads here</div>
+    </div>
+
+  </section>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block admin_modals %}
+
+<!-- Lead Composer Modal -->
+<div class="modal fade" id="leadComposerModal" tabindex="-1" aria-labelledby="leadModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="leadModalTitle">Add Lead</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="leadComposerForm">
+          <input type="hidden" id="leadRecordId">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="admin-form-label">Client Company</label>
+              <input id="leadClientCompany" class="admin-form-input" required placeholder="Acme Corp">
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Contact Name</label>
+              <input id="leadClientName" class="admin-form-input" placeholder="John Smith">
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Contact Role</label>
+              <select id="leadContactRole" class="admin-form-input">
+                <option>Owner</option>
+                <option>Principal</option>
+                <option>Director</option>
+                <option>Manager</option>
+                <option>Agent</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Budget (R)</label>
+              <input id="leadBudget" type="number" min="0" step="1" class="admin-form-input" placeholder="50000">
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Phone Number</label>
+              <input id="leadPhone" type="tel" class="admin-form-input" placeholder="0821234567">
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">WhatsApp Engagement</label>
+              <select id="leadWhatsappEngagement" class="admin-form-input">
+                <option>Replied</option>
+                <option>Read</option>
+                <option>Ignored</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Project Type</label>
+              <select id="leadProjectType" class="admin-form-input">
+                <option value="ERP">ERP</option>
+                <option value="Portal">Portal</option>
+                <option value="IoT_Integration">IoT Integration</option>
+                <option value="Data_Pipeline">Data Pipeline</option>
+                <option value="CRM">CRM</option>
+                <option value="Server_Config">Server Config</option>
+                <option value="Automation">Automation</option>
+                <option value="POS_System">POS System</option>
+                <option value="Static">Static</option>
+                <option value="Website">Website</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-form-label">Status</label>
+              <select id="leadStatus" class="admin-form-input">
+                <option>New</option>
+                <option>Contacted</option>
+                <option>Negotiating</option>
+                <option>Closed</option>
+                <option>Lost</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-form-actions mt-4">
+            <button type="submit" id="leadComposerSubmit" class="add-lead-btn" style="border-radius:4px;">Save Lead</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Lost Deal Autopsy Modal -->
+<div class="modal fade" id="lostDealModal" tabindex="-1" aria-labelledby="lostDealModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-color: rgba(239,68,68,0.25) !important;">
+      <div class="modal-header" style="border-bottom-color: rgba(239,68,68,0.15) !important;">
+        <div>
+          <h5 class="modal-title" id="lostDealModalLabel">Lost Deal Autopsy</h5>
+          <div style="font-size:0.78rem; color:var(--color-text-muted); margin-top:4px;">Why did we lose this deal?</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="lostDealForm">
+          <input type="hidden" id="lostDealLeadId">
+          <label class="admin-form-label">Loss Reason</label>
+          <select id="lossReason" class="admin-form-input" required>
+            <option value="">Select reason…</option>
+            <option>Price too high</option>
+            <option>Ghosted</option>
+            <option>Went with competitor</option>
+            <option>Budget constraints</option>
+            <option>Timing not right</option>
+            <option>Internal blocker</option>
+          </select>
+          <div class="modal-form-actions mt-4" style="gap:10px;">
+            <button type="button" id="cancelLostDeal" class="tbl-action-btn" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" style="background:var(--status-red);color:#fff;font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:8px 20px;border-radius:4px;border:none;font-weight:700;cursor:pointer;">Save Autopsy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer" style="z-index:9999;"></div>
+
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+  (function () {
+    const board = document.getElementById('powerLeadBoard');
+    if (!board) return;
+
+    const composerModalEl  = document.getElementById('leadComposerModal');
+    const lostDealModalEl  = document.getElementById('lostDealModal');
+    const composerForm     = document.getElementById('leadComposerForm');
+    const lostDealForm     = document.getElementById('lostDealForm');
+    const submitButton     = document.getElementById('leadComposerSubmit');
+    const filterButtons    = Array.from(document.querySelectorAll('.lead-filter-btn'));
+    let draggedCard        = null;
+    let pendingLostCard    = null;
+    let pendingLostSourceZone = null;
+
+    const projectMessageMap = {
+      erp:             "saw you are looking for an ERP system. I build custom inventory solutions",
+      portal:          "noticed you need a secure portal. I build polished client access platforms",
+      iot_integration: "saw your IoT integration requirement. I build custom sensor and device dashboards",
+      data_pipeline:   "noticed the data pipeline requirement. I build clean automation and reporting flows",
+      crm:             "saw you are exploring a CRM. I build custom lead and sales systems",
+      server_config:   "noticed you need server configuration help. I deploy secure production environments",
+      automation:      "saw the automation requirement. I build workflow systems that remove manual admin",
+      pos_system:      "noticed the POS system requirement. I build tailored retail operations software",
+      static:          "saw you are looking for a lightweight web presence. I build fast marketing sites",
+      website:         "noticed you need a website. I design and build conversion-focused web platforms"
+    };
+
+    /* ── Toast ─────────────────────────────────────────────── */
+    function showToast(message, kind = 'success') {
+      const bgClass = kind === 'error' ? 'text-bg-danger' : kind === 'warning' ? 'text-bg-warning' : 'text-bg-success';
+      const id = 'toast-' + Date.now();
+      document.getElementById('toastContainer').insertAdjacentHTML('beforeend', `
+        <div id="${id}" class="toast align-items-center ${bgClass}" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      `);
+      const toastEl = document.getElementById(id);
+      const bsToast = new bootstrap.Toast(toastEl, { delay: 3200 });
+      bsToast.show();
+      toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    }
+
+    /* ── Fetch helper ──────────────────────────────────────── */
+    function fetchJson(url, options = {}) {
+      return fetch(url, options).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok || data.status === 'error') throw new Error(data.message || 'Request failed');
+        return data;
+      });
+    }
+
+    /* ── Helpers ───────────────────────────────────────────── */
+    function normalisePhoneNumber(phone) {
+      const digits = String(phone || '').replace(/\D/g, '');
+      if (!digits) return '';
+      if (digits.startsWith('27')) return digits;
+      if (digits.startsWith('0')) return '27' + digits.slice(1);
+      return '27' + digits;
+    }
+
+    function formatBudget(value) {
+      const num = Number(value || 0);
+      if (!num) return 'Unknown';
+      return 'R' + num.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    }
+
+    function titleCaseProject(raw) {
+      return String(raw || 'project').replaceAll('_', ' ');
+    }
+
+    function getClassification(score) {
+      const num = Number(score);
+      if (Number.isNaN(num)) return 'Cold';
+      if (num >= 80) return 'Hot';
+      if (num >= 50) return 'Warm';
+      return 'Cold';
+    }
+
+    /* ── Column counts + empty state ───────────────────────── */
+    function updateColumnCounts() {
+      document.querySelectorAll('[data-column]').forEach((col) => {
+        const countEl = col.querySelector('[data-count]');
+        const cards   = col.querySelectorAll('.lead-kanban-card:not(.hidden)');
+        if (countEl) countEl.textContent = cards.length;
+        const emptyEl = col.querySelector('.kanban-empty');
+        if (emptyEl) emptyEl.style.display = cards.length === 0 ? '' : 'none';
+      });
+    }
+
+    /* ── Rotting state ─────────────────────────────────────── */
+    function applyRottingState() {
+      const now = Date.now();
+      document.querySelectorAll('.lead-kanban-card').forEach((card) => {
+        const raw = card.dataset.lastActivity;
+        if (!raw) return;
+        const last = new Date(raw);
+        if (Number.isNaN(last.getTime())) return;
+        const ageDays = (now - last.getTime()) / 86400000;
+        if (ageDays > 7) {
+          card.classList.add('rotting-lead');
+          if (!card.querySelector('.lead-urgency-flag')) {
+            const marker = document.createElement('div');
+            marker.className = 'lead-urgency-flag';
+            marker.innerHTML = '<span class="lead-urgency-dot"></span>Rotting lead';
+            card.appendChild(marker);
+          }
+        } else {
+          card.classList.remove('rotting-lead');
+          card.querySelector('.lead-urgency-flag')?.remove();
+        }
+      });
+    }
+
+    /* ── Filter ────────────────────────────────────────────── */
+    function projectFilterMatch(filter, card) {
+      const pt = (card.dataset.projectType || '').toLowerCase();
+      const cl = card.dataset.classification;
+      switch (filter) {
+        case 'hot':       return cl === 'Hot';
+        case 'cold':      return cl === 'Cold';
+        case 'iot-erp':   return ['iot integration', 'iot_integration', 'erp'].includes(pt);
+        case 'web-portals': return ['website', 'portal', 'static'].includes(pt);
+        default:          return true;
+      }
+    }
+
+    function applyFilter(filter) {
+      filterButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.filter === filter));
+      document.querySelectorAll('.lead-kanban-card').forEach((card) => {
+        card.classList.toggle('hidden', !projectFilterMatch(filter, card));
+      });
+      updateColumnCounts();
+    }
+
+    /* ── Modal helpers ─────────────────────────────────────── */
+    function openComposerModal()  { bootstrap.Modal.getOrCreateInstance(composerModalEl).show(); }
+    function closeComposerModal() { bootstrap.Modal.getInstance(composerModalEl)?.hide(); }
+    function openLostDealModal()  { bootstrap.Modal.getOrCreateInstance(lostDealModalEl).show(); }
+    function closeLostDealModal() { bootstrap.Modal.getInstance(lostDealModalEl)?.hide(); }
+
+    function resetComposerForm() {
+      composerForm.reset();
+      document.getElementById('leadRecordId').value = '';
+      document.getElementById('leadModalTitle').textContent = 'Add Lead';
+      submitButton.textContent = 'Save Lead';
+    }
+
+    function populateComposerFromCard(card) {
+      document.getElementById('leadRecordId').value = card.dataset.id;
+      document.getElementById('leadModalTitle').textContent = 'Edit Lead';
+      submitButton.textContent = 'Update Lead';
+      document.getElementById('leadClientCompany').value     = card.dataset.company || '';
+      document.getElementById('leadClientName').value        = card.dataset.name === 'there' ? '' : card.dataset.name || '';
+      document.getElementById('leadBudget').value            = Number(card.dataset.budget || 0) || '';
+      document.getElementById('leadContactRole').value       = card.dataset.contactRole || 'Agent';
+      document.getElementById('leadPhone').value             = card.dataset.phone || '';
+      document.getElementById('leadWhatsappEngagement').value = card.dataset.whatsappEngagement || 'Ignored';
+      document.getElementById('leadProjectType').value       = String(card.dataset.projectType || 'Static')
+        .replace('iot integration', 'IoT_Integration')
+        .replace('data pipeline',  'Data_Pipeline')
+        .replace('server config',  'Server_Config')
+        .replace('pos system',     'POS_System')
+        .replace('website',        'Website');
+      document.getElementById('leadStatus').value = card.dataset.status || 'New';
+    }
+
+    /* ── WhatsApp message ──────────────────────────────────── */
+    function contextualWhatsappMessage(card) {
+      const pk     = (card.dataset.projectType || '').toLowerCase().replaceAll(' ', '_');
+      const status = card.dataset.status || 'New';
+      const name   = card.dataset.name || 'there';
+      const base   = projectMessageMap[pk] || 'noticed your project request and I can build a tailored solution';
+      const suffix = ({
+        New:         'If you want, I can send a quick outline of the best approach.',
+        Contacted:   'I wanted to follow up and see if you need a technical breakdown or estimate.',
+        Negotiating: 'Happy to tighten scope, rollout phases, or pricing options.',
+        Closed:      'Just checking in after delivery and seeing if there is a next phase to plan.',
+        Lost:        'If the timing changes, I can still help you map the cleanest next step.'
+      })[status] || 'Let me know if you want to explore the next step.';
+      return `Hi ${name}, ${base}. ${suffix}`;
+    }
+
+    /* ── Card markup builder ───────────────────────────────── */
+    function buildCardMarkup(lead) {
+      const cl        = getClassification(lead.score);
+      const scoreLabel = (lead.score !== null && lead.score !== undefined) ? lead.score : '—';
+      const status    = lead.status || 'New';
+      const pt        = lead.project_type || lead.target_project || 'Static';
+      const tempClass = cl === 'Hot' ? 'lead-temp-hot' : cl === 'Warm' ? 'lead-temp-warm' : 'lead-temp-cold';
+      return `
+        <article
+          class="lead-kanban-card"
+          draggable="true"
+          data-id="${lead.id}"
+          data-status="${status}"
+          data-classification="${cl}"
+          data-project-type="${String(pt).toLowerCase().replaceAll('_', ' ')}"
+          data-last-activity="${lead.last_activity_date || ''}"
+          data-company="${lead.client_company || ''}"
+          data-name="${lead.client_name || lead.client_company || 'there'}"
+          data-phone="${lead.phone_number || ''}"
+          data-budget="${lead.budget || 0}"
+          data-contact-role="${lead.contact_role || 'Agent'}"
+          data-whatsapp-engagement="${lead.whatsapp_engagement || 'Ignored'}"
+          data-loss-reason="${lead.loss_reason || ''}"
+        >
+          <div class="lead-card-topline">
+            <span class="lead-temp-badge ${tempClass}">${cl}</span>
+            <span class="lead-score-pill">${scoreLabel}</span>
+          </div>
+          <div class="lead-card-main">
+            <p class="lead-card-company">${lead.client_company || 'Unnamed company'}</p>
+            <p class="lead-card-contact">${lead.client_name || 'No named contact'}</p>
+            <p class="lead-card-project">${titleCaseProject(pt)}</p>
+          </div>
+          <div class="lead-card-metrics">
+            <span class="lead-budget">${formatBudget(lead.budget)}</span>
+            <span class="lead-role">${lead.contact_role || 'Agent'}</span>
+          </div>
+          <div class="lead-card-meta">
+            <span>${status}</span>
+            <span>${lead.whatsapp_engagement || 'Ignored'}</span>
+          </div>
+          <details class="lead-breakdown">
+            <summary>Score Breakdown</summary>
+            <div class="lead-breakdown-grid">
+              <div><span>Explicit</span><strong>${lead.breakdown?.explicit ?? '—'}</strong></div>
+              <div><span>Implicit</span><strong>${lead.breakdown?.implicit ?? '—'}</strong></div>
+              <div><span>Urgency</span><strong>${lead.breakdown?.urgency ?? '—'}</strong></div>
+            </div>
+          </details>
+          <div class="lead-card-actions">
+            <button type="button" class="tbl-action-btn open-edit-lead">Edit</button>
+            <button type="button" class="tbl-action-btn send-whatsapp">WhatsApp</button>
+            <button type="button" class="tbl-action-btn btn-delete-lead delete-lead">Delete</button>
+          </div>
+        </article>
+      `;
+    }
+
+    /* ── Wire up a single card ─────────────────────────────── */
+    function mountCardInteractions(card) {
+      card.addEventListener('dragstart', () => {
+        draggedCard = card;
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        draggedCard = null;
+      });
+
+      card.querySelector('.open-edit-lead')?.addEventListener('click', () => {
+        resetComposerForm();
+        populateComposerFromCard(card);
+        openComposerModal();
+      });
+
+      card.querySelector('.send-whatsapp')?.addEventListener('click', () => {
+        const phone = normalisePhoneNumber(card.dataset.phone);
+        if (!phone) { showToast('This lead has no phone number saved.', 'warning'); return; }
+        window.open(
+          `https://wa.me/${phone}?text=${encodeURIComponent(contextualWhatsappMessage(card))}`,
+          '_blank', 'noopener'
+        );
+      });
+
+      card.querySelector('.delete-lead')?.addEventListener('click', async () => {
+        if (!confirm('Delete this lead permanently?')) return;
+        try {
+          const result = await fetchJson(`/admin/delete_lead/${card.dataset.id}`, { method: 'DELETE' });
+          card.remove();
+          updateColumnCounts();
+          showToast(result.message || 'Lead deleted.', 'success');
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    function mountAllCards() {
+      document.querySelectorAll('.lead-kanban-card').forEach(mountCardInteractions);
+      applyRottingState();
+      updateColumnCounts();
+    }
+
+    function insertLeadIntoColumn(lead) {
+      const target = board.querySelector(`.kanban-dropzone[data-dropzone="${lead.status || 'New'}"]`);
+      if (!target) return;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = buildCardMarkup(lead).trim();
+      const card = wrapper.firstElementChild;
+      target.appendChild(card);
+      mountCardInteractions(card);
+      applyRottingState();
+      updateColumnCounts();
+    }
+
+    /* ── Drag & drop on drop zones ─────────────────────────── */
+    board.querySelectorAll('.kanban-dropzone').forEach((zone) => {
+      zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
+      zone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (!draggedCard) return;
+
+        const targetStatus  = zone.dataset.dropzone;
+        const currentStatus = draggedCard.dataset.status;
+        if (targetStatus === currentStatus) return;
+
+        if (targetStatus === 'Lost') {
+          pendingLostCard       = draggedCard;
+          pendingLostSourceZone = draggedCard.parentElement;
+          document.getElementById('lostDealLeadId').value = draggedCard.dataset.id;
+          openLostDealModal();
+          return;
+        }
+
+        const originalZone = draggedCard.parentElement;
+        zone.appendChild(draggedCard);
+        draggedCard.dataset.status = targetStatus;
+
+        try {
+          const result = await fetchJson(`/admin/update_lead/${draggedCard.dataset.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: targetStatus })
+          });
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = buildCardMarkup(result.lead).trim();
+          const newCard = wrapper.firstElementChild;
+          draggedCard.replaceWith(newCard);
+          mountCardInteractions(newCard);
+          applyRottingState();
+          updateColumnCounts();
+          showToast(result.message || 'Lead moved.', 'success');
+        } catch (err) {
+          originalZone.appendChild(draggedCard);
+          draggedCard.dataset.status = currentStatus;
+          updateColumnCounts();
+          showToast(err.message, 'error');
+        }
+      });
+    });
+
+    /* ── Filter buttons ────────────────────────────────────── */
+    filterButtons.forEach((btn) => btn.addEventListener('click', () => applyFilter(btn.dataset.filter)));
+
+    /* ── Open composer (add new) ───────────────────────────── */
+    document.getElementById('openCreateLeadModal').addEventListener('click', () => {
+      resetComposerForm();
+      openComposerModal();
+    });
+
+    /* Reset form when composer modal closes */
+    composerModalEl.addEventListener('hidden.bs.modal', resetComposerForm);
+
+    /* ── Cancel lost deal — revert drag ────────────────────── */
+    document.getElementById('cancelLostDeal').addEventListener('click', () => {
+      if (pendingLostCard && pendingLostSourceZone) {
+        pendingLostSourceZone.appendChild(pendingLostCard);
+        pendingLostCard.dataset.status = pendingLostSourceZone.dataset.dropzone;
+      }
+      pendingLostCard       = null;
+      pendingLostSourceZone = null;
+      lostDealForm.reset();
+    });
+
+    /* ── Composer submit (add / edit) ──────────────────────── */
+    composerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const leadId  = document.getElementById('leadRecordId').value;
+      const payload = {
+        client_name:          document.getElementById('leadClientName').value.trim(),
+        client_company:       document.getElementById('leadClientCompany').value.trim(),
+        contact_role:         document.getElementById('leadContactRole').value,
+        budget:               document.getElementById('leadBudget').value
+                                ? Number(document.getElementById('leadBudget').value) : 0,
+        phone_number:         document.getElementById('leadPhone').value.trim(),
+        whatsapp_engagement:  document.getElementById('leadWhatsappEngagement').value,
+        project_type:         document.getElementById('leadProjectType').value,
+        target_project:       document.getElementById('leadProjectType').value,
+        status:               document.getElementById('leadStatus').value
+      };
+
+      submitButton.disabled     = true;
+      submitButton.textContent  = leadId ? 'Updating…' : 'Saving…';
+
+      try {
+        const result = await fetchJson(
+          leadId ? `/admin/update_lead/${leadId}` : '/admin/add_lead',
+          {
+            method:  leadId ? 'PATCH' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload)
+          }
+        );
+        if (leadId) board.querySelector(`.lead-kanban-card[data-id="${leadId}"]`)?.remove();
+        insertLeadIntoColumn(result.lead);
+        closeComposerModal();
+        showToast(result.message || 'Lead saved.', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = document.getElementById('leadRecordId').value ? 'Update Lead' : 'Save Lead';
+      }
+    });
+
+    /* ── Lost deal autopsy submit ──────────────────────────── */
+    lostDealForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!pendingLostCard) return;
+      const leadId     = document.getElementById('lostDealLeadId').value;
+      const lossReason = document.getElementById('lossReason').value;
+      try {
+        const result = await fetchJson(`/admin/update_lead/${leadId}`, {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ status: 'Lost', loss_reason: lossReason })
+        });
+        pendingLostCard.remove();
+        insertLeadIntoColumn(result.lead);
+        lostDealForm.reset();
+        closeLostDealModal();
+        pendingLostCard       = null;
+        pendingLostSourceZone = null;
+        showToast('Lost deal autopsy saved.', 'success');
+      } catch (err) {
+        if (pendingLostSourceZone && pendingLostCard) {
+          pendingLostSourceZone.appendChild(pendingLostCard);
+          pendingLostCard.dataset.status = pendingLostSourceZone.dataset.dropzone;
+        }
+        showToast(err.message, 'error');
+      }
+    });
+
+    /* ── Boot ──────────────────────────────────────────────── */
+    applyFilter('all');
+    mountAllCards();
+  }());
+</script>
+{% endblock %}
