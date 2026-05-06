@@ -1,0 +1,140 @@
+- generic [active] [ref=e1]:
+  - navigation "Main navigation" [ref=e2]:
+    - generic [ref=e3]:
+      - link "JO4.DEV" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Home" [ref=e7] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e8]:
+          - link "Work" [ref=e9] [cursor=pointer]:
+            - /url: /projects
+        - listitem [ref=e10]:
+          - link "Book a Call" [ref=e11] [cursor=pointer]:
+            - /url: /book
+  - main [ref=e12]:
+    - region "Hero" [ref=e13]:
+      - generic [ref=e15]:
+        - generic [ref=e17]: Web development studio
+        - heading "Websites & Systems Built for Agencies That Mean Business." [level=1] [ref=e18]:
+          - text: Websites & Systems
+          - text: Built for Agencies
+          - text: That Mean Business.
+        - paragraph [ref=e19]: Custom portals, automated CRM pipelines, and intelligent lead systems for real estate agencies ready to leave spreadsheets behind.
+        - generic [ref=e20]:
+          - link "Book a Free Call" [ref=e21] [cursor=pointer]:
+            - /url: /book
+            - text: Book a Free Call
+            - img [ref=e22]
+          - link "View Our Work →" [ref=e24] [cursor=pointer]:
+            - /url: /projects
+            - text: View Our Work
+            - generic [ref=e25]: →
+      - generic [ref=e26]:
+        - generic [ref=e27]: Scroll
+        - img [ref=e28]
+    - region "The stack that powers modern agencies." [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: What We Build
+          - heading "The stack that powers modern agencies." [level=2] [ref=e34]:
+            - text: The stack that powers
+            - text: modern agencies.
+        - generic [ref=e35]:
+          - generic [ref=e37]:
+            - img [ref=e39]
+            - heading "Web Architecture" [level=3] [ref=e42]
+            - paragraph [ref=e43]: Bespoke property portals, client-facing dashboards, and secure multi-tenant applications engineered from the ground up for scale — not bolted onto a SaaS template.
+            - link "See examples" [ref=e44] [cursor=pointer]:
+              - /url: /projects
+              - text: See examples
+              - img [ref=e45]
+          - generic [ref=e48]:
+            - img [ref=e50]
+            - heading "Secure Hosting" [level=3] [ref=e52]
+            - paragraph [ref=e53]: Managed VPS deployment with automated SSL, isolated database backups, and uptime monitoring. Your client data stays yours — no shared infrastructure, no data-mining platforms.
+            - link "Infrastructure details" [ref=e54] [cursor=pointer]:
+              - /url: /projects
+              - text: Infrastructure details
+              - img [ref=e55]
+          - generic [ref=e58]:
+            - img [ref=e60]
+            - heading "Business Automation" [level=3] [ref=e62]
+            - paragraph [ref=e63]: CRM integrations, automated lead scoring, WhatsApp & email follow-up pipelines, and ERP inventory sync — so your agents close deals instead of copying data between systems.
+            - link "Automation demos" [ref=e64] [cursor=pointer]:
+              - /url: /projects
+              - text: Automation demos
+              - img [ref=e65]
+    - region "Why JO4 Dev" [ref=e67]:
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: The difference
+          - heading "We don't sell plans. We deliver working systems." [level=2] [ref=e72]:
+            - text: We don't sell plans.
+            - text: We deliver
+            - text: working systems.
+          - paragraph [ref=e73]: Three things that separate a working engagement from a wasted invoice.
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e77]
+            - generic [ref=e79]:
+              - heading "Full source code ownership" [level=4] [ref=e80]
+              - paragraph [ref=e81]: No vendor lock-in. You own every line of code on delivery — deploy it wherever you like.
+          - generic [ref=e82]:
+            - img [ref=e84]
+            - generic [ref=e86]:
+              - heading "Built on proven open-source stack" [level=4] [ref=e87]
+              - paragraph [ref=e88]: Python / Flask backend, PostgreSQL, standard cloud hosting. No proprietary black boxes.
+          - generic [ref=e89]:
+            - img [ref=e91]
+            - generic [ref=e93]:
+              - heading "Single point of contact" [level=4] [ref=e94]
+              - paragraph [ref=e95]: No account managers passing messages. Direct access to the engineer building your system.
+    - region "Call to action" [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e98]: Ready to start
+        - heading "Your agency deserves infrastructure that scales with it." [level=2] [ref=e99]:
+          - text: Your agency deserves
+          - text: infrastructure that
+          - text: scales with it.
+        - paragraph [ref=e100]: Book a free 30-minute discovery call. No pitch deck, no hard sell — just a direct conversation about what your agency needs.
+        - link "Book Your Free Call" [ref=e102] [cursor=pointer]:
+          - /url: /book
+          - text: Book Your Free Call
+          - img [ref=e103]
+  - contentinfo [ref=e105]:
+    - generic [ref=e106]:
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - link "JO4.DEV" [ref=e109] [cursor=pointer]:
+            - /url: /
+          - paragraph [ref=e110]: Premium web systems for real estate agencies that demand results.
+        - navigation "Footer navigation" [ref=e111]:
+          - generic [ref=e112]:
+            - heading "Navigation" [level=5] [ref=e113]
+            - list [ref=e114]:
+              - listitem [ref=e115]:
+                - link "Home" [ref=e116] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e117]:
+                - link "Evidence Room" [ref=e118] [cursor=pointer]:
+                  - /url: /projects
+              - listitem [ref=e119]:
+                - link "Book a Call" [ref=e120] [cursor=pointer]:
+                  - /url: /book
+          - generic [ref=e121]:
+            - heading "Services" [level=5] [ref=e122]
+            - list [ref=e123]:
+              - listitem [ref=e124]:
+                - link "Web Architecture" [ref=e125] [cursor=pointer]:
+                  - /url: /projects
+              - listitem [ref=e126]:
+                - link "Secure Hosting" [ref=e127] [cursor=pointer]:
+                  - /url: /projects
+              - listitem [ref=e128]:
+                - link "Business Automation" [ref=e129] [cursor=pointer]:
+                  - /url: /projects
+      - generic [ref=e130]:
+        - paragraph [ref=e131]: © 2026 JO4 Dev. All rights reserved.
+        - generic [ref=e134]: All systems operational

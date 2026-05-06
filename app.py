@@ -176,6 +176,10 @@ def login():
 
     return render_template('login.html')
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(current_app.root_path, 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 @app.route('/robots.txt')
 def robots_txt():
     """Serve the robots.txt file from the root directory."""
