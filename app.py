@@ -108,6 +108,10 @@ def init_db():
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN project_url TEXT"))
             if 'slug' not in project_cols:
                 db.session.execute(text("ALTER TABLE projects ADD COLUMN slug VARCHAR(200)"))
+            if 'performance' not in project_cols:
+                db.session.execute(text("ALTER TABLE projects ADD COLUMN performance INTEGER"))
+            if 'seo' not in project_cols:
+                db.session.execute(text("ALTER TABLE projects ADD COLUMN seo INTEGER"))
             
             db.session.commit()
 

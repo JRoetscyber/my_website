@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, logout_user
 from database import db, Lead, Project, AutomationLog, Analytics
 from datetime import datetime, timedelta
-from sqlalchemy import func
+from sqlalchemy import func, text
 from lead_score import calculate_lead_score
 import os
 import re
@@ -346,6 +346,9 @@ def add_project():
         else:
             print("DEBUG add_project: no media file uploaded")
             
+        performance = request.form.get('performance')
+        seo = request.form.get('seo')
+
         new_project = Project(
             title=title,
             category=category,
@@ -354,7 +357,9 @@ def add_project():
             code_snippet=code_snippet,
             youtube_url=youtube_url,
             project_url=project_url,
-            media_path=media_path
+            media_path=media_path,
+            performance=int(performance) if performance else None,
+            seo=int(seo) if seo else None,
         )
         print(f"DEBUG add_project: new_project prepared with media_path={media_path!r}")
         db.session.add(new_project)
@@ -365,6 +370,63 @@ def add_project():
     except Exception as e:
         print(f"DEBUG add_project: exception={e!r}")
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@admin_bp.route('/admin/update_project/<int:project_id>', methods=['POST'])
+@login_required
+def update_project(project_id):
+    try:
+        title       = request.form.get('project_title', '').strip()
+        category    = request.form.get('project_tag', '').strip()
+        description = request.form.get('description', '').strip()
+        tech_stack  = request.form.get('tech_stack', '').strip()
+        youtube_url = request.form.get('youtube_url', '').strip()
+        project_url = request.form.get('project_url', '').strip()
+        performance_raw = request.form.get('performance', '').strip()
+        seo_raw         = request.form.get('seo', '').strip()
+        performance = int(performance_raw) if performance_raw else None
+        seo         = int(seo_raw) if seo_raw else None
+
+        media_path = None
+        media_file = request.files.get('media')
+        if media_file and media_file.filename:
+            filename  = secure_filename(str(media_file.filename))
+            save_path = os.path.join('static', 'assets', filename)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            media_file.save(save_path)
+            media_path = f'/static/assets/{filename}'
+
+        if media_path:
+            db.session.execute(text("""
+                UPDATE projects
+                SET title=:title, category=:category, description=:description,
+                    tech_stack=:tech_stack, youtube_url=:youtube_url,
+                    project_url=:project_url, performance=:performance,
+                    seo=:seo, media_path=:media_path
+                WHERE id=:id
+            """), dict(title=title, category=category, description=description,
+                       tech_stack=tech_stack, youtube_url=youtube_url,
+                       project_url=project_url, performance=performance,
+                       seo=seo, media_path=media_path, id=project_id))
+        else:
+            db.session.execute(text("""
+                UPDATE projects
+                SET title=:title, category=:category, description=:description,
+                    tech_stack=:tech_stack, youtube_url=:youtube_url,
+                    project_url=:project_url, performance=:performance,
+                    seo=:seo
+                WHERE id=:id
+            """), dict(title=title, category=category, description=description,
+                       tech_stack=tech_stack, youtube_url=youtube_url,
+                       project_url=project_url, performance=performance,
+                       seo=seo, id=project_id))
+
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Project updated successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 400
+
 
 @admin_bp.route('/admin/run_script', methods=['POST'])
 @login_required

@@ -86,7 +86,7 @@
   <div class="divider"></div>
 
   <!-- ==============================================================
-       PROJECT CARDS (LIST)
+       PROJECT FLIP CARDS (LIST)
   ============================================================== -->
   <section aria-labelledby="projects-heading">
     <div class="section">
@@ -102,59 +102,125 @@
       </div>
       {% endif %}
 
-      <div class="row row-cols-1 row-cols-lg-2 gap-cards g-4">
+      <div class="flip-hint-bar" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+        </svg>
+        Tap any card to flip and view project details
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         {% for project in projects %}
-        <div class="col" data-aos="fade-up" data-aos-delay="{{ 80 if loop.index is even else 0 }}">
-          <article class="project-card">
-            <div class="project-card-media">
-              {% if project.media_path %}
-              <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy">
-              {% else %}
-              <div class="video-placeholder">
-                <div class="play-btn" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
+        <div class="col" data-aos="fade-up" data-aos-delay="{{ (loop.index0 % 3) * 80 }}">
+          <div class="flip-card" tabindex="0" role="button" aria-label="View details for {{ project.title }}" aria-pressed="false">
+            <div class="flip-card-inner">
+
+              <!-- FRONT -->
+              <div class="flip-card-front">
+                <div class="fc-front-content">
+                  <span class="fc-tag">{{ project.category or 'Project' }}</span>
+                  <h3 class="fc-title">{{ project.title }}</h3>
+                  <div class="fc-flip-cue" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                    Flip for details
+                  </div>
                 </div>
-                <span>Project Preview</span>
+                <div class="fc-front-image">
+                  {% if project.media_path %}
+                  <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+                  {% else %}
+                  <div class="fc-front-placeholder">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                  {% endif %}
+                </div>
               </div>
-              {% endif %}
-            </div>
-            <button class="project-details-toggle" aria-expanded="false">
-              <span class="toggle-text">View Details</span>
-              <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-            <div class="project-card-body hidden-body">
-              <div class="project-tag">{{ project.category or 'Project' }}</div>
-              <h3>{{ project.title }}</h3>
-              <p>{{ project.description or 'No description added yet.' }}</p>
-              {% if project.project_url or project.youtube_url %}
-              <div class="uploaded-project-links">
-                {% if project.project_url %}
-                <a href="{{ project.project_url }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
+
+              <!-- BACK -->
+              <div class="flip-card-back">
+                <span class="fc-tag">{{ project.category or 'Project' }}</span>
+                <h3 class="fc-back-title">{{ project.title }}</h3>
+
+                {% set perf = project.performance | default(none) %}
+                {% set seo_val = project.seo | default(none) %}
+                {% if perf is not none or seo_val is not none %}
+                <div class="lh-gauges">
+                  {% if perf is not none %}
+                  {% set p = perf | int %}
+                  <div class="lh-gauge {% if p >= 90 %}lh-high{% elif p >= 50 %}lh-mid{% else %}lh-low{% endif %}">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: {{ p }};"/>
+                      </svg>
+                      <span class="lh-score">{{ p }}</span>
+                    </div>
+                    <span class="lh-label">Performance</span>
+                  </div>
+                  {% endif %}
+                  {% if seo_val is not none %}
+                  {% set s = seo_val | int %}
+                  <div class="lh-gauge {% if s >= 90 %}lh-high{% elif s >= 50 %}lh-mid{% else %}lh-low{% endif %}">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: {{ s }};"/>
+                      </svg>
+                      <span class="lh-score">{{ s }}</span>
+                    </div>
+                    <span class="lh-label">SEO</span>
+                  </div>
+                  {% endif %}
+                </div>
                 {% endif %}
-                {% if project.youtube_url %}
-                <a href="{{ project.youtube_url }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
+
+                <p class="fc-desc">{{ project.description or 'No description added yet.' }}</p>
+
+                {% if project.tech_stack %}
+                <div class="tag-list">
+                  {% for tech in project.tech_stack.split(',') %}
+                  <span class="tag">{{ tech.strip() }}</span>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                {% if project.project_url or project.youtube_url %}
+                <div class="uploaded-project-links">
+                  {% if project.project_url %}
+                  <a href="{{ project.project_url }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
+                  {% endif %}
+                  {% if project.youtube_url %}
+                  <a href="{{ project.youtube_url }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
+                  {% endif %}
+                </div>
                 {% endif %}
               </div>
-              {% endif %}
+
             </div>
-          </article>
+          </div>
         </div>
         {% else %}
         <div class="col-12">
-          <article class="project-card">
-            <div class="project-card-body">
-              <div class="project-tag">Portfolio</div>
-              <h3>No uploaded projects yet</h3>
-              <p>Add projects from the admin panel and they will appear here automatically.</p>
+          <div class="flip-card">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <span class="fc-tag">Portfolio</span>
+                <h3 class="fc-title">No projects yet</h3>
+              </div>
+              <div class="flip-card-back">
+                <span class="fc-tag">Portfolio</span>
+                <h3 class="fc-back-title">No projects yet</h3>
+                <p class="fc-desc">Add projects from the admin panel and they will appear here automatically.</p>
+              </div>
             </div>
-          </article>
+          </div>
         </div>
         {% endfor %}
-
       </div>
     </div>
   </section>

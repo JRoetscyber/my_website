@@ -309,35 +309,70 @@
   }());
 
   (function () {
-    var form = document.getElementById('portfolioForm');
-    var deployBtn = document.getElementById('deployBtn');
+    var form       = document.getElementById('portfolioForm');
+    var deployBtn  = document.getElementById('deployBtn');
+    var labelEl    = document.getElementById('deployBtnLabel');
+    var cancelBtn  = document.getElementById('cancelEditBtn');
+    var widgetTitle = document.querySelector('#projectsSection .widget-title');
     if (!form || !deployBtn) return;
+
+    function resetForm() {
+      form.reset();
+      document.getElementById('editProjectId').value = '';
+      if (labelEl) labelEl.textContent = 'Upload Project';
+      if (cancelBtn) cancelBtn.style.display = 'none';
+      if (widgetTitle) widgetTitle.childNodes[widgetTitle.childNodes.length - 1].textContent = ' Upload Project';
+      document.getElementById('fileDropFilename').textContent = '';
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function () {
+        resetForm();
+      });
+    }
+
+    document.querySelectorAll('.btn-edit-project').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = btn.dataset;
+        document.getElementById('editProjectId').value    = d.id;
+        document.getElementById('project_title').value   = d.title        || '';
+        document.getElementById('project_tag').value     = d.tag          || '';
+        document.getElementById('description').value     = d.description  || '';
+        document.getElementById('youtube_url').value     = d.youtube      || '';
+        document.getElementById('project_url').value     = d.url          || '';
+        document.getElementById('techStackValue').value  = d.tech         || '';
+        document.getElementById('performance_score').value = d.performance || '';
+        document.getElementById('seo_score').value       = d.seo          || '';
+        if (labelEl) labelEl.textContent = 'Save Changes';
+        if (cancelBtn) cancelBtn.style.display = '';
+        if (widgetTitle) widgetTitle.childNodes[widgetTitle.childNodes.length - 1].textContent = ' Edit Project';
+        document.getElementById('projectsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
-      var origText = deployBtn.innerHTML;
-      deployBtn.textContent = 'Uploading...';
+      var projectId = document.getElementById('editProjectId').value;
+      var isEdit    = !!projectId;
+      var url       = isEdit ? '/admin/update_project/' + projectId : '/admin/add_project';
+
+      if (labelEl) labelEl.textContent = isEdit ? 'Saving...' : 'Uploading...';
       deployBtn.disabled = true;
 
-      fetch('/admin/add_project', {
-        method: 'POST',
-        body: new FormData(form)
-      })
-      .then(function (response) { return response.json(); })
+      fetch(url, { method: 'POST', body: new FormData(form) })
+      .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.status === 'success') {
-          deployBtn.textContent = 'Uploaded';
+          if (labelEl) labelEl.textContent = isEdit ? 'Saved!' : 'Uploaded!';
           deployBtn.style.background = 'var(--status-green)';
-          setTimeout(function () {
-            window.location.reload();
-          }, 900);
+          setTimeout(function () { window.location.reload(); }, 900);
         } else {
-          deployBtn.textContent = 'Error';
+          if (labelEl) labelEl.textContent = 'Error';
           deployBtn.style.background = 'var(--badge-new)';
-          alert('Deployment failed: ' + data.message);
+          alert((isEdit ? 'Update' : 'Upload') + ' failed: ' + data.message);
           setTimeout(function () {
-            deployBtn.innerHTML = origText;
+            if (labelEl) labelEl.textContent = isEdit ? 'Save Changes' : 'Upload Project';
             deployBtn.disabled = false;
             deployBtn.style.background = '';
           }, 2000);
@@ -345,9 +380,9 @@
       })
       .catch(function (err) {
         console.error(err);
-        deployBtn.textContent = 'Error';
+        if (labelEl) labelEl.textContent = 'Error';
         setTimeout(function () {
-          deployBtn.innerHTML = origText;
+          if (labelEl) labelEl.textContent = isEdit ? 'Save Changes' : 'Upload Project';
           deployBtn.disabled = false;
           deployBtn.style.background = '';
         }, 2000);

@@ -461,5 +461,25 @@
       }, 2000);
     });
   });
+}());
 
+
+/* ----------------------------------------------------------------
+   3. FLIP CARDS
+---------------------------------------------------------------- */
+(function () {
+  document.querySelectorAll('.flip-card').forEach(function (card) {
+    function toggle(e) {
+      if (e.target.closest('a')) return;
+      var flipped = card.classList.toggle('flipped');
+      card.setAttribute('aria-pressed', flipped);
+    }
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(e);
+      }
+    });
+  });
 }());

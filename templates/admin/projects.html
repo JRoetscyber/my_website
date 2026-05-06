@@ -152,6 +152,17 @@
         </div>
         <div class="widget-body">
           <form id="portfolioForm" enctype="multipart/form-data">
+            <input type="hidden" id="editProjectId" name="project_id">
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="admin-form-label" for="performance_score">Performance Score</label>
+                <input class="admin-form-input" id="performance_score" name="performance" type="number" min="0" max="100" placeholder="0 – 100">
+              </div>
+              <div class="col-6">
+                <label class="admin-form-label" for="seo_score">SEO Score</label>
+                <input class="admin-form-input" id="seo_score" name="seo" type="number" min="0" max="100" placeholder="0 – 100">
+              </div>
+            </div>
             <div class="mb-3">
               <label class="admin-form-label" for="project_title">Heading</label>
               <input class="admin-form-input" id="project_title" name="project_title" required>
@@ -185,15 +196,18 @@
               <div class="file-drop-zone" id="fileDropZone">
                 <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <div class="file-drop-label"><strong>Click to upload</strong> or drop image</div>
-                <div class="file-drop-sub">JPG, PNG, WEBP</div>
+                <div class="file-drop-sub">JPG, PNG, WEBP · Leave blank to keep existing image</div>
                 <div class="file-drop-filename" id="fileDropFilename"></div>
               </div>
               <input id="fileInput" name="media" type="file" accept="image/*" hidden>
             </div>
-            <button class="deploy-btn" id="deployBtn" type="submit">
-              Upload Project
-              <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
-            </button>
+            <div class="d-flex gap-2">
+              <button class="deploy-btn" id="deployBtn" type="submit" style="flex:1;">
+                <span id="deployBtnLabel">Upload Project</span>
+                <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+              </button>
+              <button class="tbl-action-btn" id="cancelEditBtn" type="button" style="display:none; padding:0 18px;">Cancel</button>
+            </div>
           </form>
         </div>
       </div>
@@ -214,7 +228,7 @@
               <thead>
                 <tr>
                   <th>Project</th>
-                  <th>Links</th>
+                  <th>Scores</th>
                   <th>Deployed</th>
                   <th>Actions</th>
                 </tr>
@@ -227,21 +241,32 @@
                     <div class="client-company">{{ project.category or 'Project' }}</div>
                   </td>
                   <td>
-                    <div class="d-flex gap-2 flex-wrap">
-                      {% if project.project_url %}
-                      <a class="project-badge" href="{{ project.project_url }}" target="_blank" rel="noopener">Website</a>
-                      {% endif %}
-                      {% if project.youtube_url %}
-                      <a class="project-badge" href="{{ project.youtube_url }}" target="_blank" rel="noopener">YouTube</a>
-                      {% endif %}
-                      {% if not project.project_url and not project.youtube_url %}
-                      <span class="text-muted small">No links</span>
-                      {% endif %}
+                    {% set perf = project.performance | default(none) %}
+                    {% set seo_v = project.seo | default(none) %}
+                    {% if perf is not none or seo_v is not none %}
+                    <div class="d-flex gap-2">
+                      {% if perf is not none %}<span class="project-badge">Perf: {{ perf }}</span>{% endif %}
+                      {% if seo_v is not none %}<span class="project-badge">SEO: {{ seo_v }}</span>{% endif %}
                     </div>
+                    {% else %}
+                    <span class="text-muted small">—</span>
+                    {% endif %}
                   </td>
                   <td><span class="text-muted small font-monospace">{{ project.deployed_at.strftime('%Y-%m-%d') if project.deployed_at else '-' }}</span></td>
                   <td>
-                    <button class="tbl-action-btn btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
+                    <div class="d-flex gap-2">
+                      <button class="tbl-action-btn btn-edit-project" type="button"
+                        data-id="{{ project.id }}"
+                        data-title="{{ project.title | e }}"
+                        data-tag="{{ project.category | default('') | e }}"
+                        data-description="{{ project.description | default('') | e }}"
+                        data-youtube="{{ project.youtube_url | default('') | e }}"
+                        data-url="{{ project.project_url | default('') | e }}"
+                        data-tech="{{ project.tech_stack | default('') | e }}"
+                        data-performance="{{ project.performance | default('') }}"
+                        data-seo="{{ project.seo | default('') }}">Edit</button>
+                      <button class="tbl-action-btn btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
+                    </div>
                   </td>
                 </tr>
                 {% else %}

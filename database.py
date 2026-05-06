@@ -47,6 +47,8 @@ class Project(db.Model):
     project_url = db.Column(db.String(500))
     media_path = db.Column(db.String(255))
     views = db.Column(db.Integer, default=0)
+    performance = db.Column(db.Integer, nullable=True)
+    seo = db.Column(db.Integer, nullable=True)
     deployed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __init__(self, *args, **kwargs):
