@@ -3,6 +3,15 @@
 {% block title %}JO4 Dev — Web Systems & Automation for Modern Businesses{% endblock %}
 
 {% block content %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGCPB3FTF8');
+</script>
 
 <!-- ============================================================
      HERO
@@ -169,7 +178,7 @@
     <div class="section-header" data-aos="fade-up">
       <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">What We Build</span>
       <h2 class="display-section" id="services-heading">
-        The stack that powers<br>modern agencies.
+        The stack that powers<br>modern businesses.
       </h2>
     </div>
 
@@ -308,6 +317,49 @@
 
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     RECENT WORK
+============================================================ -->
+<section class="section" aria-labelledby="recent-work-heading">
+  <div class="section-header" data-aos="fade-up">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Evidence Room</span>
+    <h2 class="display-section" id="recent-work-heading">
+      Recent deliveries.
+    </h2>
+    <p class="lead-text" style="margin-top: 16px;">
+      Live systems deployed for clients. Click to view full case studies.
+    </p>
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-3 g-4" data-aos="fade-up" data-aos-delay="100">
+    {% for project in projects %}
+    {% if project.slug %}
+    <div class="col">
+      <a href="{{ url_for('portfolio.project_detail', slug=project.slug) }}" class="project-mini-card">
+        <div class="mini-card-image">
+          {% if project.media_path %}
+          <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+          {% else %}
+          <div class="mini-card-placeholder">Project Preview</div>
+          {% endif %}
+        </div>
+        <div class="mini-card-body">
+          <span class="mini-card-tag">{{ project.category or 'System' }}</span>
+          <h4>{{ project.title }}</h4>
+        </div>
+      </a>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <div style="text-align: center; margin-top: 48px;" data-aos="fade-up">
+    <a href="{{ url_for('portfolio.projects') }}" class="btn-ghost-custom">
+      View All Projects <span class="arrow">→</span>
+    </a>
   </div>
 </section>
 

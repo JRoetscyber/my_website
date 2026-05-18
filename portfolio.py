@@ -24,21 +24,21 @@ def project_detail(slug):
     #
     # Focus on Business Value & Metrics:
     # Instead of: "Built a Python/Flask app with a React frontend."
-    # Write: "Reduced lead response time by 80% and increased conversion rates by 15% through a custom Python/Flask CRM solution."
+    # Write: "Reduced operational overhead by 40% and improved data accuracy by 25% through a custom ERP integration."
     #
     # Target Keywords:
-    # Use terms like "Custom Software Development," "CRM," "ERP," "Automation,"
-    # "Business Intelligence," "Data Analytics," "Web Application Development"
-    # rather than generic "Web Design" or "Website Building."
+    # Use terms like "Custom Software Development," "CRM Automation," "ERP Integration," 
+    # "SaaS Architecture," "Business Intelligence," "Data Pipelines," 
+    # "Web Application Development" and "Software Company."
     #
     # Highlight Solutions to Client Problems:
-    # Describe the challenge the client faced and how your solution specifically
-    # addressed it, leading to measurable improvements.
+    # Describe the challenge the client faced (e.g., manual data entry, siloed systems)
+    # and how your software solution specifically addressed it.
     #
     # Examples of good descriptions:
-    # - "Developed a custom ERP system for a manufacturing client, streamlining inventory management and reducing operational costs by 25%."
-    # - "Implemented a secure, scalable web application for financial advisors, enabling GDPR-compliant client data management and enhancing client onboarding efficiency by 30%."
-    # - "Automated critical marketing workflows for a SaaS startup, resulting in a 40% increase in qualified lead generation within six months."
+    # - "Developed a custom multi-tenant portal for a financial services firm, enabling secure document sharing and reducing onboarding time by 50%."
+    # - "Engineered a high-performance data pipeline that consolidates inventory from 5 sources into a real-time dashboard."
+    # - "Automated complex billing workflows for a logistics company, resulting in a 30% reduction in invoicing errors."
     # -----------------------------------------------------------
 
     # Prepare JSON-LD Schema.org data for this specific project

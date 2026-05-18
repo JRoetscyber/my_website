@@ -19,4 +19,15 @@
     </url>
     {% endif %}
     {% endfor %}
+
+    {% for post in blog_posts %}
+    {% if post.slug %}
+    <url>
+        <loc>{{ url_for('blog.blog_detail', slug=post.slug, _external=True) }}</loc>
+        <lastmod>{{ post.updated_at.strftime('%Y-%m-%d') if post.updated_at else now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    {% endif %}
+    {% endfor %}
 </urlset>

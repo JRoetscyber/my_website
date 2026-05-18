@@ -21,6 +21,9 @@
   <!-- Site stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+  <!-- Canonical Link -->
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+
   {% block head_extra %}{% endblock %}
   {% block json_ld_schema %}{% endblock %}
 </head>
@@ -40,6 +43,7 @@
       <ul class="nav-links" id="navLinks" role="list">
         <li><a href="{{ url_for('home') }}">Home</a></li>
         <li><a href="{{ url_for('portfolio.projects') }}">Work</a></li>
+        <li><a href="{{ url_for('blog.blog_list') }}">Blog</a></li>
         <li>
           <a href="{{ url_for('booking.book') }}" class="nav-cta">Book a Call</a>
         </li>
@@ -87,10 +91,6 @@
 
       <div class="footer-bottom">
         <p>&copy; <span id="footerYear">{{ year }}</span> JO4 Dev. All rights reserved.</p>
-        <div class="footer-status">
-          <span class="status-dot"></span>
-          <span>All systems operational</span>
-        </div>
       </div>
     </div>
   </footer>

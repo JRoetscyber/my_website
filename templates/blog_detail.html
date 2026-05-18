@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ seo_title }}{% endblock %}
+
+{% block meta_description %}{{ seo_description }}{% endblock %}
+
+{% block json_ld_schema %}
+  {% if json_ld_schema is defined %}
+  <script type="application/ld+json">
+  {{ json_ld_schema | safe }}
+  </script>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGCPB3FTF8');
+</script>
+
+<article class="blog-post-article">
+  <header class="blog-post-header">
+    <div class="container-narrow">
+      <span class="eyebrow" style="margin-bottom: 24px; display: inline-flex;">
+        Published {{ post.created_at.strftime('%B %d, %Y') }}
+      </span>
+      <h1 class="display-hero">{{ post.title }}</h1>
+      <p class="lead-text">{{ post.summary }}</p>
+    </div>
+  </header>
+
+  {% if post.media_path %}
+  <div class="blog-post-hero-image">
+    <img src="{{ post.media_path }}" alt="{{ post.title }}">
+  </div>
+  {% endif %}
+
+  <div class="container-narrow">
+    <div class="blog-post-content">
+      {{ post.content | safe }}
+    </div>
+
+    <div class="blog-post-footer">
+      <div class="blog-post-share">
+        <span>Share this article:</span>
+        <div class="share-links">
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ url_for('blog.blog_detail', slug=post.slug, _external=True) }}" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://twitter.com/intent/tweet?url={{ url_for('blog.blog_detail', slug=post.slug, _external=True) }}&text={{ post.title }}" target="_blank" rel="noopener">Twitter</a>
+        </div>
+      </div>
+      
+      <div class="blog-post-nav">
+        <a href="{{ url_for('blog.blog_list') }}" class="btn-ghost-custom">
+          <span class="arrow">←</span> Back to Blog
+        </a>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- ==============================================================
+     BOTTOM CTA
+============================================================== -->
+<section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-1);">
+  <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
+    <h2 class="display-section" style="max-width:600px; margin: 0 auto 24px;">
+      Looking for a custom<br>
+      <span class="text-accent">software partner?</span>
+    </h2>
+    <div style="margin-top: 32px;">
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="padding: 18px 44px;">
+        Book Your Discovery Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

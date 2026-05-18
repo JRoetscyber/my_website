@@ -40,6 +40,15 @@
           Projects
           <span class="sidebar-nav-badge">{{ projects|length }}</span>
         </a>
+        <a href="{{ url_for('admin.blogs') }}" class="sidebar-nav-item{% if active_page == 'blogs' %} active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Blogs
+          <span class="sidebar-nav-badge">{{ blogs|length }}</span>
+        </a>
+        <a href="{{ url_for('admin.funds') }}" class="sidebar-nav-item{% if active_page == 'funds' %} active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Funds
+        </a>
         <a href="{{ url_for('admin.automation_page') }}" class="sidebar-nav-item{% if active_page == 'automation' %} active{% endif %}">
           <svg viewBox="0 0 24 24"><path d="M12 2v6"/><path d="m4.93 4.93 4.24 4.24"/><path d="M2 12h6"/><path d="m4.93 19.07 4.24-4.24"/><path d="M12 16v6"/><path d="m14.83 14.83 4.24 4.24"/><path d="M16 12h6"/><path d="m14.83 9.17 4.24-4.24"/></svg>
           Automation

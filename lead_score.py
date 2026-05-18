@@ -39,7 +39,7 @@ def calculate_lead_score(lead_data):
     explicit_score += budget_points * 0.333
     
     # Decision Maker Status (33.3% of Explicit)
-    role_map = {'owner': 100, 'principal': 100, 'director': 80, 'manager': 50, 'agent': 20}
+    role_map = {'owner': 100, 'principal': 100, 'director': 80, 'manager': 50, 'consultant': 20}
     explicit_score += role_map.get(lead_data.get('contact_role', '').lower(), 10) * 0.333
     
     # Project Alignment (33.3% of Explicit)

@@ -1,12 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, logout_user
-from database import db, Lead, Project, AutomationLog, Analytics
-from datetime import datetime, timedelta
+from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, Transaction
+from datetime import datetime, timedelta, date
 from sqlalchemy import func, text
 from lead_score import calculate_lead_score
 import os
 import re
 import unicodedata
+import io, csv
 
 def secure_filename(filename):
     filename = str(filename)
@@ -83,7 +84,7 @@ def safe_budget_value(value):
         return 0.0
 
 
-def build_admin_context(active_page):
+def build_admin_context(active_page, selected_month=None, selected_year=None):
     data_error = None
     top_pages = []
 
@@ -91,7 +92,32 @@ def build_admin_context(active_page):
         leads_list = Lead.query.order_by(Lead.created_at.desc(), Lead.id.desc()).all()
         leads_list = prepare_leads_for_display(leads_list)
         projects_list = Project.query.order_by(Project.deployed_at.desc()).all()
+        blogs_list = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
+        
+        transactions_query = Transaction.query
+        if selected_month and selected_year:
+            # Filter transactions for the selected month and year
+            start_date = date(selected_year, selected_month, 1)
+            # Calculate the last day of the month
+            if selected_month == 12:
+                end_date = date(selected_year + 1, 1, 1) - timedelta(days=1)
+            else:
+                end_date = date(selected_year, selected_month + 1, 1) - timedelta(days=1)
+            transactions_query = transactions_query.filter(
+                Transaction.date >= start_date,
+                Transaction.date <= end_date
+            )
+        transactions_list = transactions_query.order_by(Transaction.date.desc(), Transaction.id.desc()).all()
+        
         logs_list = AutomationLog.query.order_by(AutomationLog.timestamp.desc()).limit(10).all()
+
+        total_income = sum(t.amount for t in transactions_list if t.type == 'Income')
+        total_expenses = sum(t.amount for t in transactions_list if t.type == 'Expense')
+        net_balance = total_income - total_expenses
+        
+        # Calculate Salary & Reinvestment (20/80 split of profit)
+        salary_draw = max(0, net_balance * 0.20)
+        reinvestment_fund = max(0, net_balance * 0.80)
 
         total_views = Analytics.query.count()
         one_week_ago = datetime.utcnow() - timedelta(days=7)
@@ -163,6 +189,8 @@ def build_admin_context(active_page):
         data_error = str(e)
         leads_list = []
         projects_list = []
+        blogs_list = []
+        transactions_list = []
         logs_list = []
         total_views = 0
         scripts_this_week = 0
@@ -170,12 +198,19 @@ def build_admin_context(active_page):
         active_leads_count = 0
         pipeline_forecast = 0
         average_lead_score = 0
+        total_income = 0
+        total_expenses = 0
+        net_balance = 0
+        salary_draw = 0
+        reinvestment_fund = 0
         funnel_counts = {'new': 0, 'contacted': 0, 'negotiating': 0, 'closed': 0}
         win_loss_by_project_type = []
 
     return {
         'leads': leads_list,
         'projects': projects_list,
+        'blogs': blogs_list,
+        'transactions': transactions_list,
         'logs': logs_list,
         'total_views': total_views,
         'scripts_this_week': scripts_this_week,
@@ -183,12 +218,19 @@ def build_admin_context(active_page):
         'active_leads_count': active_leads_count,
         'pipeline_forecast': pipeline_forecast,
         'average_lead_score': round(average_lead_score, 1),
+        'total_income': total_income,
+        'total_expenses': total_expenses,
+        'net_balance': net_balance,
+        'salary_draw': salary_draw,
+        'reinvestment_fund': reinvestment_fund,
         'funnel_counts': funnel_counts,
         'win_loss_by_project_type': win_loss_by_project_type,
         'top_pages': top_pages,
         'data_error': data_error,
         'now': datetime.utcnow(),
-        'active_page': active_page
+        'active_page': active_page,
+        'selected_month': selected_month,
+        'selected_year': selected_year
     }
 
 @admin_bp.route('/admin')
@@ -524,19 +566,190 @@ def get_lead(lead_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
-@admin_bp.route('/admin/delete_project/<int:project_id>', methods=['POST', 'DELETE'])
+@admin_bp.route('/admin/blogs')
 @login_required
-def delete_project(project_id):
+def blogs():
+    return render_template('admin/blogs.html', **build_admin_context('blogs'))
+
+
+@admin_bp.route('/admin/add_blog', methods=['POST'])
+@login_required
+def add_blog():
     try:
-        project = Project.query.get_or_404(project_id)
-        # Optionally delete the file from storage
-        if project.media_path:
-            file_path = os.path.join(os.getcwd(), project.media_path.lstrip('/'))
+        title = request.form.get('title')
+        summary = request.form.get('summary')
+        content = request.form.get('content')
+        
+        # Handle file upload
+        media_path = None
+        file = request.files.get('media')
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            upload_dir = os.path.join('static', 'uploads', 'blog')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, filename)
+            file.save(file_path)
+            media_path = f"/{file_path.replace(os.sep, '/')}"
+
+        new_post = BlogPost(
+            title=title,
+            summary=summary,
+            content=content,
+            media_path=media_path
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        flash('Blog post added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding blog post: {e}', 'danger')
+        
+    return redirect(url_for('admin.blogs'))
+
+
+@admin_bp.route('/admin/update_blog/<int:post_id>', methods=['POST'])
+@login_required
+def update_blog(post_id):
+    try:
+        post = BlogPost.query.get_or_404(post_id)
+        post.title = request.form.get('title')
+        post.summary = request.form.get('summary')
+        post.content = request.form.get('content')
+        
+        # Handle file upload
+        file = request.files.get('media')
+        if file and file.filename:
+            # Delete old file if exists
+            if post.media_path:
+                old_path = os.path.join(os.getcwd(), post.media_path.lstrip('/'))
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                    
+            filename = secure_filename(file.filename)
+            upload_dir = os.path.join('static', 'uploads', 'blog')
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, filename)
+            file.save(file_path)
+            post.media_path = f"/{file_path.replace(os.sep, '/')}"
+
+        db.session.commit()
+        flash('Blog post updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating blog post: {e}', 'danger')
+        
+    return redirect(url_for('admin.blogs'))
+
+
+@admin_bp.route('/admin/funds')
+@login_required
+def funds():
+    selected_month = request.args.get('month', type=int)
+    selected_year = request.args.get('year', type=int)
+
+    context = build_admin_context('funds', selected_month=selected_month, selected_year=selected_year)
+    
+    # Get all unique years from transactions
+    all_transaction_years = sorted(list(set([d.date.year for d in db.session.query(Transaction.date).distinct().all()])), reverse=True)
+    # Get all unique months from transactions
+    all_transaction_months = sorted(list(set([d.date.month for d in db.session.query(Transaction.date).distinct().all()])))
+    
+    context['available_years'] = all_transaction_years
+    context['available_months'] = all_transaction_months
+    context['selected_month'] = selected_month
+    context['selected_year'] = selected_year
+
+    return render_template('admin/funds.html', datetime=datetime, **context)
+
+
+@admin_bp.route('/admin/add_transaction', methods=['POST'])
+@login_required
+def add_transaction():
+    try:
+        type = request.form.get('type')
+        category = request.form.get('category')
+        amount = float(request.form.get('amount', 0))
+        description = request.form.get('description')
+        date_str = request.form.get('date')
+        
+        # Parse date
+        transaction_date = date.today()
+        if date_str:
+            transaction_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        new_transaction = Transaction(
+            type=type,
+            category=category,
+            amount=amount,
+            description=description,
+            date=transaction_date
+        )
+        db.session.add(new_transaction)
+        db.session.commit()
+        flash('Transaction recorded successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error recording transaction: {e}', 'danger')
+        
+    return redirect(url_for('admin.funds'))
+
+
+@admin_bp.route('/admin/delete_transaction/<int:transaction_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_transaction(transaction_id):
+    try:
+        transaction = Transaction.query.get_or_404(transaction_id)
+        db.session.delete(transaction)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Transaction deleted successfully"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@admin_bp.route('/admin/export_transactions_csv')
+@login_required
+def export_transactions_csv():
+    try:
+        transactions = Transaction.query.order_by(Transaction.date.desc(), Transaction.created_at.desc()).all()
+        
+        si = io.StringIO()
+        cw = csv.writer(si)
+        
+        headers = ["ID", "Type", "Category", "Amount", "Description", "Date", "Created At"]
+        cw.writerow(headers)
+        
+        for t in transactions:
+            cw.writerow([
+                t.id,
+                t.type,
+                t.category,
+                f"{t.amount:.2f}",
+                t.description,
+                t.date.strftime('%Y-%m-%d'),
+                t.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            ])
+            
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=transactions_export.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
+    except Exception as e:
+        flash(f'Error exporting transactions: {e}', 'danger')
+        return redirect(url_for('admin.funds'))
+
+
+@admin_bp.route('/admin/delete_blog/<int:post_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_blog(post_id):
+    try:
+        post = BlogPost.query.get_or_404(post_id)
+        if post.media_path:
+            file_path = os.path.join(os.getcwd(), post.media_path.lstrip('/'))
             if os.path.exists(file_path):
                 os.remove(file_path)
                 
-        db.session.delete(project)
+        db.session.delete(post)
         db.session.commit()
-        return jsonify({"status": "success", "message": "Project deleted successfully"})
+        return jsonify({"status": "success", "message": "Blog post deleted successfully"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400

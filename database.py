@@ -81,6 +81,46 @@ def receive_before_update(mapper, connection, target):
         target.slug = target._generate_unique_slug(target.title)
 
 
+class BlogPost(db.Model):
+    __tablename__ = 'blog_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    slug = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    summary = db.Column(db.Text)
+    content = db.Column(db.Text, nullable=False)
+    media_path = db.Column(db.String(255))
+    views = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.slug and self.title:
+            self.slug = self._generate_unique_slug(self.title)
+
+    def _generate_unique_slug(self, title):
+        if not title:
+            return ""
+        base_slug = make_slug(title)
+        slug = base_slug
+        counter = 1
+        while BlogPost.query.filter_by(slug=slug).first():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
+
+# Event listeners for BlogPost slugs
+@event.listens_for(BlogPost, 'before_insert')
+def receive_blog_before_insert(mapper, connection, target):
+    if not target.slug:
+        target.slug = target._generate_unique_slug(target.title)
+
+@event.listens_for(BlogPost, 'before_update')
+def receive_blog_before_update(mapper, connection, target):
+    if target.title != target._sa_instance_state.original.get('title') and not target.slug:
+        target.slug = target._generate_unique_slug(target.title)
+
+
 class AutomationLog(db.Model):
     __tablename__ = 'automation_logs'
     id = db.Column(db.Integer, primary_key=True)
@@ -100,3 +140,14 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+
+
+class Transaction(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(20), nullable=False) # 'Income' or 'Expense'
+    category = db.Column(db.String(100))
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text)
+    date = db.Column(db.Date, default=datetime.utcnow().date())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

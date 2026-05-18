@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog — JO4 Dev Insights{% endblock %}
+
+{% block meta_description %}Technical insights, software engineering trends, and business automation strategies from the JO4 Dev team.{% endblock %}
+
+{% block content %}
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGCPB3FTF8');
+</script>
+
+<header class="page-hero">
+  <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Insights & Strategy</span>
+  <h1>The Dev Log.</h1>
+  <p class="lead-text">
+    Deep dives into custom software, automation logic, and the technical 
+    decisions that drive modern business growth.
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<section aria-labelledby="blog-heading">
+  <div class="section">
+    <span class="sr-only" id="blog-heading">Blog Posts</span>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5">
+      {% for post in posts %}
+      <div class="col" data-aos="fade-up" data-aos-delay="{{ (loop.index0 % 3) * 100 }}">
+        <article class="blog-card">
+          <a href="{{ url_for('blog.blog_detail', slug=post.slug) }}" class="blog-card-link">
+            <div class="blog-card-image">
+              {% if post.media_path %}
+              <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy">
+              {% else %}
+              <div class="blog-placeholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              {% endif %}
+            </div>
+            <div class="blog-card-body">
+              <div class="blog-card-meta">
+                <time datetime="{{ post.created_at.strftime('%Y-%m-%d') }}">{{ post.created_at.strftime('%b %d, %Y') }}</time>
+                <span class="blog-read-time">{{ post.views }} views</span>
+              </div>
+              <h3 class="blog-card-title">{{ post.title }}</h3>
+              <p class="blog-card-summary">{{ post.summary }}</p>
+              <span class="blog-more">Read Article <span class="arrow">→</span></span>
+            </div>
+          </a>
+        </article>
+      </div>
+      {% else %}
+      <div class="col-12 text-center">
+        <p class="lead-text">No posts yet. Check back soon!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================
+     BOTTOM CTA
+============================================================== -->
+<section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-1);">
+  <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
+    <h2 class="display-section" style="max-width:600px; margin: 0 auto 24px;" data-aos="fade-up">
+      Ready to build your<br>
+      <span class="text-accent">own system?</span>
+    </h2>
+    <div data-aos="fade-up" data-aos-delay="80">
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="padding: 18px 44px;">
+        Book a Free Discovery Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block meta_description %}
-  {% if seo_description is defined %}{{ seo_description }}{% else %}Case studies and live demos of custom real estate portals, CRM automation, and ERP systems built by JO4 Dev.{% endif %}
+  {% if seo_description is defined %}{{ seo_description }}{% else %}Case studies and live demos of custom software solutions, CRM automation, and ERP systems built by JO4 Dev.{% endif %}
 {% endblock %}
 
 {% block json_ld_schema %}
@@ -17,6 +17,15 @@
 {% endblock %}
 
 {% block content %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-SGCPB3FTF8');
+</script>
 
 <!-- Conditional content based on whether a single project is being displayed -->
 {% if project is defined %}
@@ -258,7 +267,7 @@
                   <option value="" disabled selected>Where did they come from?</option>
                   <option value="referral">Existing client referral</option>
                   <option value="whatsapp">WhatsApp direct inquiry</option>
-                  <option value="property24">Property24 / PrivateProperty</option>
+                  <option value="linkedin">LinkedIn Professional Network</option>
                   <option value="website">Website contact form</option>
                   <option value="facebook">Facebook / Instagram ad</option>
                   <option value="cold">Cold — no prior contact</option>
@@ -269,9 +278,9 @@
                 <label class="form-label-custom" for="engagementHistory">Engagement History</label>
                 <select id="engagementHistory" class="form-control-custom" required>
                   <option value="" disabled selected>Prior digital interaction?</option>
-                  <option value="multi_deep">3+ visits — viewed Pricing &amp; Specs pages</option>
+                  <option value="multi_deep">3+ visits — viewed Pricing &amp; Solutions pages</option>
                   <option value="multi">2–3 site visits in last 48 hours</option>
-                  <option value="single_specific">1 visit — went directly to a listing</option>
+                  <option value="single_specific">1 visit — went directly to a case study</option>
                   <option value="single_general">1 visit — general browsing</option>
                   <option value="none">First contact — no prior engagement</option>
                 </select>
@@ -281,12 +290,12 @@
                 <label class="form-label-custom" for="budget">Stated Budget</label>
                 <select id="budget" class="form-control-custom" required>
                   <option value="" disabled selected>Budget indication?</option>
-                  <option value="cash">Cash buyer / Pre-approved bond</option>
-                  <option value="over10m">R10M+ (stated)</option>
-                  <option value="5to10m">R5M – R10M</option>
-                  <option value="3to5m">R3M – R5M</option>
-                  <option value="1to3m">R1M – R3M</option>
-                  <option value="under1m">Under R1M / unconfirmed</option>
+                  <option value="retainer">Monthly Retainer / Project-based</option>
+                  <option value="high">R500k+ (Enterprise)</option>
+                  <option value="mid">R100k – R500k</option>
+                  <option value="low">R50k – R100k</option>
+                  <option value="startup">Startup / Pilot (under R50k)</option>
+                  <option value="unconfirmed">Unconfirmed</option>
                 </select>
               </div>
 
@@ -308,10 +317,10 @@
                   <span style="color:var(--color-text-muted); margin-left:6px; font-style:normal;">(paste their actual text)</span>
                 </label>
                 <textarea id="leadMessage" class="form-control-custom" rows="4"
-                          placeholder="e.g. Hi, my wife and I are pre-approved for R3.5M. We're looking for a home with a solar inverter and fibre in Sandton. When can we arrange a viewing?"></textarea>
+                          placeholder="e.g. Hi, we're looking for a custom CRM integration for our sales team. We need it to sync with our ERP and handle automated lead scoring. When can we discuss a quote?"></textarea>
                 <div class="textarea-hint">
                   <span class="hint-chip hot-hint">Hot signals</span>
-                  <span style="color:var(--color-text-muted); font-size:0.7rem;">viewing · solar · pre-approved · contract · otp · we want to · fibre · cash buyer</span>
+                  <span style="color:var(--color-text-muted); font-size:0.7rem;">integration · custom · automation · sync · project · asap · quote · enterprise</span>
                 </div>
                 <div class="textarea-hint" style="margin-top:5px;">
                   <span class="hint-chip cold-hint">Cold signals</span>
