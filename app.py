@@ -11,7 +11,8 @@ from lead_score import calculate_lead_score
 from portfolio import portfolio_bp
 from booking import booking_bp
 from admin import admin_bp
-from database import db, User, Analytics, Lead, Project, make_slug # Added Project
+from blog import blog_bp
+from database import db, User, Analytics, Lead, Project, BlogPost, Transaction, make_slug # Added Project, BlogPost, Transaction
 from legacy_leads import backfill_legacy_leads
 
 # Load environment variables
@@ -148,6 +149,8 @@ def init_db():
 app.register_blueprint(portfolio_bp)
 app.register_blueprint(booking_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(blog_bp)
+print("DEBUG: Blog blueprint registered.")
 
 @app.context_processor
 def inject_year():
@@ -155,7 +158,9 @@ def inject_year():
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    projects = Project.query.filter(Project.slug != None, Project.slug != '').order_by(Project.deployed_at.desc()).limit(3).all()
+    # Also fetch recent blog posts for the home page if desired, but for now let's keep it simple
+    return render_template('index.html', projects=projects)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -186,14 +191,17 @@ def robots_txt():
     return send_from_directory(current_app.root_path, 'robots.txt', mimetype='text/plain')
 
 @app.route('/sitemap')
+@app.route('/sitemap.xml')
 def sitemap_xml():
     """Generate and serve the sitemap.xml file."""
     projects = Project.query.all()
+    blog_posts = BlogPost.query.all()
     
     # You can add other static URLs here if needed
     static_urls = [
         url_for('home', _external=True),
         url_for('portfolio.projects', _external=True),
+        url_for('blog.blog_list', _external=True),
         url_for('booking.book', _external=True)
     ]
     
@@ -201,9 +209,16 @@ def sitemap_xml():
     return render_template(
         'sitemap.xml', 
         projects=projects, 
+        blog_posts=blog_posts,
         static_urls=static_urls,
         now=datetime.now()
     ), 200, {'Content-Type': 'application/xml'}
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Custom 404 error handler."""
+    return render_template('index.html'), 404
 
 
 @app.route('/api/new-lead', methods=['POST'])

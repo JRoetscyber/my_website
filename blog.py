@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, abort, url_for
 from database import db, BlogPost
 import json
 
+print("DEBUG: blog.py is being imported.")
+
 blog_bp = Blueprint('blog', __name__)
 
 @blog_bp.route('/blog')
