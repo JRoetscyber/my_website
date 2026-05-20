@@ -10,6 +10,11 @@
     <h2 class="studio-board-title" style="color: white;">Blog Management</h2>
     <p class="studio-board-sub">Engineering and strategy articles for JO4 Dev.</p>
   </div>
+  <button type="button" class="add-blog-btn" data-bs-toggle="modal" data-bs-target="#blogModal">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 1v11M1 6.5h11"/></svg>
+    Write New Article
+  </button>
+</div>
 
 <!-- Stats / Quick Insights -->
 <div class="row g-4 mb-5">
@@ -109,7 +114,7 @@
       <div class="py-4">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1" class="mb-3" style="opacity: 0.3;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         <p class="text-muted">No blog posts found.</p>
-        <button class="add-lead-btn mt-3" data-bs-toggle="modal" data-bs-target="#blogModal">Write Your First Article</button>
+        <button class="add-blog-btn mt-3" data-bs-toggle="modal" data-bs-target="#blogModal">Write Your First Article</button>
       </div>
     </div>
   </div>
@@ -205,11 +210,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // Handle New Post button (already handled by data-bs-toggle, but reset form)
-  document.querySelector('.add-client-btn').addEventListener('click', function() {
-    blogModalLabel.textContent = 'Compose Article';
-    blogForm.action = "{{ url_for('admin.add_blog') }}";
-    blogForm.reset();
-    filePreview.style.display = 'none';
+  document.querySelectorAll('.add-blog-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      blogModalLabel.textContent = 'Compose Article';
+      blogForm.action = "{{ url_for('admin.add_blog') }}";
+      blogForm.reset();
+      filePreview.style.display = 'none';
+    });
   });
 
   // Handle Delete

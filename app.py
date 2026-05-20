@@ -1,5 +1,6 @@
 import os
 import click
+import markdown
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response, send_from_directory, current_app
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,6 +20,12 @@ from legacy_leads import backfill_legacy_leads
 load_dotenv()
 
 app = Flask(__name__)
+
+@app.template_filter('markdown')
+def markdown_filter(text):
+    if not text:
+        return ""
+    return markdown.markdown(text, extensions=['fenced_code', 'tables', 'nl2br'])
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')

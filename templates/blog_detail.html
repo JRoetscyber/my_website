@@ -42,7 +42,7 @@
 
   <div class="container-narrow">
     <div class="blog-post-content">
-      {{ post.content | safe }}
+      {{ post.content | markdown | safe }}
     </div>
 
     <div class="blog-post-footer">

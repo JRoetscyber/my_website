@@ -14,3 +14,4 @@ SQLAlchemy
 typing_extensions
 Werkzeug
 gunicorn
+markdown
