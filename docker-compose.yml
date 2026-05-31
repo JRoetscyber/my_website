@@ -16,6 +16,8 @@ services:
       - FLASK_CONFIG=production
     volumes:
       - db_data:/app/instance
+      - static_assets:/app/static/assets
+      - static_uploads:/app/static/uploads
     networks:
       - tunnel-net
 
@@ -25,3 +27,5 @@ networks:
 
 volumes:
   db_data:
+  static_assets:
+  static_uploads:

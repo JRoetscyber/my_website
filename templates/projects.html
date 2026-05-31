@@ -42,7 +42,7 @@
     <div class="project-card"> {# Simplified for detail view #}
       <div class="project-card-media">
         {% if project.media_path %}
-        <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy">
+        <img src="{{ asset_url(project.media_path) }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy">
         {% else %}
         <div class="video-placeholder">
           <div class="play-btn" aria-hidden="true">
@@ -140,7 +140,7 @@
                 </div>
                 <div class="fc-front-image">
                   {% if project.media_path %}
-                  <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+                  <img src="{{ asset_url(project.media_path) }}" alt="{{ project.title }}" loading="lazy">
                   {% else %}
                   <div class="fc-front-placeholder">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -591,5 +591,5 @@
      PAGE SCRIPTS
 ============================================================== -->
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/projects.js') }}" defer></script>
+<script src="{{ static_url('js/projects.js') }}" defer></script>
 {% endblock %}

@@ -16,8 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application code
 COPY . .
 
-# Create the instance directory and give ownership to 'appuser'
-RUN mkdir -p /app/instance && chown -R appuser:appuser /app/instance
+# Create persistent-data directories and give ownership to 'appuser'
+RUN mkdir -p /app/instance /app/static/assets /app/static/uploads/blog \
+    && chown -R appuser:appuser /app/instance /app/static/assets /app/static/uploads
 
 # Switch to the non-root user for security
 USER appuser

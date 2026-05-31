@@ -300,7 +300,7 @@
       <a href="{{ url_for('portfolio.project_detail', slug=project.slug) }}" class="project-mini-card">
         <div class="mini-card-image">
           {% if project.media_path %}
-          <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+          <img src="{{ asset_url(project.media_path) }}" alt="{{ project.title }}" loading="lazy">
           {% else %}
           <div class="mini-card-placeholder">Project Preview</div>
           {% endif %}

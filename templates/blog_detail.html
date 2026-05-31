@@ -36,7 +36,7 @@
 
   {% if post.media_path %}
   <div class="blog-post-hero-image">
-    <img src="{{ post.media_path }}" alt="{{ post.title }}">
+    <img src="{{ asset_url(post.media_path) }}" alt="{{ post.title }}">
   </div>
   {% endif %}
 

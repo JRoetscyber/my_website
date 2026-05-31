@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, render_template, url_for, request, flash, redirect, current_app
+from flask import Blueprint, abort, render_template, url_for, request, redirect, current_app
 from database import FAQ, FAQSubmission, db
 from flask_mail import Message
 import json
@@ -15,7 +15,6 @@ def submit_question():
         question = request.form.get('question')
 
         if not name or not email or not question:
-            flash('Please fill in all required fields.', 'danger')
             return redirect(url_for('faq.faq_list'))
 
         new_sub = FAQSubmission(
@@ -39,10 +38,9 @@ def submit_question():
         except Exception as e:
             print(f"Error sending notification email: {e}")
 
-        flash('Your question has been submitted! I will get back to you soon.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error submitting question: {e}', 'danger')
+        current_app.logger.exception("Error submitting FAQ question: %s", e)
     
     return redirect(url_for('faq.faq_list'))
 

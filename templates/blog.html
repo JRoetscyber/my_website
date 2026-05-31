@@ -38,7 +38,7 @@
           <a href="{{ url_for('blog.blog_detail', slug=post.slug) }}" class="blog-card-link">
             <div class="blog-card-image">
               {% if post.media_path %}
-              <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy">
+              <img src="{{ asset_url(post.media_path) }}" alt="{{ post.title }}" loading="lazy">
               {% else %}
               <div class="blog-placeholder">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">

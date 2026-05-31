@@ -23,6 +23,37 @@ load_dotenv()
 
 app = Flask(__name__)
 
+def versioned_static(filename):
+    static_path = os.path.join(app.static_folder, filename)
+    version = None
+    try:
+        version = int(os.path.getmtime(static_path))
+    except OSError:
+        pass
+
+    if version:
+        return url_for('static', filename=filename, v=version)
+    return url_for('static', filename=filename)
+
+
+def versioned_asset(path):
+    if not path:
+        return path
+
+    static_prefix = '/static/'
+    if path.startswith(static_prefix):
+        return versioned_static(path[len(static_prefix):])
+
+    return path
+
+
+@app.context_processor
+def inject_asset_helpers():
+    return {
+        'static_url': versioned_static,
+        'asset_url': versioned_asset
+    }
+
 @app.template_filter('markdown')
 def markdown_filter(text):
     if not text:
