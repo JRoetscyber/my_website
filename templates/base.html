@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}JO4 Dev — Web Systems & Automation for Modern Businesses{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Custom web portals, automated CRM systems, and intelligent business pipelines built for companies ready to scale.{% endblock %}">
+  <meta name="description" content="{% block meta_description %}Custom websites, CRM tools and automation systems for faster leads, cleaner workflows and owned software.{% endblock %}">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
   <!-- Google Fonts -->
@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="{{ static_url('css/style.css') }}">
 
   <!-- Canonical Link -->
-  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="canonical" href="https://{{ request.host }}{{ request.path }}">
 
   {% block head_extra %}{% endblock %}
   {% block json_ld_schema %}{% endblock %}

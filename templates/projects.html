@@ -4,9 +4,7 @@
   {% if seo_title is defined %}{{ seo_title }}{% else %}Evidence Room — JO4 Dev{% endif %}
 {% endblock %}
 
-{% block meta_description %}
-  {% if seo_description is defined %}{{ seo_description }}{% else %}Case studies and live demos of custom software solutions, CRM automation, and ERP systems built by JO4 Dev.{% endif %}
-{% endblock %}
+{% block meta_description %}{% if seo_description is defined %}{{ seo_description|striptags|truncate(145, true, '') }}{% else %}Case studies of websites, CRM systems, automations and client portals built by JO4 Dev.{% endif %}{% endblock %}
 
 {% block json_ld_schema %}
   {% if json_ld_schema is defined %}

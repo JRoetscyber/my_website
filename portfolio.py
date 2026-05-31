@@ -48,7 +48,7 @@ def project_detail(slug):
         "name": project.title,
         "description": project.description,
         "applicationCategory": project.category,
-        "url": url_for('portfolio.project_detail', slug=project.slug, _external=True),
+        "url": url_for('portfolio.project_detail', slug=project.slug, _external=True, _scheme='https'),
         "operatingSystem": "Web", # Assuming web application
         # Add more properties as relevant, e.g., 'processorRequirements', 'memoryRequirements', 'softwareHelp', 'screenshot'
         "offers": {
@@ -66,4 +66,3 @@ def project_detail(slug):
         seo_description=project.description, # Consider a more refined, truncated description here
         json_ld_schema=json.dumps(schema_data, indent=2)
     )
-

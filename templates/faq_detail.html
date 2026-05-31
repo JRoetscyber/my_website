@@ -2,7 +2,7 @@
 
 {% block title %}{{ faq.question }} - JO4 Dev FAQ{% endblock %}
 
-{% block meta_description %}{{ faq.answer|striptags|truncate(155) }}{% endblock %}
+{% block meta_description %}{{ faq.answer|striptags|truncate(145, true, '') }}{% endblock %}
 
 {% block json_ld_schema %}
 {% if json_ld_schema %}

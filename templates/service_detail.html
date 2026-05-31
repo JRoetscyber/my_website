@@ -2,9 +2,7 @@
 
 {% block title %}{{ service.title }} — JO4 Dev South Africa{% endblock %}
 
-{% block meta_description %}
-<meta name="description" content="{{ service.lead_text }}">
-{% endblock %}
+{% block meta_description %}{{ service.description|striptags|truncate(145, true, '') }}{% endblock %}
 
 {% block content %}
 

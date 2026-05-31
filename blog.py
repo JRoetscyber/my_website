@@ -38,7 +38,7 @@ def blog_detail(slug):
             "name": "Jonathan Roets"
         },
         "datePublished": post.created_at.isoformat(),
-        "url": url_for('blog.blog_detail', slug=post.slug, _external=True)
+        "url": url_for('blog.blog_detail', slug=post.slug, _external=True, _scheme='https')
     }
 
     return render_template(

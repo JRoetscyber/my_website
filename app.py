@@ -436,12 +436,12 @@ def sitemap_xml():
     
     # You can add other static URLs here if needed
     static_urls = [
-        url_for('home', _external=True),
-        url_for('portfolio.projects', _external=True),
-        url_for('blog.blog_list', _external=True),
-        url_for('faq.faq_list', _external=True),
-        url_for('booking.book', _external=True),
-        url_for('services.services', _external=True)
+        url_for('home', _external=True, _scheme='https'),
+        url_for('portfolio.projects', _external=True, _scheme='https'),
+        url_for('blog.blog_list', _external=True, _scheme='https'),
+        url_for('faq.faq_list', _external=True, _scheme='https'),
+        url_for('booking.book', _external=True, _scheme='https'),
+        url_for('services.services', _external=True, _scheme='https')
     ]
     
     # Passing now=datetime.now() prevents the HTTP 500 crash

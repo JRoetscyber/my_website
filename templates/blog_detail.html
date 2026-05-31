@@ -2,7 +2,7 @@
 
 {% block title %}{{ seo_title }}{% endblock %}
 
-{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block meta_description %}{{ seo_description|striptags|truncate(145, true, '') }}{% endblock %}
 
 {% block json_ld_schema %}
   {% if json_ld_schema is defined %}

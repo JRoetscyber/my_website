@@ -92,7 +92,7 @@ def faq_detail(slug):
             "@type": "Answer",
             "text": faq.answer
         },
-        "url": url_for('faq.faq_detail', slug=faq.slug, _external=True)
+        "url": url_for('faq.faq_detail', slug=faq.slug, _external=True, _scheme='https')
     }
 
     return render_template(
