@@ -2,12 +2,26 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jo4-site
     restart: always
     ports:
       - "6010:6010"
-    volumes:
-      - .:/app
-      - ./instance:/app/instance  # Maps your local folder to the container
     env_file:
       - .env
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_CONFIG=production
+    volumes:
+      - db_data:/app/instance
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    external: true
+
+volumes:
+  db_data:

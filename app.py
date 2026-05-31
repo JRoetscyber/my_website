@@ -489,7 +489,13 @@ def backfill_legacy_leads_command():
 
 
 # Initialise the database when the module is imported (by gunicorn/wsgi)
-init_db()
+@app.cli.command("init-db")
+def init_db_command():
+    """Clear the existing data and create new tables."""
+    init_db()
+    print("Database initialized and migrated.")
 
 if __name__ == '__main__':
+    # Safe to run locally, but ignored by Gunicorn in production
+    init_db()
     app.run(debug=True, host='0.0.0.0', port=6010)
