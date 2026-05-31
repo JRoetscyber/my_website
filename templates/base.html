@@ -42,8 +42,10 @@
 
       <ul class="nav-links" id="navLinks" role="list">
         <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('services.services') }}">Services</a></li>
         <li><a href="{{ url_for('portfolio.projects') }}">Work</a></li>
         <li><a href="{{ url_for('blog.blog_list') }}">Blog</a></li>
+        <li><a href="{{ url_for('faq.faq_list') }}">FAQ</a></li>
         <li>
           <a href="{{ url_for('booking.book') }}" class="nav-cta">Book a Call</a>
         </li>
@@ -74,15 +76,16 @@
             <ul>
               <li><a href="{{ url_for('home') }}">Home</a></li>
               <li><a href="{{ url_for('portfolio.projects') }}">Evidence Room</a></li>
+              <li><a href="{{ url_for('faq.faq_list') }}">FAQ</a></li>
               <li><a href="{{ url_for('booking.book') }}">Book a Call</a></li>
             </ul>
           </div>
           <div class="footer-col">
             <h5>Services</h5>
             <ul>
-              <li><a href="{{ url_for('portfolio.projects') }}">Web Architecture</a></li>
-              <li><a href="{{ url_for('portfolio.projects') }}">Secure Hosting</a></li>
-              <li><a href="{{ url_for('portfolio.projects') }}">Business Automation</a></li>
+              <li><a href="{{ url_for('services.services') }}#web-design">Web Design</a></li>
+              <li><a href="{{ url_for('services.services') }}#seo">Local SEO</a></li>
+              <li><a href="{{ url_for('services.services') }}#automation">Automation</a></li>
             </ul>
           </div>
         </nav>

@@ -1,0 +1,122 @@
+{% extends "admin/admin.html" %}
+
+{% block admin_title %}Booking - Admin{% endblock %}
+{% block admin_heading %}Booking{% endblock %}
+
+{% block admin_content %}
+<div class="studio-board-head mb-4">
+  <div>
+    <h2 class="studio-board-title" style="color: white;">Booking Settings</h2>
+    <p class="studio-board-sub">Tune availability, buffers, reminders, and Google Calendar integration.</p>
+  </div>
+  <a href="{{ url_for('booking.book') }}" target="_blank" class="tbl-action-btn">View Booking Page</a>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">Meeting Length</div>
+      <div class="stat-card-value">{{ booking_settings.meeting_duration_minutes }}m</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">Calendar Buffer</div>
+      <div class="stat-card-value">{{ booking_settings.buffer_minutes }}m</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">Google API</div>
+      <div class="stat-card-value" style="font-size:1.2rem; margin-top:14px;">
+        {{ 'Installed' if google_calendar_packages_installed else 'Missing' }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('admin.update_booking_settings') }}" class="widget-card">
+  <div class="widget-header">
+    <h3 class="widget-title">Calendar Connection</h3>
+  </div>
+  <div class="widget-body">
+    <div class="row g-4">
+      <div class="col-md-6">
+        <label class="admin-form-label" for="calendarId">Google Calendar ID</label>
+        <input class="admin-form-input" id="calendarId" name="calendar_id" value="{{ booking_settings.calendar_id or 'primary' }}" placeholder="primary or your calendar id">
+      </div>
+      <div class="col-md-6">
+        <label class="admin-form-label" for="serviceAccountFile">Service Account JSON Path</label>
+        <input class="admin-form-input" id="serviceAccountFile" name="service_account_file" value="{{ booking_settings.service_account_file or '' }}" placeholder="instance/google-service-account.json">
+      </div>
+      <div class="col-12">
+        <p class="topbar-date" style="line-height:1.7;">
+          Share your Google Calendar with the service account email from the JSON file. Use "Make changes to events" permission so the site can read busy times, create events, send invites, and set reminders.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="widget-header">
+    <h3 class="widget-title">Availability Rules</h3>
+  </div>
+  <div class="widget-body">
+    <div class="row g-4">
+      <div class="col-md-3">
+        <label class="admin-form-label" for="workdayStart">Workday Start</label>
+        <input class="admin-form-input" id="workdayStart" name="workday_start" type="time" value="{{ booking_settings.workday_start }}">
+      </div>
+      <div class="col-md-3">
+        <label class="admin-form-label" for="workdayEnd">Workday End</label>
+        <input class="admin-form-input" id="workdayEnd" name="workday_end" type="time" value="{{ booking_settings.workday_end }}">
+      </div>
+      <div class="col-md-3">
+        <label class="admin-form-label" for="meetingDuration">Meeting Minutes</label>
+        <input class="admin-form-input" id="meetingDuration" name="meeting_duration_minutes" type="number" min="15" step="15" value="{{ booking_settings.meeting_duration_minutes }}">
+      </div>
+      <div class="col-md-3">
+        <label class="admin-form-label" for="slotStep">Slot Step</label>
+        <input class="admin-form-input" id="slotStep" name="slot_step_minutes" type="number" min="15" step="15" value="{{ booking_settings.slot_step_minutes }}">
+      </div>
+      <div class="col-md-4">
+        <label class="admin-form-label" for="bufferMinutes">Buffer Before/After</label>
+        <input class="admin-form-input" id="bufferMinutes" name="buffer_minutes" type="number" min="0" step="5" value="{{ booking_settings.buffer_minutes }}">
+      </div>
+      <div class="col-md-4">
+        <label class="admin-form-label" for="horizonDays">Book Ahead Days</label>
+        <input class="admin-form-input" id="horizonDays" name="booking_horizon_days" type="number" min="1" max="90" value="{{ booking_settings.booking_horizon_days }}">
+      </div>
+      <div class="col-md-4">
+        <label class="admin-form-label" for="minNotice">Minimum Notice Hours</label>
+        <input class="admin-form-input" id="minNotice" name="min_notice_hours" type="number" min="0" value="{{ booking_settings.min_notice_hours }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="widget-header">
+    <h3 class="widget-title">Invite Settings</h3>
+  </div>
+  <div class="widget-body">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <label class="admin-form-label" for="reminderMinutes">Reminder Minutes</label>
+        <input class="admin-form-input" id="reminderMinutes" name="reminder_minutes" type="number" min="5" step="5" value="{{ booking_settings.reminder_minutes }}">
+      </div>
+      <div class="col-md-8">
+        <label class="admin-form-label" for="meetingLocation">Fallback Location</label>
+        <input class="admin-form-input" id="meetingLocation" name="meeting_location" value="{{ booking_settings.meeting_location or 'Google Meet' }}">
+      </div>
+      <div class="col-12">
+        <label class="d-flex align-items-center gap-2 topbar-date" style="font-size:0.85rem;">
+          <input type="checkbox" name="create_google_meet" {% if booking_settings.create_google_meet %}checked{% endif %}>
+          Create a Google Meet link automatically
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="widget-body border-top">
+    <button class="deploy-btn" type="submit" style="width:auto;">Save Booking Settings</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ service.title }} — JO4 Dev South Africa{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="{{ service.lead_text }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- SERVICE DETAIL -->
+<article class="svc-detail" id="{{ service.slug }}" style="padding-top: var(--nav-h);">
+  <div class="section">
+
+    <div class="svc-detail-grid">
+
+      <!-- Copy -->
+      <div class="svc-detail-copy" data-aos="fade-up">
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">{{ service.eyebrow or 'Service' }}</span>
+        <h2 class="display-section" id="svc-{{ service.slug }}-heading">
+          {{ service.title | replace('&', '&amp;') | safe | replace('  ', '<br>') | safe }}
+        </h2>
+        <p class="lead-text" style="margin-top:20px;">
+          {{ service.lead_text }}
+        </p>
+        <p style="color:var(--text-secondary); font-size:0.92rem; line-height:1.78; margin-top:16px; max-width:520px;">
+          {{ service.description }}
+        </p>
+
+        <div class="svc-feature-list">
+          {% for feature in (service.features or '').split('\n') %}
+          {% if feature.strip() %}
+          <div class="svc-feature-item">
+            <span class="svc-feature-check" aria-hidden="true">✓</span>
+            {{ feature.strip() }}
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="svc-price-hint">
+          <span class="svc-price-label">{{ service.price_label or 'Typical project range' }}</span>
+          <span class="svc-price-value">{{ service.price_range }}</span>
+          <span class="svc-price-note">{{ service.price_note }}</span>
+        </div>
+
+        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="margin-top:36px;">
+          Discuss Your Project
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+
+      <!-- Dark card / use-case panel -->
+      <div class="svc-detail-panel" data-aos="fade-up" data-aos-delay="120">
+        <div class="svc-panel-card">
+          <div class="svc-panel-label">{{ service.panel_title }}</div>
+          
+          {% set panel_items = (service.panel_content | from_json) if service.panel_content else [] %}
+          
+          {% if service.panel_type == 'use-case' %}
+          <div class="svc-panel-usecase">
+            {% for item in panel_items %}
+            <div class="svc-usecase-item">
+              <div class="svc-usecase-icon" aria-hidden="true">
+                {% if item.icon == 'monitor' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                {% elif item.icon == 'home' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                {% elif item.icon == 'shopping-cart' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                {% endif %}
+              </div>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'audit' %}
+          <div class="svc-audit-list">
+            {% for item in panel_items %}
+            <div class="svc-audit-row">
+              <span class="svc-audit-num">{{ item.num }}</span>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'stats' %}
+          <div class="svc-stat-stack">
+            {% for item in panel_items %}
+            <div class="svc-stat-block">
+              <div class="svc-stat-number">{{ item.num }}<span>{{ item.suffix }}</span></div>
+              <div class="svc-stat-desc">{{ item.desc }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'auto' %}
+          <div class="svc-auto-list">
+            {% for item in panel_items %}
+            <div class="svc-auto-item">
+              <div class="svc-auto-dot" aria-hidden="true"></div>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</article>
+
+<div style="text-align: center; margin: 80px 0;">
+    <a href="{{ url_for('services.services') }}" class="btn-ghost-custom">← View All Services</a>
+</div>
+
+{% endblock %}

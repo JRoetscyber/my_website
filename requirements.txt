@@ -15,3 +15,6 @@ typing_extensions
 Werkzeug
 gunicorn
 markdown
+google-api-python-client
+google-auth
+Flask-Mail

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - JO4 Dev{% endblock %}
+
+{% block meta_description %}Answers to common questions about JO4 Dev projects, website ownership, hosting, maintenance, timelines, and custom business systems.{% endblock %}
+
+{% block json_ld_schema %}
+{% if json_ld_schema %}
+<script type="application/ld+json">
+{{ json_ld_schema|safe }}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<header class="page-hero">
+  <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Questions</span>
+  <h1>Frequently asked questions.</h1>
+  <p class="lead-text">
+    Practical answers about project ownership, hosting, maintenance, rebuilds,
+    and how a JO4 Dev build usually starts.
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<section class="faq-section section-full" aria-labelledby="faq-heading">
+  <div class="section">
+    <div class="row align-items-start g-5">
+      <div class="col-lg-5" data-aos="fade-up">
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Knowledge Base</span>
+        <h2 class="display-section" id="faq-heading">
+          Straight answers<br>
+          before we build.
+        </h2>
+        <p class="lead-text" style="margin-top:20px;">
+          Each answer has its own slugged URL, so you can share individual questions when needed.
+        </p>
+      </div>
+
+      <div class="col-lg-6 offset-lg-1" data-aos="fade-up" data-aos-delay="100">
+        {% if faqs %}
+        <div class="faq-list">
+          {% for faq in faqs %}
+          <details class="faq-item" id="{{ faq.slug }}"{% if loop.first %} open{% endif %}>
+            <summary>
+              <span>{{ faq.question }}</span>
+            </summary>
+            <div class="faq-answer">
+              {{ faq.answer|markdown|safe }}
+              <a href="{{ url_for('faq.faq_detail', slug=faq.slug) }}" class="faq-permalink">Open answer</a>
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="faq-list">
+          <div class="faq-empty">
+            No FAQs have been published yet.
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-0);">
+  <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
+    <h2 class="display-section" style="max-width:620px; margin: 0 auto 24px;" data-aos="fade-up">
+      Still need a direct answer?
+    </h2>
+    <div data-aos="fade-up" data-aos-delay="80">
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="padding: 18px 44px;">
+        Book a Free Discovery Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

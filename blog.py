@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, abort, url_for, request
-from database import db, BlogPost, Analytics
+from database import db, BlogPost
 import json
 
 print("DEBUG: blog.py is being imported.")
@@ -19,22 +19,10 @@ def blog_list():
 @blog_bp.route('/blog/<slug>')
 def blog_detail(slug):
     post = BlogPost.query.filter_by(slug=slug).first_or_404()
-    
-    # Increment views only if it's a unique visit (IP-based check against Analytics)
+
     try:
-        # Analytics records are added in app.before_request. 
-        # We check if there are OTHER records for this IP and this path.
-        # Note: app.before_request just added one for the current request.
-        visitor_ip = request.remote_addr
-        existing_views = Analytics.query.filter_by(
-            page_path=request.path, 
-            visitor_ip=visitor_ip
-        ).count()
-        
-        # If this is the only record (the one just created), it's a unique view
-        if existing_views <= 1:
-            post.views += 1
-            db.session.commit()
+        post.views = (post.views or 0) + 1
+        db.session.commit()
     except Exception as e:
         print(f"Error updating views: {e}")
         db.session.rollback()

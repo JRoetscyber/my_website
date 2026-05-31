@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, logout_user
-from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, Transaction
+from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, FAQ, BookingSettings, Transaction, get_booking_settings, make_slug
+from google_calendar import google_calendar_available
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, text
 from lead_score import calculate_lead_score
@@ -17,6 +18,15 @@ def secure_filename(filename):
         filename = filename.replace(os.path.altsep, ' ')
     filename = re.sub(r'[^A-Za-z0-9_.-]+', '_', filename).strip('._')
     return filename or 'upload'
+
+
+def save_blog_media(file):
+    filename = secure_filename(file.filename)
+    upload_dir = os.path.join('static', 'uploads', 'blog')
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, filename)
+    file.save(file_path)
+    return f"/{file_path.replace(os.sep, '/')}"
 
 
 admin_bp = Blueprint('admin', __name__)
@@ -93,6 +103,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         leads_list = prepare_leads_for_display(leads_list)
         projects_list = Project.query.order_by(Project.deployed_at.desc()).all()
         blogs_list = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
+        faqs_list = FAQ.query.order_by(FAQ.display_order.asc(), FAQ.created_at.desc()).all()
+        booking_settings = get_booking_settings()
         
         transactions_query = Transaction.query
         if selected_month and selected_year:
@@ -190,6 +202,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         leads_list = []
         projects_list = []
         blogs_list = []
+        faqs_list = []
+        booking_settings = BookingSettings()
         transactions_list = []
         logs_list = []
         total_views = 0
@@ -210,6 +224,9 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         'leads': leads_list,
         'projects': projects_list,
         'blogs': blogs_list,
+        'faqs': faqs_list,
+        'booking_settings': booking_settings,
+        'google_calendar_packages_installed': google_calendar_available(),
         'transactions': transactions_list,
         'logs': logs_list,
         'total_views': total_views,
@@ -261,6 +278,39 @@ def analytics_page():
 @login_required
 def automation_page():
     return render_template('admin/automation.html', **build_admin_context('automation'))
+
+
+@admin_bp.route('/admin/booking')
+@login_required
+def booking_settings_page():
+    return render_template('admin/booking.html', **build_admin_context('booking'))
+
+
+@admin_bp.route('/admin/booking', methods=['POST'])
+@login_required
+def update_booking_settings():
+    try:
+        settings = get_booking_settings()
+        settings.calendar_id = request.form.get('calendar_id', 'primary').strip() or 'primary'
+        settings.service_account_file = request.form.get('service_account_file', '').strip()
+        settings.workday_start = request.form.get('workday_start', '09:00')
+        settings.workday_end = request.form.get('workday_end', '17:00')
+        settings.meeting_duration_minutes = request.form.get('meeting_duration_minutes', type=int) or 30
+        settings.buffer_minutes = request.form.get('buffer_minutes', type=int) or 30
+        settings.slot_step_minutes = request.form.get('slot_step_minutes', type=int) or 30
+        settings.booking_horizon_days = request.form.get('booking_horizon_days', type=int) or 21
+        settings.min_notice_hours = request.form.get('min_notice_hours', type=int) or 4
+        settings.reminder_minutes = request.form.get('reminder_minutes', type=int) or 30
+        settings.create_google_meet = request.form.get('create_google_meet') == 'on'
+        settings.meeting_location = request.form.get('meeting_location', 'Google Meet').strip() or 'Google Meet'
+
+        db.session.commit()
+        flash('Booking settings updated successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating booking settings: {e}', 'danger')
+
+    return redirect(url_for('admin.booking_settings_page'))
 
 @admin_bp.route('/admin/logout')
 @login_required
@@ -572,6 +622,84 @@ def blogs():
     return render_template('admin/blogs.html', **build_admin_context('blogs'))
 
 
+@admin_bp.route('/admin/faqs')
+@login_required
+def faqs():
+    return render_template('admin/faqs.html', **build_admin_context('faqs'))
+
+
+@admin_bp.route('/admin/add_faq', methods=['POST'])
+@login_required
+def add_faq():
+    try:
+        question = request.form.get('question', '').strip()
+        answer = request.form.get('answer', '').strip()
+        slug = request.form.get('slug', '').strip()
+        display_order = request.form.get('display_order', type=int) or 0
+        is_published = request.form.get('is_published') == 'on'
+
+        if not question or not answer:
+            flash('FAQ question and answer are required.', 'danger')
+            return redirect(url_for('admin.faqs'))
+
+        new_faq = FAQ(
+            question=question,
+            answer=answer,
+            slug=make_slug(slug) if slug else None,
+            display_order=display_order,
+            is_published=is_published
+        )
+        db.session.add(new_faq)
+        db.session.commit()
+        flash('FAQ added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding FAQ: {e}', 'danger')
+
+    return redirect(url_for('admin.faqs'))
+
+
+@admin_bp.route('/admin/update_faq/<int:faq_id>', methods=['POST'])
+@login_required
+def update_faq(faq_id):
+    try:
+        faq = FAQ.query.get_or_404(faq_id)
+        question = request.form.get('question', '').strip()
+        answer = request.form.get('answer', '').strip()
+        slug = request.form.get('slug', '').strip()
+
+        if not question or not answer:
+            flash('FAQ question and answer are required.', 'danger')
+            return redirect(url_for('admin.faqs'))
+
+        faq.question = question
+        faq.answer = answer
+        faq.slug = make_slug(slug) if slug else faq.slug
+        faq.display_order = request.form.get('display_order', type=int) or 0
+        faq.is_published = request.form.get('is_published') == 'on'
+
+        db.session.commit()
+        flash('FAQ updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating FAQ: {e}', 'danger')
+
+    return redirect(url_for('admin.faqs'))
+
+
+@admin_bp.route('/admin/delete_faq/<int:faq_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_faq(faq_id):
+    try:
+        faq = FAQ.query.get_or_404(faq_id)
+        db.session.delete(faq)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "FAQ deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 @admin_bp.route('/admin/add_blog', methods=['POST'])
 @login_required
 def add_blog():
@@ -580,16 +708,10 @@ def add_blog():
         summary = request.form.get('summary')
         content = request.form.get('content')
         
-        # Handle file upload
         media_path = None
         file = request.files.get('media')
         if file and file.filename:
-            filename = secure_filename(file.filename)
-            upload_dir = os.path.join('static', 'uploads', 'blog')
-            os.makedirs(upload_dir, exist_ok=True)
-            file_path = os.path.join(upload_dir, filename)
-            file.save(file_path)
-            media_path = f"/{file_path.replace(os.sep, '/')}"
+            media_path = save_blog_media(file)
 
         new_post = BlogPost(
             title=title,
@@ -616,21 +738,14 @@ def update_blog(post_id):
         post.summary = request.form.get('summary')
         post.content = request.form.get('content')
         
-        # Handle file upload
         file = request.files.get('media')
         if file and file.filename:
-            # Delete old file if exists
             if post.media_path:
                 old_path = os.path.join(os.getcwd(), post.media_path.lstrip('/'))
-                if os.path.exists(old_path):
+                if os.path.isfile(old_path):
                     os.remove(old_path)
-                    
-            filename = secure_filename(file.filename)
-            upload_dir = os.path.join('static', 'uploads', 'blog')
-            os.makedirs(upload_dir, exist_ok=True)
-            file_path = os.path.join(upload_dir, filename)
-            file.save(file_path)
-            post.media_path = f"/{file_path.replace(os.sep, '/')}"
+
+            post.media_path = save_blog_media(file)
 
         db.session.commit()
         flash('Blog post updated successfully!', 'success')

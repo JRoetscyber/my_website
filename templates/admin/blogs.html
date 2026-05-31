@@ -10,10 +10,6 @@
     <h2 class="studio-board-title" style="color: white;">Blog Management</h2>
     <p class="studio-board-sub">Engineering and strategy articles for JO4 Dev.</p>
   </div>
-  <button type="button" class="add-blog-btn" data-bs-toggle="modal" data-bs-target="#blogModal">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 1v11M1 6.5h11"/></svg>
-    Write New Article
-  </button>
 </div>
 
 <!-- Stats / Quick Insights -->
@@ -31,9 +27,9 @@
     <div class="stat-card">
       <div class="stat-card-label">Lifetime Views</div>
       <div class="stat-card-value">
-        {% set total_views = 0 %}
-        {% for b in blogs %}{% set total_views = total_views + b.views %}{% endfor %}
-        {{ total_views }}
+        {% set totals = namespace(views=0) %}
+        {% for b in blogs %}{% set totals.views = totals.views + (b.views or 0) %}{% endfor %}
+        {{ totals.views }}
       </div>
       <div class="stat-card-icon">
         <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -95,9 +91,10 @@
             </a>
             <button class="tbl-action-btn edit-blog-btn" 
                     data-id="{{ post.id }}"
-                    data-title="{{ post.title }}"
-                    data-summary="{{ post.summary }}"
-                    data-content="{{ post.content }}">
+                    data-title="{{ post.title|forceescape }}"
+                    data-summary="{{ post.summary|forceescape }}"
+                    data-content="{{ post.content|forceescape }}"
+                    data-media-path="{{ post.media_path or '' }}">
               Edit
             </button>
             <button class="tbl-action-btn btn-delete-blog text-danger" data-id="{{ post.id }}">
@@ -156,7 +153,7 @@
               </div>
               <div class="mb-4">
                 <label class="admin-form-label">Cover Image</label>
-                <div class="file-drop-zone" onclick="document.getElementById('blogMedia').click()">
+                <div class="file-drop-zone" id="blogMediaDropzone" role="button" tabindex="0">
                   <svg viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
                   <div class="file-drop-label"><strong>Click to upload</strong> or drag image</div>
                   <div class="file-drop-sub">JPG, PNG or WEBP (Max 2MB)</div>
@@ -185,8 +182,20 @@ document.addEventListener('DOMContentLoaded', function() {
   const blogModalLabel = document.getElementById('blogModalLabel');
   const fileInput = document.getElementById('blogMedia');
   const filePreview = document.getElementById('filePreview');
+  const fileDropzone = document.getElementById('blogMediaDropzone');
+  const submitBtn = blogForm.querySelector('button[type="submit"]');
 
-  // File preview logic
+  fileDropzone.addEventListener('click', function() {
+    fileInput.click();
+  });
+
+  fileDropzone.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      fileInput.click();
+    }
+  });
+
   fileInput.addEventListener('change', function() {
     if (this.files && this.files[0]) {
       filePreview.textContent = this.files[0].name;
@@ -200,10 +209,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const id = this.dataset.id;
       blogModalLabel.textContent = 'Edit Article';
       blogForm.action = `/admin/update_blog/${id}`;
+      submitBtn.textContent = 'Update Article';
       
       document.getElementById('blogTitle').value = this.dataset.title;
       document.getElementById('blogSummary').value = this.dataset.summary;
       document.getElementById('blogContent').value = this.dataset.content;
+      fileInput.value = '';
+      if (this.dataset.mediaPath) {
+        filePreview.textContent = `Current image: ${this.dataset.mediaPath.split('/').pop()}`;
+        filePreview.style.display = 'block';
+      } else {
+        filePreview.textContent = '';
+        filePreview.style.display = 'none';
+      }
       
       blogModal.show();
     });
@@ -214,7 +232,10 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.addEventListener('click', function() {
       blogModalLabel.textContent = 'Compose Article';
       blogForm.action = "{{ url_for('admin.add_blog') }}";
+      submitBtn.textContent = 'Publish Article';
       blogForm.reset();
+      fileInput.value = '';
+      filePreview.textContent = '';
       filePreview.style.display = 'none';
     });
   });

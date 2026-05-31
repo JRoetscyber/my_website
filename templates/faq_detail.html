@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ faq.question }} - JO4 Dev FAQ{% endblock %}
+
+{% block meta_description %}{{ faq.answer|striptags|truncate(155) }}{% endblock %}
+
+{% block json_ld_schema %}
+{% if json_ld_schema %}
+<script type="application/ld+json">
+{{ json_ld_schema|safe }}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<article class="faq-detail-page">
+  <header class="page-hero">
+    <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">FAQ</span>
+    <h1>{{ faq.question }}</h1>
+    <p class="lead-text">
+      A direct answer from the JO4 Dev FAQ.
+    </p>
+  </header>
+
+  <div class="divider"></div>
+
+  <section class="section">
+    <div class="faq-detail-card" data-aos="fade-up">
+      <div class="blog-post-content">
+        {{ faq.answer|markdown|safe }}
+      </div>
+      <div class="blog-post-footer">
+        <a href="{{ url_for('faq.faq_list') }}" class="btn-ghost-custom">
+          Back to FAQ <span class="arrow">-&gt;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</article>
+{% endblock %}

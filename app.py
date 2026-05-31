@@ -13,8 +13,10 @@ from portfolio import portfolio_bp
 from booking import booking_bp
 from admin import admin_bp
 from blog import blog_bp
-from database import db, User, Analytics, Lead, Project, BlogPost, Transaction, make_slug # Added Project, BlogPost, Transaction
+from services import services_bp
+from database import db, User, Analytics, Lead, Project, BlogPost, FAQ, Transaction, Service, make_slug # Added Project, BlogPost, Transaction
 from legacy_leads import backfill_legacy_leads
+from faq import faq_bp
 
 # Load environment variables
 load_dotenv()
@@ -26,6 +28,16 @@ def markdown_filter(text):
     if not text:
         return ""
     return markdown.markdown(text, extensions=['fenced_code', 'tables', 'nl2br'])
+
+@app.template_filter('from_json')
+def from_json_filter(value):
+    import json
+    if not value:
+        return []
+    try:
+        return json.loads(value)
+    except Exception:
+        return []
 
 # Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')
@@ -49,6 +61,21 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# --------------------------------------------------
+# NEW: Flask-Mail & Brevo Setup
+# --------------------------------------------------
+from flask_mail import Mail
+
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+
+mail = Mail(app)
+# --------------------------------------------------
 
 @app.before_request
 def record_visit():
@@ -151,12 +178,181 @@ def init_db():
         except Exception as e:
             print(f"Error initializing database user: {e}")
             db.session.rollback()
+
+        try:
+            faq_cols = {
+                row[1] for row in db.session.execute(text("PRAGMA table_info(faqs)")).fetchall()
+            }
+
+            if faq_cols:
+                if 'slug' not in faq_cols:
+                    db.session.execute(text("ALTER TABLE faqs ADD COLUMN slug VARCHAR(255)"))
+                if 'display_order' not in faq_cols:
+                    db.session.execute(text("ALTER TABLE faqs ADD COLUMN display_order INTEGER DEFAULT 0"))
+                if 'is_published' not in faq_cols:
+                    db.session.execute(text("ALTER TABLE faqs ADD COLUMN is_published BOOLEAN DEFAULT 1"))
+                if 'created_at' not in faq_cols:
+                    db.session.execute(text("ALTER TABLE faqs ADD COLUMN created_at DATETIME"))
+                if 'updated_at' not in faq_cols:
+                    db.session.execute(text("ALTER TABLE faqs ADD COLUMN updated_at DATETIME"))
+                db.session.commit()
+
+                faqs_to_fix = FAQ.query.filter((FAQ.slug == None) | (FAQ.slug == '')).all()
+                for faq in faqs_to_fix:
+                    faq.slug = make_slug(faq.question)
+                if faqs_to_fix:
+                    db.session.commit()
+
+                if FAQ.query.count() == 0:
+                    default_faqs = [
+                        FAQ(
+                            question="What kind of businesses do you build systems for?",
+                            answer="JO4 Dev builds custom web portals, dashboards, CRM pipelines, booking flows, and automation systems for service businesses, property teams, agencies, and growing companies that need better internal tools.",
+                            display_order=10,
+                            is_published=True
+                        ),
+                        FAQ(
+                            question="Do I own the website or system after delivery?",
+                            answer="Yes. You own the delivered source code and can host it where you choose. JO4 Dev can also manage deployment, SSL, backups, and monitoring if you want ongoing support.",
+                            display_order=20,
+                            is_published=True
+                        ),
+                        FAQ(
+                            question="Can you improve an existing website instead of rebuilding it?",
+                            answer="Yes. Existing sites can be audited, cleaned up, secured, optimized, or extended with new portals, integrations, analytics, lead capture, and automation features.",
+                            display_order=30,
+                            is_published=True
+                        ),
+                        FAQ(
+                            question="How does a project usually start?",
+                            answer="Most projects start with a free discovery call to understand the business workflow, current tools, must-have features, timeline, and budget range before a practical build plan is proposed.",
+                            display_order=40,
+                            is_published=True
+                        ),
+                        FAQ(
+                            question="Do you offer hosting and maintenance?",
+                            answer="Yes. JO4 Dev can provide managed VPS hosting, SSL setup, database backups, uptime monitoring, and ongoing improvements after launch.",
+                            display_order=50,
+                            is_published=True
+                        )
+                    ]
+                    db.session.add_all(default_faqs)
+                    db.session.commit()
+        except Exception as e:
+            print(f"Error migrating FAQ table: {e}")
+            db.session.rollback()
+
+        # Migrate services table schema
+        try:
+            service_cols = {
+                row[1] for row in db.session.execute(text("PRAGMA table_info(services)")).fetchall()
+            }
+            
+            if service_cols:
+                # Add missing columns if they don't exist (if any were added later)
+                pass
+            
+            db.session.commit()
+
+            if Service.query.count() == 0:
+                import json
+                default_services = [
+                    Service(
+                        title="Web Design & Development",
+                        slug="web-design",
+                        eyebrow="Service 01",
+                        lead_text="Your website is your best salesperson. For construction companies and contractors across South Africa, a slow, outdated site isn't just embarrassing — it's costing you quotes every single day.",
+                        description="We build bespoke websites engineered to convert — fast-loading, mobile-first, and structured so Google knows exactly what you do and where you do it. No page builders, no templates someone else already owns, no monthly platform fees to keep your own site live.",
+                        features="Custom design — no templates, no drag-and-drop builders\nMobile-first, sub-3-second load times\nOn-page SEO baked in from the first line of code\nLead capture forms wired to your CRM or email\nFull source code ownership — you take it with you\nProject gallery & testimonial sections built for conversion",
+                        price_range="R15 000 – R50 000",
+                        price_label="Typical project range",
+                        price_note="Scoped to your requirements — no surprise invoices",
+                        icon_svg='<polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/>',
+                        panel_title="Who this is for",
+                        panel_type="use-case",
+                        panel_content=json.dumps([
+                            {"title": "Construction & contractors", "desc": "Showcase your projects, get quote requests online, and stop losing work to competitors with better-looking sites.", "icon": "monitor"},
+                            {"title": "Real estate agencies", "desc": "Property portals, listing management, and lead capture systems that work while you sleep.", "icon": "home"},
+                            {"title": "E-commerce & retail", "desc": "Custom online stores built for South African payment gateways and shipping workflows.", "icon": "shopping-cart"}
+                        ]),
+                        display_order=10
+                    ),
+                    Service(
+                        title="Local SEO & Technical Audits",
+                        slug="seo",
+                        eyebrow="Service 02",
+                        lead_text="A construction company in Johannesburg that doesn't appear on the first page of Google for 'contractor near me' is invisible. SEO fixes that — but only when it's done properly, not as an afterthought.",
+                        description="We start every engagement with a full technical audit so you know exactly what's broken and what it'll take to rank. No vague monthly retainers with nothing to show for them. Every deliverable is documented, every change is explained, and you own the results.",
+                        features="Full technical SEO audit with prioritised action plan\nLocal keyword research targeting your city & service area\nOn-page optimisation — titles, meta, headings, schema markup\nGoogle Search Console & Analytics setup & monitoring\nCompetitor gap report — find where you're losing and why",
+                        price_range="R15 000 – R35 000",
+                        price_label="Typical project range",
+                        price_note="Audit + implementation or audit-only available",
+                        icon_svg='<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/>',
+                        panel_title="What a SEO audit covers",
+                        panel_type="audit",
+                        panel_content=json.dumps([
+                            {"num": "01", "title": "Technical health check", "desc": "Crawl errors, broken links, page speed, Core Web Vitals, mobile usability."},
+                            {"num": "02", "title": "On-page structure", "desc": "Title tags, meta descriptions, heading hierarchy, keyword mapping per page."},
+                            {"num": "03", "title": "Local signal strength", "desc": "NAP consistency, local keyword coverage, GBP alignment, citation gaps."},
+                            {"num": "04", "title": "Competitor gap analysis", "desc": "Where your competitors rank that you don't — and exactly what to do about it."}
+                        ]),
+                        display_order=20
+                    ),
+                    Service(
+                        title="Google Business Profile Setup & Optimisation",
+                        slug="gbp",
+                        eyebrow="Service 03",
+                        lead_text="When a homeowner in Pretoria searches 'building contractor near me', the businesses in the Map Pack get the call. That three-pack is owned by whoever has the best-optimised Google Business Profile.",
+                        description="Most contractors have either a missing, unclaimed, or badly filled-in GBP. We set it up properly from scratch or audit and fix what's there — categories, services, photos, Q&A, review strategy and all — so you appear where your customers are actually looking.",
+                        features="Full profile setup or audit & clean-up\nPrimary & secondary category selection (most get this wrong)\nServices, products & attributes fully populated\nKeyword-optimised business description\nPhoto & post strategy to signal active business\nReview acquisition system so 5-stars build automatically",
+                        price_range="R5 000 – R15 000",
+                        price_label="Typical project range",
+                        price_note="One-time setup or ongoing management available",
+                        icon_svg='<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+                        panel_title="The Map Pack opportunity",
+                        panel_type="stats",
+                        panel_content=json.dumps([
+                            {"num": "46", "suffix": "%", "desc": "of all Google searches have local intent — people looking for something near them"},
+                            {"num": "76", "suffix": "%", "desc": "of people who search for a local business on mobile visit within 24 hours"},
+                            {"num": "3", "suffix": "", "desc": "spots in the Google Map Pack — most of your competitors aren't in it yet"}
+                        ]),
+                        display_order=30
+                    ),
+                    Service(
+                        title="Software & Business Automation",
+                        slug="automation",
+                        eyebrow="Service 04",
+                        lead_text="Most construction businesses are running on WhatsApp groups, scattered spreadsheets, and memory. Every hour your team spends chasing follow-ups or copying data is an hour not on the tools.",
+                        description="We build custom automation systems — CRM pipelines, quote workflows, lead scoring, and client portals — that plug into the tools you already use and eliminate the manual work that eats your margin. Built on open-source tech you own, not a SaaS subscription you're locked into.",
+                        features="Custom CRM built around your actual sales process\nWhatsApp & email automation via your existing number\nQuote, invoice & job-tracking workflows\nClient-facing portal — project status, documents, sign-off\nIntegrations: Xero, QuickBooks, Google Sheets, and more",
+                        price_range="R20 000 – R50 000",
+                        price_label="Typical project range",
+                        price_note="Scoped after a free discovery call",
+                        icon_svg='<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+                        panel_title="What gets automated",
+                        panel_type="auto",
+                        panel_content=json.dumps([
+                            {"title": "Lead follow-up", "desc": "New quote request → instant WhatsApp or email acknowledgement → CRM entry. No leads fall through."},
+                            {"title": "Quote & invoice workflows", "desc": "Generate, send and track quotes from one system — not scattered across WhatsApp and email threads."},
+                            {"title": "Project status updates", "desc": "Clients get automatic progress notifications — fewer 'just checking in' calls, more trust."},
+                            {"title": "Review requests", "desc": "Job completed → automated request for a Google review while the client is still happy."}
+                        ]),
+                        display_order=40
+                    )
+                ]
+                db.session.add_all(default_services)
+                db.session.commit()
+        except Exception as e:
+            print(f"Error migrating Service table: {e}")
+            db.session.rollback()
             
 # Blueprints
 app.register_blueprint(portfolio_bp)
 app.register_blueprint(booking_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(blog_bp)
+app.register_blueprint(faq_bp)
+app.register_blueprint(services_bp)
 print("DEBUG: Blog blueprint registered.")
 
 @app.context_processor
@@ -166,8 +362,9 @@ def inject_year():
 @app.route('/')
 def home():
     projects = Project.query.filter(Project.slug != None, Project.slug != '').order_by(Project.deployed_at.desc()).limit(3).all()
+    services = Service.query.filter_by(is_published=True).order_by(Service.display_order.asc()).all()
     # Also fetch recent blog posts for the home page if desired, but for now let's keep it simple
-    return render_template('index.html', projects=projects)
+    return render_template('index.html', projects=projects, services=services)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -203,13 +400,17 @@ def sitemap_xml():
     """Generate and serve the sitemap.xml file."""
     projects = Project.query.all()
     blog_posts = BlogPost.query.all()
+    faqs = FAQ.query.filter_by(is_published=True).all()
+    services = Service.query.filter_by(is_published=True).all()
     
     # You can add other static URLs here if needed
     static_urls = [
         url_for('home', _external=True),
         url_for('portfolio.projects', _external=True),
         url_for('blog.blog_list', _external=True),
-        url_for('booking.book', _external=True)
+        url_for('faq.faq_list', _external=True),
+        url_for('booking.book', _external=True),
+        url_for('services.services', _external=True)
     ]
     
     # Passing now=datetime.now() prevents the HTTP 500 crash
@@ -217,6 +418,8 @@ def sitemap_xml():
         'sitemap.xml', 
         projects=projects, 
         blog_posts=blog_posts,
+        faqs=faqs,
+        services=services,
         static_urls=static_urls,
         now=datetime.now()
     ), 200, {'Content-Type': 'application/xml'}

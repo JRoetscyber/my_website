@@ -182,75 +182,24 @@
       </h2>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 gap-cards g-4">
+    <div class="services-grid">
 
-      <div class="col" data-aos="fade-up" data-aos-delay="0">
-        <div class="service-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
-              <line x1="12" y1="22" x2="12" y2="15.5"/>
-              <polyline points="22 8.5 12 15.5 2 8.5"/>
+      {% for service in services %}
+      <!-- {{ service.title }} -->
+      <div class="service-card-v2" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+        <a href="{{ url_for('services.services') }}#{{ service.slug }}" class="service-card-v2-inner">
+          <div class="service-icon-v2" aria-hidden="true">
+            <!-- SWAP: replace this SVG with your custom animated icon component -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="svc-icon-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              {{ service.icon_svg | safe }}
             </svg>
           </div>
-          <h3>Web Architecture</h3>
-          <p>
-            Bespoke client portals, internal dashboards, and secure
-            multi-tenant web applications engineered from the ground up
-            for scale  not bolted onto a SaaS template.
-          </p>
-          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
-            See examples
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M2 6h8M6 2l4 4-4 4"/>
-            </svg>
-          </a>
-        </div>
+          <h3>{{ service.title }}</h3>
+          <p>{{ service.lead_text }}</p>
+          <span class="svc-learn-more">Learn More &rsaquo;</span>
+        </a>
       </div>
-
-      <div class="col" data-aos="fade-up" data-aos-delay="100">
-        <div class="service-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          </div>
-          <h3>Secure Hosting</h3>
-          <p>
-            Managed VPS deployment with automated SSL, isolated database
-            backups, and uptime monitoring. Your client data stays yours 
-            no shared infrastructure, no data-mining platforms.
-          </p>
-          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
-            Infrastructure details
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M2 6h8M6 2l4 4-4 4"/>
-            </svg>
-          </a>
-        </div>
-      </div>
-
-      <div class="col" data-aos="fade-up" data-aos-delay="200">
-        <div class="service-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-            </svg>
-          </div>
-          <h3>Business Automation</h3>
-          <p>
-            CRM integrations, automated lead scoring, WhatsApp &amp; email
-            follow-up pipelines, and ERP sync so your team closes deals
-            instead of copying data between systems.
-          </p>
-          <a href="{{ url_for('portfolio.projects') }}" class="card-link">
-            Automation demos
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M2 6h8M6 2l4 4-4 4"/>
-            </svg>
-          </a>
-        </div>
-      </div>
+      {% endfor %}
 
     </div>
   </div>
@@ -265,14 +214,17 @@
 
       <!-- Left -->
       <div class="col-lg-5" data-aos="fade-up">
-        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">The difference</span>
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Why it's different</span>
         <h2 class="display-section">
-          We don't sell plans.<br>
-          We deliver<br>
-          <span class="text-accent">working systems.</span>
+          Tired of paying for<br>
+          a website nobody<br>
+          <span class="text-accent">can find?</span>
         </h2>
         <p class="lead-text" style="margin-top:20px;">
-          Three things that set a real delivery apart from a wasted invoice.
+          Most small businesses have been let down by a developer who
+          delivered something that looked okay and did nothing. We build
+          sites that rank, convert, and run, then we stick around to
+          prove it.
         </p>
       </div>
 
@@ -286,8 +238,8 @@
             </svg>
           </div>
           <div class="proof-body">
-            <h4>Full source code ownership</h4>
-            <p>No vendor lock-in. You own every line of code on delivery deploy it wherever you like.</p>
+            <h4>Built to rank from day one</h4>
+            <p>Every site ships with on-page SEO, Google Business Profile setup, and a technical foundation that search engines can actually crawl, not an afterthought you pay extra for later.</p>
           </div>
         </div>
 
@@ -298,8 +250,8 @@
             </svg>
           </div>
           <div class="proof-body">
-            <h4>Built on proven open-source stack</h4>
-            <p>Python / Flask backend, PostgreSQL, standard cloud hosting. No proprietary black boxes.</p>
+            <h4>No disappearing act after launch</h4>
+            <p>The developer who builds your system is the same person you call when something needs fixing. No handoffs, no support tickets into a void, no surprise invoices to change a button colour.</p>
           </div>
         </div>
 
@@ -310,8 +262,8 @@
             </svg>
           </div>
           <div class="proof-body">
-            <h4>Single point of contact</h4>
-            <p>No account managers passing messages. Direct access to the engineer building your system.</p>
+            <h4>You own everything, always</h4>
+            <p>Your domain, your hosting, your code. If you ever walk away you take it all with you, no platform lock-in, no monthly ransom to keep your own site live.</p>
           </div>
         </div>
 

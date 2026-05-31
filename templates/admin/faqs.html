@@ -1,0 +1,185 @@
+{% extends "admin/admin.html" %}
+
+{% block admin_title %}FAQ - Admin{% endblock %}
+{% block admin_heading %}FAQ{% endblock %}
+
+{% block admin_content %}
+<div class="studio-board-head mb-4">
+  <div>
+    <h2 class="studio-board-title" style="color: white;">FAQ Management</h2>
+    <p class="studio-board-sub">Create, edit, publish, and remove slugged FAQ answers.</p>
+  </div>
+  <button class="deploy-btn add-faq-btn" data-bs-toggle="modal" data-bs-target="#faqModal" style="width: auto;">Add FAQ</button>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">Total FAQs</div>
+      <div class="stat-card-value">{{ faqs|length }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">Published</div>
+      <div class="stat-card-value">{{ faqs|selectattr('is_published')|list|length }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-card-label">FAQ Page</div>
+      <div class="stat-card-value" style="font-size: 1.1rem; margin-top: 16px;">
+        <a href="{{ url_for('faq.faq_list') }}" target="_blank">View Live</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="widget-card">
+  <div class="widget-body">
+    <div class="table-responsive">
+      <table class="pipeline-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Question</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for faq in faqs %}
+          <tr>
+            <td>{{ faq.display_order }}</td>
+            <td>{{ faq.question }}</td>
+            <td>/faq/{{ faq.slug }}</td>
+            <td>
+              {% if faq.is_published %}
+              <span class="status-badge status-new">Published</span>
+              {% else %}
+              <span class="status-badge status-lost">Draft</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                {% if faq.is_published %}
+                <a href="{{ url_for('faq.faq_detail', slug=faq.slug) }}" target="_blank" class="tbl-action-btn">View</a>
+                {% endif %}
+                <button class="tbl-action-btn edit-faq-btn"
+                        data-id="{{ faq.id }}"
+                        data-question="{{ faq.question|forceescape }}"
+                        data-slug="{{ faq.slug|forceescape }}"
+                        data-answer="{{ faq.answer|forceescape }}"
+                        data-display-order="{{ faq.display_order }}"
+                        data-is-published="{{ 'true' if faq.is_published else 'false' }}">
+                  Edit
+                </button>
+                <button class="tbl-action-btn btn-delete-faq text-danger" data-id="{{ faq.id }}">Delete</button>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">No FAQs yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block admin_modals %}
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="faqModalLabel">Add FAQ</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="faqForm" method="POST" action="{{ url_for('admin.add_faq') }}">
+        <div class="modal-body">
+          <div class="mb-4">
+            <label class="admin-form-label" for="faqQuestion">Question</label>
+            <input class="admin-form-input" id="faqQuestion" name="question" type="text" required placeholder="What do clients usually ask?">
+          </div>
+          <div class="row g-4">
+            <div class="col-md-8">
+              <label class="admin-form-label" for="faqSlug">Slug</label>
+              <input class="admin-form-input" id="faqSlug" name="slug" type="text" placeholder="leave blank to generate from question">
+            </div>
+            <div class="col-md-4">
+              <label class="admin-form-label" for="faqDisplayOrder">Order</label>
+              <input class="admin-form-input" id="faqDisplayOrder" name="display_order" type="number" value="0">
+            </div>
+          </div>
+          <div class="mt-4">
+            <label class="admin-form-label" for="faqAnswer">Answer (Markdown supported)</label>
+            <textarea class="admin-form-input" id="faqAnswer" name="answer" rows="8" required placeholder="Write the answer clearly..."></textarea>
+          </div>
+          <label class="mt-4 d-flex align-items-center gap-2 topbar-date" style="font-size: 0.85rem;">
+            <input type="checkbox" id="faqPublished" name="is_published" checked>
+            Published
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="tbl-action-btn" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="deploy-btn" style="width: auto;">Save FAQ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const faqModal = new bootstrap.Modal(document.getElementById('faqModal'));
+  const faqForm = document.getElementById('faqForm');
+  const faqModalLabel = document.getElementById('faqModalLabel');
+
+  document.querySelectorAll('.add-faq-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      faqModalLabel.textContent = 'Add FAQ';
+      faqForm.action = "{{ url_for('admin.add_faq') }}";
+      faqForm.reset();
+      document.getElementById('faqDisplayOrder').value = 0;
+      document.getElementById('faqPublished').checked = true;
+    });
+  });
+
+  document.querySelectorAll('.edit-faq-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      faqModalLabel.textContent = 'Edit FAQ';
+      faqForm.action = `/admin/update_faq/${this.dataset.id}`;
+      document.getElementById('faqQuestion').value = this.dataset.question || '';
+      document.getElementById('faqSlug').value = this.dataset.slug || '';
+      document.getElementById('faqAnswer').value = this.dataset.answer || '';
+      document.getElementById('faqDisplayOrder').value = this.dataset.displayOrder || 0;
+      document.getElementById('faqPublished').checked = this.dataset.isPublished === 'true';
+      faqModal.show();
+    });
+  });
+
+  document.querySelectorAll('.btn-delete-faq').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (!confirm('Permanently delete this FAQ?')) return;
+
+      const response = await fetch(`/admin/delete_faq/${this.dataset.id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

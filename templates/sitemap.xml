@@ -30,4 +30,26 @@
     </url>
     {% endif %}
     {% endfor %}
+
+    {% for service in services %}
+    {% if service.slug %}
+    <url>
+        <loc>{{ url_for('services.service_detail', slug=service.slug, _external=True) }}</loc>
+        <lastmod>{{ service.updated_at.strftime('%Y-%m-%d') if service.updated_at else now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    {% endif %}
+    {% endfor %}
+
+    {% for faq in faqs %}
+    {% if faq.slug %}
+    <url>
+        <loc>{{ url_for('faq.faq_detail', slug=faq.slug, _external=True) }}</loc>
+        <lastmod>{{ faq.updated_at.strftime('%Y-%m-%d') if faq.updated_at else now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    {% endif %}
+    {% endfor %}
 </urlset>

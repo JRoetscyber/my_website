@@ -29,16 +29,97 @@
     sense for your operation.
   </p>
 
-  <!-- ================================================================
-       CALENDLY EMBED WRAPPER
-       Replace the placeholder content inside with your Calendly snippet:
+  <div class="booking-card" data-aos="fade-up" data-aos-delay="180">
+    <form id="bookingForm" class="booking-form">
+      <div class="booking-grid">
+        <div class="booking-panel">
+          <div class="booking-panel-kicker">Pick a time</div>
+          <h2>Choose a day, then a slot.</h2>
+          <p>
+            Availability checks your calendar, then blocks out the meeting plus buffer time.
+          </p>
 
-  ================================================================ -->
-  <div class="calendly-embed-wrapper" data-aos="fade-up" data-aos-delay="180" id="calendlyWrapper">
+          <div class="booking-calendar">
+            <div class="booking-calendar-head">
+              <button type="button" class="booking-calendar-nav" id="bookingPrevMonth" aria-label="Previous month">‹</button>
+              <div class="booking-calendar-title" id="bookingCalendarTitle"></div>
+              <button type="button" class="booking-calendar-nav" id="bookingNextMonth" aria-label="Next month">›</button>
+            </div>
+            <div class="booking-calendar-weekdays" aria-hidden="true">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div class="booking-calendar-days" id="bookingCalendarDays"></div>
+          </div>
 
-    <div class="calendly-inline-widget" data-url="https://calendly.com/jroetscyber/30min" data-resize="true"></div>
-    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+          <input id="scheduledAt" name="scheduled_at" type="hidden" required>
+          <div class="booking-availability">
+            <div class="booking-label" id="bookingAvailabilityLabel">Available times</div>
+            <div class="booking-slots" id="bookingSlots" aria-label="Available booking slots"></div>
+            <div class="booking-calendar-note" id="bookingCalendarNote"></div>
+          </div>
+        </div>
 
+        <div class="booking-panel booking-panel-form">
+          <div class="booking-row">
+            <div>
+              <label class="booking-label" for="bookingName">Name</label>
+              <input class="booking-input" id="bookingName" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div>
+              <label class="booking-label" for="bookingEmail">Email</label>
+              <input class="booking-input" id="bookingEmail" name="email" type="email" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="booking-row">
+            <div>
+              <label class="booking-label" for="bookingCompany">Company</label>
+              <input class="booking-input" id="bookingCompany" name="company" type="text" autocomplete="organization">
+            </div>
+            <div>
+              <label class="booking-label" for="bookingPhone">Phone</label>
+              <input class="booking-input" id="bookingPhone" name="phone" type="tel" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="booking-row">
+            <div>
+              <label class="booking-label" for="bookingProjectType">Project type</label>
+              <select class="booking-input" id="bookingProjectType" name="project_type">
+                <option value="portal">Client portal</option>
+                <option value="crm">CRM / lead system</option>
+                <option value="automation">Automation</option>
+                <option value="erp">ERP / operations system</option>
+                <option value="static">Website</option>
+              </select>
+            </div>
+            <div>
+              <label class="booking-label" for="bookingBudget">Budget range</label>
+              <select class="booking-input" id="bookingBudget" name="budget">
+                <option value="2000">R2k - R5k</option>
+                <option value="10000">R5k - R10k</option>
+                <option value="15000">R15k - R30k</option>
+                <option value="50000">R30k - R75k</option>
+                <option value="100000">R75k - R150k</option>
+                <option value="250000">R150k+</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="booking-label" for="bookingNotes">What should we discuss?</label>
+          <textarea class="booking-input booking-textarea" id="bookingNotes" name="notes" rows="4" placeholder="Current tools, bottlenecks, deadline, or anything useful."></textarea>
+
+          <button class="btn-primary-custom booking-submit" type="submit" id="bookingSubmit">
+            Request the Call
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4"/>
+            </svg>
+          </button>
+
+          <div class="booking-result" id="bookingResult" aria-live="polite"></div>
+        </div>
+      </div>
+    </form>
   </div>
 
   <!-- Trust signals below the widget -->
@@ -76,4 +157,174 @@
 
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var form = document.getElementById('bookingForm');
+  var scheduledAt = document.getElementById('scheduledAt');
+  var slots = document.getElementById('bookingSlots');
+  var result = document.getElementById('bookingResult');
+  var submit = document.getElementById('bookingSubmit');
+  var calendarDays = document.getElementById('bookingCalendarDays');
+  var calendarTitle = document.getElementById('bookingCalendarTitle');
+  var prevMonth = document.getElementById('bookingPrevMonth');
+  var nextMonth = document.getElementById('bookingNextMonth');
+  var availabilityLabel = document.getElementById('bookingAvailabilityLabel');
+  var calendarNote = document.getElementById('bookingCalendarNote');
+
+  if (!form || !scheduledAt || !slots || !result || !submit || !calendarDays || !calendarTitle) return;
+
+  var visibleMonth = new Date();
+  visibleMonth.setDate(1);
+  var selectedDate = null;
+  var horizonDays = 21;
+
+  function pad(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function toDateString(date) {
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+  }
+
+  function sameDay(a, b) {
+    return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function renderCalendar() {
+    calendarDays.innerHTML = '';
+    slots.innerHTML = '';
+    scheduledAt.value = '';
+    calendarTitle.textContent = visibleMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var lastDate = new Date(today);
+    lastDate.setDate(lastDate.getDate() + horizonDays);
+    var firstDay = new Date(visibleMonth);
+    var offset = (firstDay.getDay() + 6) % 7;
+    var daysInMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate();
+
+    for (var blank = 0; blank < offset; blank += 1) {
+      calendarDays.appendChild(document.createElement('span'));
+    }
+
+    for (var day = 1; day <= daysInMonth; day += 1) {
+      var date = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day);
+      var dayOfWeek = date.getDay();
+      var disabled = date < today || date > lastDate || dayOfWeek === 0 || dayOfWeek === 6;
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'booking-day';
+      button.textContent = day;
+      button.disabled = disabled;
+      if (sameDay(date, selectedDate)) button.classList.add('active');
+      button.addEventListener('click', function () {
+        selectedDate = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), Number(this.textContent));
+        renderCalendar();
+        loadAvailability(toDateString(selectedDate));
+      });
+      calendarDays.appendChild(button);
+    }
+  }
+
+  async function loadAvailability(dateValue) {
+    slots.innerHTML = '<div class="booking-calendar-note">Checking availability...</div>';
+    calendarNote.textContent = '';
+    scheduledAt.value = '';
+    availabilityLabel.textContent = 'Available times for ' + selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+
+    try {
+      var response = await fetch('{{ url_for("booking.booking_availability") }}?date=' + encodeURIComponent(dateValue));
+      var data = await response.json();
+      if (!response.ok || data.status !== 'success') throw new Error(data.message || 'Could not load availability.');
+
+      horizonDays = data.settings.horizon_days || horizonDays;
+      slots.innerHTML = '';
+
+      if (!data.calendar_connected && data.calendar_error) {
+        calendarNote.textContent = 'Calendar sync is pending; showing standard availability.';
+      }
+
+      if (!data.slots.length) {
+        slots.innerHTML = '<div class="booking-calendar-note">No open slots on this day.</div>';
+        return;
+      }
+
+      data.slots.forEach(function (slot) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'booking-slot';
+        button.textContent = slot.label;
+        button.dataset.value = slot.value;
+        button.addEventListener('click', function () {
+          scheduledAt.value = this.dataset.value;
+          slots.querySelectorAll('.booking-slot').forEach(function (item) {
+            item.classList.toggle('active', item === button);
+          });
+        });
+        slots.appendChild(button);
+      });
+    } catch (error) {
+      slots.innerHTML = '';
+      calendarNote.textContent = error.message;
+    }
+  }
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    result.className = 'booking-result';
+    result.textContent = '';
+    submit.disabled = true;
+    submit.textContent = 'Saving...';
+
+    var payload = Object.fromEntries(new FormData(form).entries());
+
+    try {
+      var response = await fetch('{{ url_for("booking.book_call") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var data = await response.json();
+
+      if (!response.ok || data.status !== 'success') {
+        throw new Error(data.message || 'Booking failed.');
+      }
+
+      result.classList.add('success');
+      result.innerHTML = '<strong>Your session has been successfully booked! We will be in touch shortly.</strong>';
+      form.reset();
+      if (selectedDate) loadAvailability(toDateString(selectedDate));
+    } catch (error) {
+      result.classList.add('error');
+      result.textContent = error.message;
+    } finally {
+      submit.disabled = false;
+      submit.innerHTML = 'Request the Call <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+    }
+  });
+
+  prevMonth.addEventListener('click', function () {
+    visibleMonth.setMonth(visibleMonth.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextMonth.addEventListener('click', function () {
+    visibleMonth.setMonth(visibleMonth.getMonth() + 1);
+    renderCalendar();
+  });
+
+  selectedDate = new Date();
+  selectedDate.setDate(selectedDate.getDate() + 1);
+  while (selectedDate.getDay() === 0 || selectedDate.getDay() === 6) {
+    selectedDate.setDate(selectedDate.getDate() + 1);
+  }
+  visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  renderCalendar();
+  loadAvailability(toDateString(selectedDate));
+}());
+</script>
 {% endblock %}

@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Web Design, SEO & Business Automation Services — JO4 Dev South Africa{% endblock %}
+
+{% block meta_description %}
+<meta name="description" content="JO4 Dev builds websites, local SEO, Google Business Profiles and business automation for construction companies, contractors and small businesses across South Africa. Get found. Get leads. Get results.">
+<meta name="keywords" content="web design South Africa, SEO South Africa, Google Business Profile setup, business automation, website for construction company, contractor website, web developer Johannesburg">
+<meta property="og:title" content="Web Design, SEO & Business Automation — JO4 Dev South Africa">
+<meta property="og:description" content="Custom websites, local SEO and automation systems built for South African contractors and businesses ready to scale.">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block content %}
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SGCPB3FTF8');
+</script>
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="svc-page-hero" aria-label="Services hero">
+  <div class="svc-page-hero-inner">
+    <div data-aos="fade-up">
+      <span class="eyebrow" style="margin-bottom:24px; display:inline-flex;">What We Build</span>
+      <h1 class="display-hero" style="max-width:780px;">
+        Web Systems Built for<br>
+        South African Businesses<br>
+        <span class="accent-line">That Want More Leads.</span>
+      </h1>
+      <p class="lead-text" style="margin-top:24px; max-width:600px;">
+        From construction companies in Cape Town to contractors in Johannesburg —
+        we build the websites, SEO foundations, and automation systems that turn
+        your online presence into a pipeline.
+      </p>
+      <div style="margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom">
+          Book a Free Call
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#services-nav" class="btn-ghost-custom">Browse Services <span class="arrow">↓</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SERVICES NAV STRIP
+============================================================ -->
+<nav class="svc-nav-strip" id="services-nav" aria-label="Jump to service">
+  <div class="svc-nav-inner">
+    {% for service in services %}
+    <a href="#{{ service.slug }}" class="svc-nav-pill">{{ service.title }}</a>
+    {% endfor %}
+  </div>
+</nav>
+
+{% for service in services %}
+<!-- ============================================================
+     SERVICE {{ loop.index }} — {{ service.title }}
+============================================================ -->
+<article class="svc-detail {{ 'svc-detail--alt' if loop.index is even }}" id="{{ service.slug }}" aria-labelledby="svc-{{ service.slug }}-heading">
+  <div class="section">
+
+    <div class="svc-detail-grid {{ 'svc-detail-grid--reversed' if loop.index is even }}">
+
+      <!-- Copy -->
+      <div class="svc-detail-copy" data-aos="fade-up">
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">{{ service.eyebrow or 'Service ' ~ loop.index }}</span>
+        <h2 class="display-section" id="svc-{{ service.slug }}-heading">
+          {{ service.title | replace('&', '&amp;') | safe | replace('  ', '<br>') | safe }}
+        </h2>
+        <p class="lead-text" style="margin-top:20px;">
+          {{ service.lead_text }}
+        </p>
+        <p style="color:var(--text-secondary); font-size:0.92rem; line-height:1.78; margin-top:16px; max-width:520px;">
+          {{ service.description }}
+        </p>
+
+        <div class="svc-feature-list">
+          {% for feature in (service.features or '').split('\n') %}
+          {% if feature.strip() %}
+          <div class="svc-feature-item">
+            <span class="svc-feature-check" aria-hidden="true">✓</span>
+            {{ feature.strip() }}
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="svc-price-hint">
+          <span class="svc-price-label">{{ service.price_label or 'Typical project range' }}</span>
+          <span class="svc-price-value">{{ service.price_range }}</span>
+          <span class="svc-price-note">{{ service.price_note }}</span>
+        </div>
+
+        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="margin-top:36px;">
+          Discuss Your Project
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+
+      <!-- Dark card / use-case panel -->
+      <div class="svc-detail-panel" data-aos="fade-up" data-aos-delay="120">
+        <div class="svc-panel-card">
+          <div class="svc-panel-label">{{ service.panel_title }}</div>
+          
+          {% set panel_items = (service.panel_content | from_json) if service.panel_content else [] %}
+          
+          {% if service.panel_type == 'use-case' %}
+          <div class="svc-panel-usecase">
+            {% for item in panel_items %}
+            <div class="svc-usecase-item">
+              <div class="svc-usecase-icon" aria-hidden="true">
+                {% if item.icon == 'monitor' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                {% elif item.icon == 'home' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                {% elif item.icon == 'shopping-cart' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                {% endif %}
+              </div>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'audit' %}
+          <div class="svc-audit-list">
+            {% for item in panel_items %}
+            <div class="svc-audit-row">
+              <span class="svc-audit-num">{{ item.num }}</span>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'stats' %}
+          <div class="svc-stat-stack">
+            {% for item in panel_items %}
+            <div class="svc-stat-block">
+              <div class="svc-stat-number">{{ item.num }}<span>{{ item.suffix }}</span></div>
+              <div class="svc-stat-desc">{{ item.desc }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          {% elif service.panel_type == 'auto' %}
+          <div class="svc-auto-list">
+            {% for item in panel_items %}
+            <div class="svc-auto-item">
+              <div class="svc-auto-dot" aria-hidden="true"></div>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.desc }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</article>
+
+{% if not loop.last %}
+<div class="svc-section-divider" aria-hidden="true"></div>
+{% endif %}
+{% endfor %}
+
+<!-- ============================================================
+     FAQ — SEO RICH CONTENT
+============================================================ -->
+<section class="svc-faq-section" aria-labelledby="faq-heading">
+  <div class="section">
+
+    <div class="section-header" data-aos="fade-up" style="text-align:center;">
+      <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Common Questions</span>
+      <h2 class="display-section" id="faq-heading">
+        Straight answers.
+      </h2>
+    </div>
+
+    <div class="svc-faq-grid" data-aos="fade-up" data-aos-delay="80">
+
+      <div class="svc-faq-item">
+        <h3>How long does a website project take?</h3>
+        <p>Most projects are delivered in 3–6 weeks depending on scope and how quickly you provide content. You'll get a clear timeline in writing before any work starts.</p>
+      </div>
+
+      <div class="svc-faq-item">
+        <h3>Do I need SEO if I already have a website?</h3>
+        <p>Almost certainly yes. Most existing sites have technical issues that actively hurt their rankings — broken structure, missing meta data, slow load times. An audit tells you exactly where you stand.</p>
+      </div>
+
+      <div class="svc-faq-item">
+        <h3>How long before SEO shows results?</h3>
+        <p>Honest answer: 3–6 months to see meaningful ranking movement for competitive local terms. GBP optimisation often shows results faster — sometimes within weeks.</p>
+      </div>
+
+      <div class="svc-faq-item">
+        <h3>What if I already have a developer?</h3>
+        <p>We can work alongside them, take over from them, or just audit what they've built. We don't lock you in — you'll always own your code and your accounts.</p>
+      </div>
+
+      <div class="svc-faq-item">
+        <h3>Do you work outside Johannesburg?</h3>
+        <p>Yes — we work with clients across South Africa. Everything is handled remotely with clear communication, documented deliverables, and video calls when needed.</p>
+      </div>
+
+      <div class="svc-faq-item">
+        <h3>Can you handle all four services together?</h3>
+        <p>Yes, and that's often the most effective approach. A new website, properly optimised GBP, on-page SEO, and automated lead follow-up working together is a complete growth system.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BAND
+============================================================ -->
+<section class="cta-band" aria-label="Call to action">
+  <div class="section" style="text-align:center; padding-top:clamp(80px,10vw,130px); padding-bottom:clamp(80px,10vw,130px);">
+    <span class="eyebrow" style="justify-content:center; margin-bottom:24px;" data-aos="fade-up">Ready to start</span>
+    <h2 class="display-section" style="max-width:680px; margin:0 auto 22px;" data-aos="fade-up" data-aos-delay="60">
+      Stop losing work to contractors<br>with better websites.
+    </h2>
+    <p class="lead-text" style="margin:0 auto 44px; text-align:center;" data-aos="fade-up" data-aos-delay="120">
+      Book a free 30-minute discovery call. No pitch deck, no hard sell —
+      just a direct conversation about what your business needs to rank and convert.
+    </p>
+    <div data-aos="fade-up" data-aos-delay="180">
+      <a href="{{ url_for('booking.book') }}" class="btn-light-custom">
+        Book Your Free Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- JSON-LD structured data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "JO4 Dev",
+  "description": "Web design, local SEO, Google Business Profile optimisation and business automation for South African contractors and small businesses.",
+  "url": "https://jo4.dev",
+  "areaServed": {
+    "@type": "Country",
+    "name": "South Africa"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Web & Digital Services",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Web Design & Development",
+          "description": "Custom websites for South African construction companies, contractors and small businesses."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Local SEO & Technical Audits",
+          "description": "On-page SEO, technical audits and local search optimisation across South Africa."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Google Business Profile Optimisation",
+          "description": "GBP setup, category optimisation and review strategy for South African businesses."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Business Automation & Software Development",
+          "description": "CRM pipelines, quote workflows and client portals for contractors and small businesses."
+        }
+      }
+    ]
+  }
+}
+</script>
+
+{% endblock %}
