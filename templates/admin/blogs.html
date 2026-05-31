@@ -86,10 +86,10 @@
           </div>
           
           <div class="d-flex gap-2">
-            <a href="{{ url_for('blog.blog_detail', slug=post.slug) }}" target="_blank" class="tbl-action-btn">
+            <a href="{{ url_for('blog.blog_detail', slug=post.slug) }}" target="_blank" class="btn-admin-outline btn-admin-sm">
               View
             </a>
-            <button class="tbl-action-btn edit-blog-btn" 
+            <button class="btn-admin-outline btn-admin-sm edit-blog-btn" 
                     data-id="{{ post.id }}"
                     data-title="{{ post.title|forceescape }}"
                     data-summary="{{ post.summary|forceescape }}"
@@ -97,7 +97,7 @@
                     data-media-path="{{ post.media_path or '' }}">
               Edit
             </button>
-            <button class="tbl-action-btn btn-delete-blog text-danger" data-id="{{ post.id }}">
+            <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-blog" data-id="{{ post.id }}">
               Delete
             </button>
           </div>

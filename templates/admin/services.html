@@ -2,21 +2,22 @@
 
 {% block admin_content %}
 <div class="admin-header">
-    <h1>Service Management</h1>
+    <h1 style="color: white;">Service Management</h1>
     <p>Create, update, and manage your services.</p>
-    <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+    <button class="btn-admin-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
         Add New Service
     </button>
 </div>
 
 <div class="admin-table-wrap mt-4">
-    <table class="admin-table">
+    <table class="pipeline-table">
         <thead>
             <tr>
                 <th>Order</th>
                 <th>Title</th>
                 <th>Slug</th>
                 <th>Status</th>
+                <th>Last Updated</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -28,14 +29,19 @@
                 <td><code>/services/{{ service.slug }}</code></td>
                 <td>
                     {% if service.is_published %}
-                    <span class="badge bg-success">Published</span>
+                    <span class="status-badge status-new">Published</span>
                     {% else %}
-                    <span class="badge bg-secondary">Draft</span>
+                    <span class="status-badge status-lost">Draft</span>
                     {% endif %}
                 </td>
                 <td>
-                    <button class="btn-sm-custom btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ service.id }}">Edit</button>
-                    <button class="btn-sm-custom btn-outline-danger" onclick="deleteService({{ service.id }})">Delete</button>
+                    <span class="topbar-date" style="font-size: 0.75rem;">
+                        {{ service.updated_at.strftime('%Y-%m-%d %H:%M') if service.updated_at else 'N/A' }}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-admin-outline btn-admin-sm" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ service.id }}">Edit</button>
+                    <button class="btn-admin-outline btn-admin-sm btn-admin-danger" onclick="deleteService({{ service.id }})">Delete</button>
                 </td>
             </tr>
 

@@ -7,9 +7,13 @@
 <style>
   /* ── 5-col client board ───────────────────────────────────────────── */
   #clientBoard { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  @media (max-width: 1599px) { #clientBoard { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 991px)  { #clientBoard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px)  { #clientBoard { grid-template-columns: 1fr; } }
 
   /* ── Stage badge colours (extend .lead-temp-badge base) ────────────── */
   .stage-discovery { background: rgba(59,130,246,0.15);  color: #60a5fa; border-color: rgba(59,130,246,0.3); }
+  .stage-seo       { background: rgba(0,229,204,0.15);   color: var(--accent); border-color: rgba(0,229,204,0.3); }
   .stage-building  { background: rgba(245,158,11,0.15);  color: #fbbf24; border-color: rgba(245,158,11,0.3); }
   .stage-review    { background: rgba(139,92,246,0.15);  color: #a78bfa; border-color: rgba(139,92,246,0.3); }
   .stage-live      { background: rgba(16,185,129,0.15);  color: #34d399; border-color: rgba(16,185,129,0.3); }
@@ -90,10 +94,21 @@
 
   /* ── Column accent top-border per stage ──────────────────────────── */
   #clientBoard .kanban-column:nth-child(1) .kanban-column-head { border-top-color: #3b82f6; }
-  #clientBoard .kanban-column:nth-child(2) .kanban-column-head { border-top-color: #f59e0b; }
-  #clientBoard .kanban-column:nth-child(3) .kanban-column-head { border-top-color: #8b5cf6; }
-  #clientBoard .kanban-column:nth-child(4) .kanban-column-head { border-top-color: #10b981; }
-  #clientBoard .kanban-column:nth-child(5) .kanban-column-head { border-top-color: #00e5cc; }
+  #clientBoard .kanban-column:nth-child(2) .kanban-column-head { border-top-color: var(--accent); }
+  #clientBoard .kanban-column:nth-child(3) .kanban-column-head { border-top-color: #f59e0b; }
+  #clientBoard .kanban-column:nth-child(4) .kanban-column-head { border-top-color: #8b5cf6; }
+  #clientBoard .kanban-column:nth-child(5) .kanban-column-head { border-top-color: #10b981; }
+  #clientBoard .kanban-column:nth-child(6) .kanban-column-head { border-top-color: #00e5cc; }
+
+  /* ── SEO Board specific ─────────────────────────────────────────── */
+  #seoBoard { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 991px)  { #seoBoard { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 575px)  { #seoBoard { grid-template-columns: 1fr; } }
+  
+  #seoBoard .kanban-column:nth-child(1) .kanban-column-head { border-top-color: #a78bfa; }
+  #seoBoard .kanban-column:nth-child(2) .kanban-column-head { border-top-color: #3b82f6; }
+  #seoBoard .kanban-column:nth-child(3) .kanban-column-head { border-top-color: var(--accent); }
+  #seoBoard .kanban-column:nth-child(4) .kanban-column-head { border-top-color: #10b981; }
 
   /* ── Section divider ──────────────────────────────────────────────── */
   .studio-divider {
@@ -115,14 +130,37 @@
       <div class="studio-board-title">Active Client Board</div>
       <div class="studio-board-sub">Drag cards between stages · Auto-saved in browser</div>
     </div>
-    <button class="add-client-btn" id="openAddClientBtn" type="button">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-           stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+    <button class="btn-admin-primary" id="openAddClientBtn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
       Add Client
     </button>
   </div>
 
   <div class="kanban-board" id="clientBoard">
+    <!-- Columns rendered by JS -->
+  </div>
+</section>
+
+<hr class="studio-divider">
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SEO PROCESS BOARD
+════════════════════════════════════════════════════════════════════ -->
+<section class="mb-5">
+  <div class="studio-board-head">
+    <div>
+      <div class="studio-board-title">SEO Campaign Board</div>
+      <div class="studio-board-sub">Technical audits · Keyword tracking · Backlink pipelines</div>
+    </div>
+    <button class="add-client-btn" id="openAddSeoBtn" type="button" style="background: var(--status-purple); color: #fff;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Add SEO Client
+    </button>
+  </div>
+
+  <div class="kanban-board" id="seoBoard">
     <!-- Columns rendered by JS -->
   </div>
 </section>
@@ -255,7 +293,7 @@
                   <td><span class="text-muted small font-monospace">{{ project.deployed_at.strftime('%Y-%m-%d') if project.deployed_at else '-' }}</span></td>
                   <td>
                     <div class="d-flex gap-2">
-                      <button class="tbl-action-btn btn-edit-project" type="button"
+                      <button class="btn-admin-outline btn-admin-sm btn-edit-project" type="button"
                         data-id="{{ project.id }}"
                         data-title="{{ project.title | e }}"
                         data-tag="{{ project.category | default('') | e }}"
@@ -265,7 +303,7 @@
                         data-tech="{{ project.tech_stack | default('') | e }}"
                         data-performance="{{ project.performance | default('') }}"
                         data-seo="{{ project.seo | default('') }}">Edit</button>
-                      <button class="tbl-action-btn btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
+                      <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -362,33 +400,58 @@
 (function () {
   'use strict';
 
-  /* ── Constants ────────────────────────────────────────────────────── */
-  var STORE_KEY = 'jo4_client_board_v1';
-  var STAGES    = ['Discovery', 'Building', 'Review', 'Live', 'Invoiced'];
-  var STAGE_CLS = {
+  /* ── Configuration ────────────────────────────────────────────────── */
+  const BOARDS = {
+    client: {
+      id: 'clientBoard',
+      key: 'jo4_client_board_v1',
+      stages: ['Discovery', 'Building', 'Review', 'Live', 'Invoiced'],
+      addBtn: 'openAddClientBtn',
+      title: 'Add Client'
+    },
+    seo: {
+      id: 'seoBoard',
+      key: 'jo4_seo_board_v1',
+      stages: ['Audit', 'Keywords', 'Content', 'Backlinks'],
+      addBtn: 'openAddSeoBtn',
+      title: 'Add SEO Project'
+    }
+  };
+
+  const STAGE_CLS = {
     Discovery: 'stage-discovery',
+    SEO:       'stage-seo',
     Building:  'stage-building',
     Review:    'stage-review',
     Live:      'stage-live',
-    Invoiced:  'stage-invoiced'
+    Invoiced:  'stage-invoiced',
+    Audit:     'stage-discovery',
+    Keywords:  'stage-seo',
+    Content:   'stage-building',
+    Backlinks: 'stage-review'
   };
-  var PAY_CLS = {
+
+  const PAY_CLS = {
     Awaiting: 'pay-awaiting',
     Partial:  'pay-partial',
     Paid:     'pay-paid'
   };
 
-  var clients = [];
-  var dragId  = null;
+  let boardData = { client: [], seo: [] };
+  let dragId = null;
+  let dragBoard = null;
+  let activeBoardType = 'client';
 
   /* ── Storage ──────────────────────────────────────────────────────── */
-  function load() {
-    try { clients = JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
-    catch (e) { clients = []; }
+  function loadAll() {
+    Object.keys(BOARDS).forEach(type => {
+      try { boardData[type] = JSON.parse(localStorage.getItem(BOARDS[type].key)) || []; }
+      catch (e) { boardData[type] = []; }
+    });
   }
 
-  function save() {
-    localStorage.setItem(STORE_KEY, JSON.stringify(clients));
+  function save(type) {
+    localStorage.setItem(BOARDS[type].key, JSON.stringify(boardData[type]));
   }
 
   function uid() {
@@ -397,281 +460,222 @@
 
   /* ── Toast ────────────────────────────────────────────────────────── */
   function showToast(msg, type) {
-    var tc  = document.getElementById('studioToastContainer');
-    var cls = type === 'success' ? 'text-bg-success'
-            : type === 'danger'  ? 'text-bg-danger'
-            :                      'text-bg-warning';
-    var el  = document.createElement('div');
+    const tc = document.getElementById('studioToastContainer');
+    const cls = type === 'success' ? 'text-bg-success' : type === 'danger' ? 'text-bg-danger' : 'text-bg-warning';
+    const el = document.createElement('div');
     el.className = 'toast align-items-center border-0 ' + cls;
     el.setAttribute('role', 'alert');
-    el.innerHTML =
-      '<div class="d-flex">' +
-        '<div class="toast-body fw-semibold">' + msg + '</div>' +
-        '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
-      '</div>';
+    el.innerHTML = `<div class="d-flex"><div class="toast-body fw-semibold">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
     tc.appendChild(el);
     bootstrap.Toast.getOrCreateInstance(el, { delay: 2800 }).show();
-    el.addEventListener('hidden.bs.toast', function () { el.remove(); });
+    el.addEventListener('hidden.bs.toast', () => el.remove());
   }
 
-  /* ── Escape HTML ──────────────────────────────────────────────────── */
   function esc(s) {
-    return String(s || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  /* ── Build card HTML ──────────────────────────────────────────────── */
-  function buildCard(c) {
-    var stageCls = STAGE_CLS[c.stage]   || 'stage-discovery';
-    var payCls   = PAY_CLS[c.payment]   || 'pay-awaiting';
+  /* ── Card & Board Rendering ───────────────────────────────────────── */
+  function buildCard(c, type) {
+    const stageCls = STAGE_CLS[c.stage] || 'stage-discovery';
+    const payCls = PAY_CLS[c.payment] || 'pay-awaiting';
 
-    var metricsHtml =
-      '<div class="lead-card-metrics">' +
-        '<span class="client-budget">' + (c.budget ? esc(c.budget) : '—') + '</span>' +
-        (c.startDate ? '<span class="client-start">' + esc(c.startDate) + '</span>' : '') +
-      '</div>';
+    const metricsHtml = `<div class="lead-card-metrics"><span class="client-budget">${c.budget ? esc(c.budget) : '—'}</span>${c.startDate ? `<span class="client-start">${esc(c.startDate)}</span>` : ''}</div>`;
+    const notesHtml = c.notes ? `<p class="client-notes">${esc(c.notes)}</p>` : '';
+    const waBtn = c.phone ? `<button type="button" class="btn-admin-outline btn-admin-sm js-wa-client" data-id="${c.id}" data-board="${type}">WhatsApp</button>` : '';
 
-    var notesHtml = c.notes
-      ? '<p class="client-notes">' + esc(c.notes) + '</p>'
-      : '';
-
-    var waBtn = c.phone
-      ? '<button type="button" class="tbl-action-btn js-wa-client" data-id="' + c.id + '">WhatsApp</button>'
-      : '';
-
-    return (
-      '<article class="lead-kanban-card" draggable="true" data-id="' + c.id + '" data-stage="' + esc(c.stage) + '">' +
-        '<div class="lead-card-topline">' +
-          '<span class="lead-temp-badge ' + stageCls + '">' + esc(c.stage) + '</span>' +
-          '<span class="pay-badge ' + payCls + '">' + esc(c.payment) + '</span>' +
-        '</div>' +
-        '<div class="lead-card-main">' +
-          '<p class="lead-card-company">' + esc(c.name) + '</p>' +
-          '<p class="lead-card-project">' + esc(c.project) + '</p>' +
-        '</div>' +
-        metricsHtml +
-        notesHtml +
-        '<div class="lead-card-actions">' +
-          '<button type="button" class="tbl-action-btn js-edit-client" data-id="' + c.id + '">Edit</button>' +
-          waBtn +
-          '<button type="button" class="tbl-action-btn btn-delete-lead js-del-client" data-id="' + c.id + '">Delete</button>' +
-        '</div>' +
-      '</article>'
-    );
+    return `
+      <article class="lead-kanban-card" draggable="true" data-id="${c.id}" data-board="${type}" data-stage="${esc(c.stage)}">
+        <div class="lead-card-topline">
+          <span class="lead-temp-badge ${stageCls}">${esc(c.stage)}</span>
+          <span class="pay-badge ${payCls}">${esc(c.payment)}</span>
+        </div>
+        <div class="lead-card-main">
+          <p class="lead-card-company">${esc(c.name)}</p>
+          <p class="lead-card-project">${esc(c.project)}</p>
+        </div>
+        ${metricsHtml}${notesHtml}
+        <div class="lead-card-actions">
+          <button type="button" class="btn-admin-outline btn-admin-sm js-edit-client" data-id="${c.id}" data-board="${type}">Edit</button>
+          ${waBtn}
+          <button type="button" class="btn-admin-outline btn-admin-sm btn-admin-danger js-del-client" data-id="${c.id}" data-board="${type}">Delete</button>
+        </div>
+      </article>`;
   }
 
-  /* ── Render board ─────────────────────────────────────────────────── */
-  function renderBoard() {
-    var board = document.getElementById('clientBoard');
+  function renderBoard(type) {
+    const board = document.getElementById(BOARDS[type].id);
     if (!board) return;
     board.innerHTML = '';
 
-    STAGES.forEach(function (stage) {
-      var stageClients = clients.filter(function (c) { return c.stage === stage; });
-
-      var col = document.createElement('div');
-      col.className  = 'kanban-column';
+    BOARDS[type].stages.forEach(stage => {
+      const stageItems = boardData[type].filter(c => c.stage === stage);
+      const col = document.createElement('div');
+      col.className = 'kanban-column';
       col.dataset.stage = stage;
+      col.dataset.board = type;
 
-      var cardsHtml = stageClients.map(buildCard).join('');
-      if (!cardsHtml) cardsHtml = '<div class="kanban-empty">No clients yet</div>';
+      let cardsHtml = stageItems.map(c => buildCard(c, type)).join('');
+      if (!cardsHtml) cardsHtml = '<div class="kanban-empty">Drop here</div>';
 
-      col.innerHTML =
-        '<div class="kanban-column-head">' +
-          '<div class="kanban-column-title">' + stage + '</div>' +
-          '<span class="kanban-column-count">' + stageClients.length + '</span>' +
-        '</div>' +
-        '<div class="kanban-cards" data-stage="' + stage + '">' +
-          cardsHtml +
-        '</div>';
-
+      col.innerHTML = `
+        <div class="kanban-column-head">
+          <div class="kanban-column-title">${stage}</div>
+          <span class="kanban-column-count">${stageItems.length}</span>
+        </div>
+        <div class="kanban-dropzone" data-stage="${stage}" data-board="${type}">
+          ${cardsHtml}
+        </div>`;
       board.appendChild(col);
     });
 
-    attachCardEvents();
-    attachDropZones();
+    attachEvents(type);
   }
 
-  /* ── Card events ──────────────────────────────────────────────────── */
-  function attachCardEvents() {
-    document.querySelectorAll('#clientBoard .lead-kanban-card').forEach(function (card) {
-      card.addEventListener('dragstart', function (e) {
+  /* ── Events ────────────────────────────────────────────────────────── */
+  function attachEvents(type) {
+    const board = document.getElementById(BOARDS[type].id);
+    
+    // Cards
+    board.querySelectorAll('.lead-kanban-card').forEach(card => {
+      card.addEventListener('dragstart', (e) => {
         dragId = card.dataset.id;
+        dragBoard = card.dataset.board;
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
       });
-      card.addEventListener('dragend', function () {
+      card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         dragId = null;
-        document.querySelectorAll('#clientBoard .kanban-cards').forEach(function (z) {
-          z.classList.remove('drag-over');
-        });
+        dragBoard = null;
+        document.querySelectorAll('.kanban-dropzone').forEach(z => z.classList.remove('drag-over'));
       });
-
-      var editBtn = card.querySelector('.js-edit-client');
-      if (editBtn) {
-        editBtn.addEventListener('click', function () { openModal(editBtn.dataset.id); });
-      }
-
-      var waBtn = card.querySelector('.js-wa-client');
-      if (waBtn) {
-        waBtn.addEventListener('click', function () { sendWA(waBtn.dataset.id); });
-      }
-
-      var delBtn = card.querySelector('.js-del-client');
-      if (delBtn) {
-        delBtn.addEventListener('click', function () { deleteClient(delBtn.dataset.id); });
-      }
     });
-  }
 
-  /* ── Drop zones ───────────────────────────────────────────────────── */
-  function attachDropZones() {
-    document.querySelectorAll('#clientBoard .kanban-cards').forEach(function (zone) {
-      zone.addEventListener('dragover', function (e) {
+    // Buttons
+    board.querySelectorAll('.js-edit-client').forEach(btn => {
+      btn.onclick = () => openModal(btn.dataset.board, btn.dataset.id);
+    });
+    board.querySelectorAll('.js-wa-client').forEach(btn => {
+      btn.onclick = () => sendWA(btn.dataset.board, btn.dataset.id);
+    });
+    board.querySelectorAll('.js-del-client').forEach(btn => {
+      btn.onclick = () => deleteItem(btn.dataset.board, btn.dataset.id);
+    });
+
+    // Zones
+    board.querySelectorAll('.kanban-dropzone').forEach(zone => {
+      zone.addEventListener('dragover', (e) => {
+        if (dragBoard !== zone.dataset.board) return;
         e.preventDefault();
         zone.classList.add('drag-over');
         e.dataTransfer.dropEffect = 'move';
       });
-      zone.addEventListener('dragleave', function (e) {
+      zone.addEventListener('dragleave', (e) => {
         if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
       });
-      zone.addEventListener('drop', function (e) {
+      zone.addEventListener('drop', (e) => {
         e.preventDefault();
         zone.classList.remove('drag-over');
-        if (!dragId) return;
-        var newStage = zone.dataset.stage;
-        var client   = clients.find(function (c) { return c.id === dragId; });
-        if (client && client.stage !== newStage) {
-          client.stage = newStage;
-          save();
-          renderBoard();
-          showToast(client.name + ' moved to ' + newStage, 'success');
+        if (!dragId || dragBoard !== zone.dataset.board) return;
+        
+        const newStage = zone.dataset.stage;
+        const item = boardData[dragBoard].find(c => c.id === dragId);
+        if (item && item.stage !== newStage) {
+          item.stage = newStage;
+          save(dragBoard);
+          renderBoard(dragBoard);
+          showToast(`${item.name} moved to ${newStage}`, 'success');
         }
       });
     });
   }
 
-  /* ── Modal ────────────────────────────────────────────────────────── */
-  var _bsModal = null;
+  /* ── Modal & Form ─────────────────────────────────────────────────── */
+  function openModal(type, editId) {
+    activeBoardType = type;
+    const config = BOARDS[type];
+    const form = document.getElementById('clientForm');
+    form.reset();
+    document.getElementById('clientId').value = '';
+    document.getElementById('clientModalLabel').textContent = config.title;
 
-  function getModal() {
-    if (!_bsModal) {
-      _bsModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('clientModal'));
-    }
-    return _bsModal;
-  }
-
-  function clearForm() {
-    ['clientId','clientName','clientProject','clientBudget','clientPhone','clientNotes','clientStart'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    document.getElementById('clientStage').value   = 'Discovery';
-    document.getElementById('clientPayment').value = 'Awaiting';
-  }
-
-  function openModal(editId) {
-    clearForm();
-    var labelEl = document.getElementById('clientModalLabel');
+    // Populate stages
+    const stageSelect = document.getElementById('clientStage');
+    stageSelect.innerHTML = config.stages.map(s => `<option value="${s}">${s}</option>`).join('');
 
     if (editId) {
-      var c = clients.find(function (x) { return x.id === editId; });
-      if (!c) return;
-      labelEl.textContent = 'Edit Client';
-      document.getElementById('clientId').value      = c.id;
-      document.getElementById('clientName').value    = c.name      || '';
-      document.getElementById('clientProject').value = c.project   || '';
-      document.getElementById('clientBudget').value  = c.budget    || '';
-      document.getElementById('clientPhone').value   = c.phone     || '';
-      document.getElementById('clientStage').value   = c.stage     || 'Discovery';
-      document.getElementById('clientPayment').value = c.payment   || 'Awaiting';
-      document.getElementById('clientStart').value   = c.startDate || '';
-      document.getElementById('clientNotes').value   = c.notes     || '';
-    } else {
-      labelEl.textContent = 'Add Client';
+      const item = boardData[type].find(x => x.id === editId);
+      if (item) {
+        document.getElementById('clientModalLabel').textContent = 'Edit ' + (type === 'seo' ? 'SEO Project' : 'Client');
+        document.getElementById('clientId').value = item.id;
+        document.getElementById('clientName').value = item.name || '';
+        document.getElementById('clientProject').value = item.project || '';
+        document.getElementById('clientBudget').value = item.budget || '';
+        document.getElementById('clientPhone').value = item.phone || '';
+        document.getElementById('clientStage').value = item.stage || config.stages[0];
+        document.getElementById('clientPayment').value = item.payment || 'Awaiting';
+        document.getElementById('clientStart').value = item.startDate || '';
+        document.getElementById('clientNotes').value = item.notes || '';
+      }
     }
-
-    getModal().show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('clientModal')).show();
   }
 
-  /* ── Save client ──────────────────────────────────────────────────── */
-  document.getElementById('saveClientBtn').addEventListener('click', function () {
-    var name    = (document.getElementById('clientName').value    || '').trim();
-    var project = (document.getElementById('clientProject').value || '').trim();
+  document.getElementById('saveClientBtn').addEventListener('click', () => {
+    const name = document.getElementById('clientName').value.trim();
+    const project = document.getElementById('clientProject').value.trim();
+    if (!name || !project) { showToast('Name and project are required.', 'warning'); return; }
 
-    if (!name || !project) {
-      showToast('Client name and project type are required.', 'warning');
-      return;
-    }
-
-    var id = document.getElementById('clientId').value;
-    var data = {
-      name:      name,
-      project:   project,
-      budget:    (document.getElementById('clientBudget').value  || '').trim(),
-      phone:     (document.getElementById('clientPhone').value   || '').trim(),
-      stage:     document.getElementById('clientStage').value,
-      payment:   document.getElementById('clientPayment').value,
+    const id = document.getElementById('clientId').value;
+    const data = {
+      name, project,
+      budget: document.getElementById('clientBudget').value.trim(),
+      phone: document.getElementById('clientPhone').value.trim(),
+      stage: document.getElementById('clientStage').value,
+      payment: document.getElementById('clientPayment').value,
       startDate: document.getElementById('clientStart').value,
-      notes:     (document.getElementById('clientNotes').value   || '').trim()
+      notes: document.getElementById('clientNotes').value.trim()
     };
 
     if (id) {
-      var idx = clients.findIndex(function (c) { return c.id === id; });
-      if (idx > -1) clients[idx] = Object.assign({ id: id }, data);
+      const idx = boardData[activeBoardType].findIndex(c => c.id === id);
+      if (idx > -1) boardData[activeBoardType][idx] = Object.assign({ id }, data);
     } else {
       data.id = uid();
-      clients.push(data);
+      boardData[activeBoardType].push(data);
     }
 
-    save();
-    getModal().hide();
-    renderBoard();
-    showToast(id ? 'Client updated.' : 'Client added.', 'success');
+    save(activeBoardType);
+    bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
+    renderBoard(activeBoardType);
+    showToast(id ? 'Updated successfully.' : 'Added successfully.', 'success');
   });
 
-  /* ── Delete client ────────────────────────────────────────────────── */
-  function deleteClient(id) {
-    var c = clients.find(function (x) { return x.id === id; });
-    if (!c) return;
-    if (!confirm('Remove "' + c.name + '" from the board?')) return;
-    clients = clients.filter(function (x) { return x.id !== id; });
-    save();
-    renderBoard();
-    showToast('Client removed.', 'danger');
+  function deleteItem(type, id) {
+    const item = boardData[type].find(x => x.id === id);
+    if (!item || !confirm(`Remove "${item.name}"?`)) return;
+    boardData[type] = boardData[type].filter(x => x.id !== id);
+    save(type);
+    renderBoard(type);
+    showToast('Removed.', 'danger');
   }
 
-  /* ── WhatsApp ─────────────────────────────────────────────────────── */
-  function sendWA(id) {
-    var c = clients.find(function (x) { return x.id === id; });
-    if (!c || !c.phone) return;
-
-    var stageMessages = {
-      Discovery: 'Hi, just following up on our discovery chat for your ' + (c.project || 'project') + '. Ready to map out the next steps whenever you are.',
-      Building:  'Quick update — your ' + (c.project || 'project') + ' is actively in development. I will send a progress demo link soon.',
-      Review:    'Your ' + (c.project || 'project') + ' is ready for review. Please take a look and send any feedback so I can finalise it.',
-      Live:      'Great news — your ' + (c.project || 'project') + ' is now live! Let me know how it is working for you.',
-      Invoiced:  'Invoice sent for your ' + (c.project || 'project') + '. Please confirm receipt when you get a moment. Thank you for the work!'
-    };
-
-    var msg = stageMessages[c.stage] || ('Hi, just checking in on your ' + (c.project || 'project') + '.');
-    var num = c.phone.replace(/\D/g, '');
-    if (num.startsWith('0')) num = '27' + num.slice(1);
-    window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(msg), '_blank');
+  function sendWA(type, id) {
+    const item = boardData[type].find(x => x.id === id);
+    if (!item || !item.phone) return;
+    const msg = `Hi, following up on your ${item.project || 'project'} (${item.stage} phase).`;
+    const num = item.phone.replace(/\D/g, '');
+    window.open(`https://wa.me/${num.startsWith('0') ? '27' + num.slice(1) : num}?text=${encodeURIComponent(msg)}`, '_blank');
   }
-
-  /* ── Wire "Add Client" button ─────────────────────────────────────── */
-  var addBtn = document.getElementById('openAddClientBtn');
-  if (addBtn) addBtn.addEventListener('click', function () { openModal(null); });
 
   /* ── Init ─────────────────────────────────────────────────────────── */
-  load();
-  renderBoard();
-
+  document.getElementById(BOARDS.client.addBtn).onclick = () => openModal('client');
+  document.getElementById(BOARDS.seo.addBtn).onclick = () => openModal('seo');
+  
+  loadAll();
+  renderBoard('client');
+  renderBoard('seo');
 })();
 </script>
 {% endblock %}

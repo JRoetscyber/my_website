@@ -67,8 +67,8 @@
       <div class="lead-toolbar-title">Lead Pipeline</div>
       <div class="lead-toolbar-sub">Drag leads across stages · catch rotting opportunities · trigger WhatsApp follow-ups</div>
     </div>
-    <button type="button" id="openCreateLeadModal" class="add-lead-btn">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 1v11M1 6.5h11"/></svg>
+    <button type="button" id="openCreateLeadModal" class="btn-admin-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       Add Lead
     </button>
   </div>
@@ -93,11 +93,11 @@
   </div>
 
   <div class="leads-filter-strip" id="leadQuickFilters">
-    <button type="button" data-filter="all" class="lead-filter-btn active">All</button>
-    <button type="button" data-filter="hot" class="lead-filter-btn">Hot Leads</button>
-    <button type="button" data-filter="cold" class="lead-filter-btn">Cold Leads</button>
-    <button type="button" data-filter="iot-erp" class="lead-filter-btn">IoT &amp; ERP</button>
-    <button type="button" data-filter="web-portals" class="lead-filter-btn">Web &amp; Portals</button>
+    <button type="button" data-filter="all" class="btn-admin-outline btn-admin-sm active">All</button>
+    <button type="button" data-filter="hot" class="btn-admin-outline btn-admin-sm">Hot Leads</button>
+    <button type="button" data-filter="cold" class="btn-admin-outline btn-admin-sm">Cold Leads</button>
+    <button type="button" data-filter="iot-erp" class="btn-admin-outline btn-admin-sm">IoT &amp; ERP</button>
+    <button type="button" data-filter="web-portals" class="btn-admin-outline btn-admin-sm">Web &amp; Portals</button>
   </div>
 
 </div>
@@ -184,9 +184,9 @@
         </details>
 
         <div class="lead-card-actions">
-          <button type="button" class="tbl-action-btn open-edit-lead">Edit</button>
-          <button type="button" class="tbl-action-btn send-whatsapp">WhatsApp</button>
-          <button type="button" class="tbl-action-btn btn-delete-lead delete-lead">Delete</button>
+          <button type="button" class="btn-admin-outline btn-admin-sm open-edit-lead">Edit</button>
+          <button type="button" class="btn-admin-outline btn-admin-sm send-whatsapp">WhatsApp</button>
+          <button type="button" class="btn-admin-outline btn-admin-sm btn-admin-danger delete-lead">Delete</button>
         </div>
       </article>
       {% endif %}
@@ -276,7 +276,7 @@
             </div>
           </div>
           <div class="modal-form-actions mt-4">
-            <button type="submit" id="leadComposerSubmit" class="add-lead-btn" style="border-radius:4px;">Save Lead</button>
+            <button type="submit" id="leadComposerSubmit" class="btn-admin-primary">Save Lead</button>
           </div>
         </form>
       </div>

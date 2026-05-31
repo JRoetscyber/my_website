@@ -8,47 +8,50 @@
    ADMIN LAYOUT TOKENS
    ------------------------------------------------------------ */
 :root {
-  --sidebar-w:      240px;
-  --topbar-h:       64px;
+  --sidebar-w:      260px;
+  --topbar-h:       72px;
   --content-pad:    32px;
-  --widget-radius:  8px;
+  --widget-radius:  12px;
+  --input-radius:   8px;
+  --btn-radius:     8px;
 
   /* Status colours */
   --status-green:  #22c55e;
   --status-amber:  #f5a020;
   --status-red:    #ef4444;
   --status-purple: #a78bfa;
+  --status-blue:   #3b82f6;
 
   /* Badge colours */
   --badge-new:      #00e5cc;
   --badge-contact:  #f5a020;
   --badge-proposal: #a78bfa;
   --badge-closed:   #22c55e;
-  --badge-lost:     #555555;
+  --badge-lost:     #6b7280;
 }
 
 /* ------------------------------------------------------------
    DARK THEME VARIABLE OVERRIDES
-   admin.css loads after style.css, so these values win on all
-   admin routes and restore the Black Hole dark theme.
    ------------------------------------------------------------ */
 :root {
   --color-bg:             #000000;
-  --color-surface-1:      #0d0d0d;
-  --color-surface-2:      #111111;
-  --color-surface-3:      #1a1a1a;
+  --color-surface-1:      #050505;
+  --color-surface-2:      #0a0a0a;
+  --color-surface-3:      #121212;
+  --color-surface-4:      #1a1a1a;
   --color-border:         rgba(255,255,255,0.08);
   --color-border-subtle:  rgba(255,255,255,0.04);
-  --color-text-primary:   #f0f0f0;
-  --color-text-secondary: #888888;
-  --color-text-muted:     #555555;
+  --color-text-primary:   #f8f8f8;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted:     #71717a;
   --accent:               #00e5cc;
   --accent-dim:           rgba(0,229,204,0.12);
-  --accent-glow:          0 0 20px rgba(0,229,204,0.3);
-  --shadow-card:          0 4px 24px rgba(0,0,0,0.7);
-  --transition-base:      0.18s ease;
-  --transition-slow:      0.3s ease;
-  --font-body:            'Inter', sans-serif;
+  --accent-glow:          0 0 24px rgba(0,229,204,0.3);
+  --shadow-card:          0 8px 32px rgba(0,0,0,0.8);
+  --shadow-glow:          0 0 15px rgba(0,229,204,0.1);
+  --transition-base:      0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:      0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-body:            'Inter', system-ui, -apple-system, sans-serif;
   --font-display:         'Syne', sans-serif;
   --font-mono:            'JetBrains Mono', monospace;
 }
@@ -95,7 +98,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   z-index: 200;
   overflow-y: auto;
   overflow-x: hidden;
-  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  transition: transform 0.4s cubic-bezier(.4,0,.2,1);
 }
 
 /* Sidebar brand */
@@ -103,16 +106,16 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   height: var(--topbar-h);
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 28px;
   border-bottom: 1px solid var(--color-border-subtle);
   flex-shrink: 0;
 }
 
 .sidebar-logo {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: var(--color-text-primary);
 }
 
@@ -120,36 +123,36 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
 
 .sidebar-tag {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.14em;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 /* Sidebar nav */
 .sidebar-nav {
   flex: 1;
-  padding: 20px 0;
+  padding: 24px 0;
 }
 
 .sidebar-section-label {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  padding: 16px 24px 8px;
-  opacity: 0.5;
+  padding: 20px 28px 12px;
+  opacity: 0.6;
 }
 
 .sidebar-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  padding: 12px 24px;
-  font-size: 0.88rem;
+  padding: 12px 28px;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   transition: all var(--transition-base);
@@ -159,29 +162,29 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
 }
 
 .sidebar-nav-item svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   stroke: currentColor;
   fill: none;
-  stroke-width: 1.5;
+  stroke-width: 1.75;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.6;
-  transition: opacity var(--transition-base);
+  opacity: 0.5;
+  transition: all var(--transition-base);
 }
 
 .sidebar-nav-item:hover {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.04);
   color: var(--color-text-primary);
 }
 
-.sidebar-nav-item:hover svg { opacity: 1; }
+.sidebar-nav-item:hover svg { opacity: 1; transform: translateX(2px); }
 
 .sidebar-nav-item.active {
   color: var(--accent);
   border-left-color: var(--accent);
-  background: rgba(0, 229, 204, 0.05);
+  background: rgba(0, 229, 204, 0.06);
 }
 
 .sidebar-nav-item.active svg { opacity: 1; stroke: var(--accent); }
@@ -192,44 +195,45 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   color: #000;
   font-family: var(--font-mono);
   font-size: 0.6rem;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
+  padding: 0 6px;
+  box-shadow: 0 0 10px rgba(0, 229, 204, 0.2);
 }
 
 /* Sidebar system status */
 .sidebar-status {
-  padding: 20px 24px;
+  padding: 24px 28px;
   border-top: 1px solid var(--color-border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sidebar-status-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   color: var(--color-text-muted);
 }
 
 .status-indicator {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.status-indicator.green { background: var(--status-green); box-shadow: 0 0 8px rgba(34,197,94,0.4); }
-.status-indicator.amber { background: var(--status-amber); box-shadow: 0 0 8px rgba(245,160,32,0.4); }
-.status-indicator.red   { background: var(--status-red); }
+.status-indicator.green { background: var(--status-green); box-shadow: 0 0 12px rgba(34,197,94,0.5); }
+.status-indicator.amber { background: var(--status-amber); box-shadow: 0 0 12px rgba(245,160,32,0.5); }
+.status-indicator.red   { background: var(--status-red); box-shadow: 0 0 12px rgba(239,68,68,0.5); }
 
 /* ------------------------------------------------------------
    MAIN AREA
@@ -246,8 +250,9 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
 /* Top bar */
 .admin-topbar {
   height: var(--topbar-h);
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
@@ -255,7 +260,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   display: flex;
   align-items: center;
   padding: 0 var(--content-pad);
-  gap: 20px;
+  gap: 24px;
 }
 
 .topbar-toggle {
@@ -349,6 +354,11 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   box-shadow: var(--shadow-card);
   overflow: hidden;
   height: auto;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.widget-card:hover {
+  border-color: rgba(255,255,255,0.12);
 }
 
 /* Only stretch to full column height when explicitly needed (equal-height rows) */
@@ -360,39 +370,43 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 24px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--color-border-subtle);
+  background: rgba(255,255,255,0.01);
 }
 
 .widget-title {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-text-muted);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  font-weight: 600;
 }
 
 .widget-title svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   stroke: var(--accent);
   fill: none;
-  stroke-width: 1.5;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .widget-meta {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   color: var(--color-text-muted);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
 }
 
 .widget-body { padding: 24px; }
+.widget-body.p-0 { padding: 0; }
 
 /* ------------------------------------------------------------
    STAT CARDS
@@ -402,7 +416,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   border: 1px solid var(--color-border);
   border-radius: var(--widget-radius);
   box-shadow: var(--shadow-card);
-  padding: 24px;
+  padding: 28px 24px;
   position: relative;
   overflow: hidden;
   transition: all var(--transition-slow);
@@ -418,23 +432,28 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   transition: opacity var(--transition-slow);
 }
 
-.stat-card:hover { transform: translateY(-4px); border-color: rgba(0,229,204,0.3); }
+.stat-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0,229,204,0.3);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.9), var(--shadow-glow);
+}
 .stat-card:hover::before { opacity: 1; }
 
 .stat-card-label {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 .stat-card-value {
   font-family: var(--font-display);
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
   line-height: 1;
   color: var(--color-text-primary);
   margin-bottom: 8px;
@@ -522,38 +541,48 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
    ------------------------------------------------------------ */
 .pipeline-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
 }
 
 .pipeline-table thead tr {
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(255,255,255,0.02);
 }
 
 .pipeline-table thead th {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  padding: 14px 20px;
+  padding: 18px 24px;
   text-align: left;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .pipeline-table tbody tr {
-  border-bottom: 1px solid var(--color-border-subtle);
-  transition: background var(--transition-base);
+  transition: background var(--transition-base), transform var(--transition-base);
 }
 
-.pipeline-table tbody tr:last-child { border-bottom: none; }
+.pipeline-table tbody tr:last-child td { border-bottom: none; }
 
-.pipeline-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.pipeline-table tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
 
 .pipeline-table td {
-  padding: 16px 20px;
+  padding: 16px 24px;
   vertical-align: middle;
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text-secondary);
+}
+
+.pipeline-table td strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
 .lead-toolbar {
@@ -1226,6 +1255,82 @@ details[open].lead-breakdown summary::before {
 }
 
 /* ------------------------------------------------------------
+   BUTTONS
+   ------------------------------------------------------------ */
+.btn-admin-primary,
+.btn-admin-secondary,
+.btn-admin-danger,
+.btn-admin-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: var(--btn-radius);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all var(--transition-base);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-admin-primary {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-admin-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: var(--accent-glow);
+}
+
+.btn-admin-secondary {
+  background: var(--color-surface-4);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+.btn-admin-secondary:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-admin-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--status-red);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-admin-danger:hover {
+  background: var(--status-red);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-admin-outline {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.btn-admin-outline:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
+  background: rgba(255,255,255,0.03);
+}
+
+/* Small versions */
+.btn-admin-sm {
+  padding: 6px 12px;
+  font-size: 0.65rem;
+  gap: 6px;
+}
+
+/* ------------------------------------------------------------
    PORTFOLIO MANAGER FORM
    ------------------------------------------------------------ */
 .admin-form-label {
@@ -1236,34 +1341,38 @@ details[open].lead-breakdown summary::before {
   text-transform: uppercase;
   color: var(--color-text-muted);
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .admin-form-input {
   width: 100%;
-  background: var(--color-surface-1); /* Changed to a darker surface */
+  background: var(--color-surface-1);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--input-radius);
   padding: 12px 16px;
   color: var(--color-text-primary);
   font-family: var(--font-body);
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   outline: none;
   transition: all var(--transition-base);
 }
 
 .admin-form-input option,
 .admin-form-input optgroup {
-  background: var(--color-surface-1); /* Darker background for options and optgroups */
+  background: #111;
   color: var(--color-text-primary);
 }
 
-
-.admin-form-input::placeholder { color: var(--color-text-muted); opacity: 0.5; }
+.admin-form-input::placeholder { color: var(--color-text-muted); opacity: 0.4; }
 
 .admin-form-input:focus {
   border-color: var(--accent);
   background: rgba(0, 229, 204, 0.02);
   box-shadow: 0 0 0 4px rgba(0,229,204,0.08);
+}
+
+.admin-form-input:hover:not(:focus) {
+  border-color: rgba(255,255,255,0.15);
 }
 
 textarea.admin-form-input {
