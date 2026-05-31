@@ -14,7 +14,9 @@
 </script>
 
 <!-- ============================================================
-     HERO
+     HERO — v2
+     Replace your entire existing <section class="hero"> block
+     with this. No CSS changes needed beyond what's below.
 ============================================================ -->
 <section class="hero" aria-label="Hero">
   <div class="hero-inner">
@@ -28,14 +30,14 @@
 
       <h1 class="display-hero hero-headline">
         Websites &amp; Systems<br>
-        Built for Companies<br>
-        <span class="accent-line">That Mean Business.</span>
+        That Work While<br>
+        <span class="accent-line">You Work.</span>
       </h1>
 
       <p class="lead-text hero-lead">
-        Custom web portals, automated CRM pipelines, and intelligent
-        business systems built for any company ready to stop running
-        on spreadsheets and start scaling.
+        We build the websites, SEO foundations, and automation
+        pipelines that turn your online presence into a lead machine —
+        then stick around to make sure it stays that way.
       </p>
 
       <div class="hero-actions">
@@ -52,110 +54,115 @@
 
     </div>
 
-    <!-- Right: browser mockup -->
-    <div class="hero-mockup-wrap" aria-hidden="true">
-      <div class="hero-mockup">
+    <!-- Right: animated process -->
+    <div class="hero-process-wrap" aria-hidden="true">
+      <div class="hero-process">
 
-        <!-- Chrome bar -->
-        <div class="mockup-chrome">
-          <div class="mockup-dots">
-            <span></span><span></span><span></span>
-          </div>
-          <div class="mockup-url">app.clientportal.jo4.dev/dashboard</div>
-        </div>
+        <div class="process-track">
 
-        <!-- App body -->
-        <div class="mockup-body">
-
-          <!-- Sidebar -->
-          <div class="mockup-sidebar">
-            <div class="mock-brand">JO4<span>.</span>PORTAL</div>
-            <div class="mock-nav-items">
-              <div class="mock-nav-item active">
-                <span class="mock-nav-icon"></span>Dashboard
+          <div class="process-step" data-step="1">
+            <div class="process-step-left">
+              <div class="process-dot">
+                <span>01</span>
               </div>
-              <div class="mock-nav-item">
-                <span class="mock-nav-icon"></span>Listings
+              <div class="process-line"></div>
+            </div>
+            <div class="process-card">
+              <div class="process-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
               </div>
-              <div class="mock-nav-item">
-                <span class="mock-nav-icon"></span>Leads
+              <div class="process-card-body">
+                <div class="process-card-title">Discovery Call</div>
+                <div class="process-card-desc">30 min. We map your goals, current gaps, and what a win looks like for your business.</div>
               </div>
-              <div class="mock-nav-item">
-                <span class="mock-nav-icon"></span>Automation
-              </div>
-              <div class="mock-nav-item">
-                <span class="mock-nav-icon"></span>Reports
-              </div>
+              <div class="process-card-badge">Free</div>
             </div>
           </div>
 
-          <!-- Main dashboard -->
-          <div class="mockup-main">
-            <div class="mock-topbar">
-              <div class="mock-page-title">Dashboard</div>
-              <div class="mock-badge">● Live</div>
+          <div class="process-step" data-step="2">
+            <div class="process-step-left">
+              <div class="process-dot">
+                <span>02</span>
+              </div>
+              <div class="process-line"></div>
             </div>
+            <div class="process-card">
+              <div class="process-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+                </svg>
+              </div>
+              <div class="process-card-body">
+                <div class="process-card-title">Scope &amp; Design</div>
+                <div class="process-card-desc">Fixed-price proposal, wireframes, and a clear delivery timeline — before a single line of code.</div>
+              </div>
+              <div class="process-card-badge process-card-badge--week">Week 1</div>
+            </div>
+          </div>
 
-            <div class="mock-stats-row">
-              <div class="mock-stat">
-                <div class="mock-stat-lbl">Active Leads</div>
-                <div class="mock-stat-val">147</div>
-                <div class="mock-stat-trend">↑ 12%</div>
+          <div class="process-step" data-step="3">
+            <div class="process-step-left">
+              <div class="process-dot">
+                <span>03</span>
               </div>
-              <div class="mock-stat">
-                <div class="mock-stat-lbl">Pipeline</div>
-                <div class="mock-stat-val">R4.2M</div>
-                <div class="mock-stat-trend">↑ 23%</div>
+              <div class="process-line"></div>
+            </div>
+            <div class="process-card">
+              <div class="process-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+                </svg>
               </div>
-              <div class="mock-stat">
-                <div class="mock-stat-lbl">Closings</div>
-                <div class="mock-stat-val">38</div>
-                <div class="mock-stat-trend">↑ 8%</div>
+              <div class="process-card-body">
+                <div class="process-card-title">Build &amp; Integrate</div>
+                <div class="process-card-desc">Custom code, SEO foundation, automations wired up. You get progress updates throughout.</div>
+              </div>
+              <div class="process-card-badge process-card-badge--week">Wk 2–3</div>
+            </div>
+          </div>
+
+          <div class="process-step" data-step="4">
+            <div class="process-step-left">
+              <div class="process-dot process-dot--final">
+                <span>04</span>
               </div>
             </div>
-
-            <div class="mock-chart">
-              <div class="mock-chart-label">Lead Activity 7 Days</div>
-              <div class="mock-bars">
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
-                <div class="mock-bar"></div>
+            <div class="process-card process-card--final">
+              <div class="process-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
               </div>
-            </div>
-
-            <div class="mock-leads">
-              <div class="mock-lead-row">
-                <div class="mock-avatar"></div>
-                <div class="mock-lead-info">
-                  <div class="mock-lead-name"></div>
-                  <div class="mock-lead-sub"></div>
-                </div>
-                <div class="mock-score score-hot">HOT</div>
+              <div class="process-card-body">
+                <div class="process-card-title">Live &amp; Getting Leads</div>
+                <div class="process-card-desc">Deployed, indexed, and tracking. You own the code, the accounts, and the results.</div>
               </div>
-              <div class="mock-lead-row">
-                <div class="mock-avatar"></div>
-                <div class="mock-lead-info">
-                  <div class="mock-lead-name"></div>
-                  <div class="mock-lead-sub"></div>
-                </div>
-                <div class="mock-score score-warm">WARM</div>
-              </div>
-              <div class="mock-lead-row">
-                <div class="mock-avatar"></div>
-                <div class="mock-lead-info">
-                  <div class="mock-lead-name"></div>
-                  <div class="mock-lead-sub"></div>
-                </div>
-                <div class="mock-score score-cold">COLD</div>
-              </div>
+              <div class="process-card-badge process-card-badge--live">● Live</div>
             </div>
           </div>
 
         </div>
+
+        <!-- Bottom credibility strip -->
+        <div class="process-footer">
+          <div class="process-footer-item">
+            <span class="process-footer-val">1–3 wks</span>
+            <span class="process-footer-lbl">Avg. delivery</span>
+          </div>
+          <div class="process-footer-divider"></div>
+          <div class="process-footer-item">
+            <span class="process-footer-val">R3k–R20k</span>
+            <span class="process-footer-lbl">Typical range</span>
+          </div>
+          <div class="process-footer-divider"></div>
+          <div class="process-footer-item">
+            <span class="process-footer-val">100%</span>
+            <span class="process-footer-lbl">Code ownership</span>
+          </div>
+        </div>
+
       </div>
     </div>
 

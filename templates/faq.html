@@ -65,6 +65,49 @@
   </div>
 </section>
 
+<section class="section-full" style="background: var(--color-surface-0); border-top: 1px solid var(--color-border-subtle);">
+  <div class="section">
+    <div class="row g-5">
+      <div class="col-lg-5" data-aos="fade-up">
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Ask Anything</span>
+        <h2 class="display-section">
+          Didn't find your<br>
+          answer? Ask me.
+        </h2>
+        <p class="lead-text" style="margin-top:20px;">
+          Submit your question and I'll get back to you directly via email or phone. 
+          The most helpful questions are added to this knowledge base.
+        </p>
+      </div>
+      <div class="col-lg-6 offset-lg-1" data-aos="fade-up" data-aos-delay="100">
+        <form action="{{ url_for('faq.submit_question') }}" method="POST" class="widget-card p-4 p-md-5">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label class="form-label">Your Name</label>
+              <input type="text" name="name" class="form-control" placeholder="Jonathan Roets" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email Address</label>
+              <input type="email" name="email" class="form-control" placeholder="jon@example.com" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Phone Number (Optional)</label>
+              <input type="tel" name="phone" class="form-control" placeholder="+27 82 123 4567">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Your Question</label>
+              <textarea name="question" class="form-control" rows="4" placeholder="How do you handle...?" required></textarea>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-primary-custom w-100">Submit My Question</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-0);">
   <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
     <h2 class="display-section" style="max-width:620px; margin: 0 auto 24px;" data-aos="fade-up">

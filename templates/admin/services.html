@@ -1,0 +1,238 @@
+{% extends 'admin/admin.html' %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Service Management</h1>
+    <p>Create, update, and manage your services.</p>
+    <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+        Add New Service
+    </button>
+</div>
+
+<div class="admin-table-wrap mt-4">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Title</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+            <tr>
+                <td>{{ service.display_order }}</td>
+                <td><strong>{{ service.title }}</strong></td>
+                <td><code>/services/{{ service.slug }}</code></td>
+                <td>
+                    {% if service.is_published %}
+                    <span class="badge bg-success">Published</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Draft</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn-sm-custom btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ service.id }}">Edit</button>
+                    <button class="btn-sm-custom btn-outline-danger" onclick="deleteService({{ service.id }})">Delete</button>
+                </td>
+            </tr>
+
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editServiceModal{{ service.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form action="{{ url_for('admin.update_service', service_id=service.id) }}" method="POST">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Service: {{ service.title }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row g-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label">Title</label>
+                                        <input type="text" name="title" class="form-control" value="{{ service.title }}" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Display Order</label>
+                                        <input type="number" name="display_order" class="form-control" value="{{ service.display_order }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Eyebrow (e.g. Service 01)</label>
+                                        <input type="text" name="eyebrow" class="form-control" value="{{ service.eyebrow }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Slug (Auto-generated if blank)</label>
+                                        <input type="text" name="slug" class="form-control" value="{{ service.slug }}" readonly>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Lead Text</label>
+                                        <textarea name="lead_text" class="form-control" rows="2">{{ service.lead_text }}</textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Description</label>
+                                        <textarea name="description" class="form-control" rows="4">{{ service.description }}</textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Features (One per line)</label>
+                                        <textarea name="features" class="form-control" rows="4">{{ service.features }}</textarea>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Price Range</label>
+                                        <input type="text" name="price_range" class="form-control" value="{{ service.price_range }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Price Label</label>
+                                        <input type="text" name="price_label" class="form-control" value="{{ service.price_label }}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Price Note</label>
+                                        <input type="text" name="price_note" class="form-control" value="{{ service.price_note }}">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Icon SVG (Path/Code)</label>
+                                        <textarea name="icon_svg" class="form-control" rows="2">{{ service.icon_svg }}</textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Panel Title</label>
+                                        <input type="text" name="panel_title" class="form-control" value="{{ service.panel_title }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Panel Type</label>
+                                        <select name="panel_type" class="form-select">
+                                            <option value="use-case" {{ 'selected' if service.panel_type == 'use-case' }}>Use Case</option>
+                                            <option value="audit" {{ 'selected' if service.panel_type == 'audit' }}>Audit List</option>
+                                            <option value="stats" {{ 'selected' if service.panel_type == 'stats' }}>Stats Stack</option>
+                                            <option value="auto" {{ 'selected' if service.panel_type == 'auto' }}>Automation List</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Panel Content (JSON)</label>
+                                        <textarea name="panel_content" class="form-control" rows="4">{{ service.panel_content }}</textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="is_published" id="pub{{ service.id }}" {{ 'checked' if service.is_published }}>
+                                            <label class="form-check-label" for="pub{{ service.id }}">Published</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addServiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ url_for('admin.add_service') }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Display Order</label>
+                            <input type="number" name="display_order" class="form-control" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Eyebrow</label>
+                            <input type="text" name="eyebrow" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Lead Text</label>
+                            <textarea name="lead_text" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Features (One per line)</label>
+                            <textarea name="features" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Price Range</label>
+                            <input type="text" name="price_range" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Price Label</label>
+                            <input type="text" name="price_label" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Price Note</label>
+                            <input type="text" name="price_note" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Icon SVG</label>
+                            <textarea name="icon_svg" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Panel Title</label>
+                            <input type="text" name="panel_title" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Panel Type</label>
+                            <select name="panel_type" class="form-select">
+                                <option value="use-case">Use Case</option>
+                                <option value="audit">Audit List</option>
+                                <option value="stats">Stats Stack</option>
+                                <option value="auto">Automation List</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Panel Content (JSON)</label>
+                            <textarea name="panel_content" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_published" id="newPub" checked>
+                                <label class="form-check-label" for="newPub">Published</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteService(serviceId) {
+    if (confirm('Are you sure you want to delete this service?')) {
+        fetch(`/admin/delete_service/${serviceId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error deleting service: ' + data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

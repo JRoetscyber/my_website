@@ -180,6 +180,72 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+
+  document.querySelectorAll('.btn-delete-submission').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (!confirm('Permanently delete this inquiry?')) return;
+
+      const response = await fetch(`/admin/delete_faq_submission/${this.dataset.id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    });
+  });
 });
 </script>
+{% endblock %}
+
+{% block admin_content_after %}
+<div class="studio-board-head mt-5 mb-4">
+  <div>
+    <h2 class="studio-board-title" style="color: white;">User Inquiries</h2>
+    <p class="studio-board-sub">Questions submitted by users via the FAQ page.</p>
+  </div>
+</div>
+
+<div class="widget-card">
+  <div class="widget-body">
+    <div class="table-responsive">
+      <table class="pipeline-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Email / Phone</th>
+            <th>Question</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in faq_submissions %}
+          <tr>
+            <td>{{ sub.created_at.strftime('%Y-%m-%d') }}</td>
+            <td><strong>{{ sub.name }}</strong></td>
+            <td>
+              <div style="font-size: 0.85rem; color: #fff;">{{ sub.email }}</div>
+              {% if sub.phone %}<div style="font-size: 0.85rem; color: #888;">{{ sub.phone }}</div>{% endif %}
+            </td>
+            <td>
+              <div style="max-width: 400px; font-size: 0.9rem; color: #ccc;">{{ sub.question }}</div>
+            </td>
+            <td>
+              <button class="tbl-action-btn text-danger btn-delete-submission" data-id="{{ sub.id }}">Delete</button>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">No inquiries yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -197,35 +197,12 @@
 
     <div class="svc-faq-grid" data-aos="fade-up" data-aos-delay="80">
 
+      {% for faq in faqs %}
       <div class="svc-faq-item">
-        <h3>How long does a website project take?</h3>
-        <p>Most projects are delivered in 3–6 weeks depending on scope and how quickly you provide content. You'll get a clear timeline in writing before any work starts.</p>
+        <h3>{{ faq.question }}</h3>
+        <p>{{ faq.answer }}</p>
       </div>
-
-      <div class="svc-faq-item">
-        <h3>Do I need SEO if I already have a website?</h3>
-        <p>Almost certainly yes. Most existing sites have technical issues that actively hurt their rankings — broken structure, missing meta data, slow load times. An audit tells you exactly where you stand.</p>
-      </div>
-
-      <div class="svc-faq-item">
-        <h3>How long before SEO shows results?</h3>
-        <p>Honest answer: 3–6 months to see meaningful ranking movement for competitive local terms. GBP optimisation often shows results faster — sometimes within weeks.</p>
-      </div>
-
-      <div class="svc-faq-item">
-        <h3>What if I already have a developer?</h3>
-        <p>We can work alongside them, take over from them, or just audit what they've built. We don't lock you in — you'll always own your code and your accounts.</p>
-      </div>
-
-      <div class="svc-faq-item">
-        <h3>Do you work outside Johannesburg?</h3>
-        <p>Yes — we work with clients across South Africa. Everything is handled remotely with clear communication, documented deliverables, and video calls when needed.</p>
-      </div>
-
-      <div class="svc-faq-item">
-        <h3>Can you handle all four services together?</h3>
-        <p>Yes, and that's often the most effective approach. A new website, properly optimised GBP, on-page SEO, and automated lead follow-up working together is a complete growth system.</p>
-      </div>
+      {% endfor %}
 
     </div>
   </div>

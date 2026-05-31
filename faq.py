@@ -1,9 +1,50 @@
-from flask import Blueprint, abort, render_template, url_for
-from database import FAQ, db
+from flask import Blueprint, abort, render_template, url_for, request, flash, redirect, current_app
+from database import FAQ, FAQSubmission, db
+from flask_mail import Message
 import json
 
 
 faq_bp = Blueprint('faq', __name__)
+...
+@faq_bp.route('/faq/submit', methods=['POST'])
+def submit_question():
+    try:
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        question = request.form.get('question')
+
+        if not name or not email or not question:
+            flash('Please fill in all required fields.', 'danger')
+            return redirect(url_for('faq.faq_list'))
+
+        new_sub = FAQSubmission(
+            name=name,
+            email=email,
+            phone=phone,
+            question=question
+        )
+        db.session.add(new_sub)
+        db.session.commit()
+
+        # Notify Admin
+        try:
+            mail = current_app.extensions.get('mail')
+            msg = Message(
+                subject=f"New FAQ Question from {name}",
+                recipients=[current_app.config['MAIL_DEFAULT_SENDER']],
+                body=f"Name: {name}\nEmail: {email}\nPhone: {phone}\n\nQuestion:\n{question}"
+            )
+            mail.send(msg)
+        except Exception as e:
+            print(f"Error sending notification email: {e}")
+
+        flash('Your question has been submitted! I will get back to you soon.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error submitting question: {e}', 'danger')
+    
+    return redirect(url_for('faq.faq_list'))
 
 
 def published_faqs_query():

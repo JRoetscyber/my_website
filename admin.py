@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, logout_user
-from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, FAQ, BookingSettings, Transaction, get_booking_settings, make_slug
+from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, FAQ, BookingSettings, Transaction, Service, FAQSubmission, get_booking_settings, make_slug
 from google_calendar import google_calendar_available
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, text
@@ -104,6 +104,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         projects_list = Project.query.order_by(Project.deployed_at.desc()).all()
         blogs_list = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
         faqs_list = FAQ.query.order_by(FAQ.display_order.asc(), FAQ.created_at.desc()).all()
+        services_list = Service.query.order_by(Service.display_order.asc()).all()
+        faq_submissions = FAQSubmission.query.order_by(FAQSubmission.created_at.desc()).all()
         booking_settings = get_booking_settings()
         
         transactions_query = Transaction.query
@@ -203,6 +205,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         projects_list = []
         blogs_list = []
         faqs_list = []
+        services_list = []
+        faq_submissions = []
         booking_settings = BookingSettings()
         transactions_list = []
         logs_list = []
@@ -225,6 +229,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         'projects': projects_list,
         'blogs': blogs_list,
         'faqs': faqs_list,
+        'services': services_list,
+        'faq_submissions': faq_submissions,
         'booking_settings': booking_settings,
         'google_calendar_packages_installed': google_calendar_available(),
         'transactions': transactions_list,
@@ -626,6 +632,98 @@ def blogs():
 @login_required
 def faqs():
     return render_template('admin/faqs.html', **build_admin_context('faqs'))
+
+
+@admin_bp.route('/admin/services')
+@login_required
+def services_page():
+    return render_template('admin/services.html', **build_admin_context('services'))
+
+
+@admin_bp.route('/admin/add_service', methods=['POST'])
+@login_required
+def add_service():
+    try:
+        new_service = Service(
+            title=request.form.get('title'),
+            eyebrow=request.form.get('eyebrow'),
+            lead_text=request.form.get('lead_text'),
+            description=request.form.get('description'),
+            features=request.form.get('features'),
+            price_range=request.form.get('price_range'),
+            price_label=request.form.get('price_label'),
+            price_note=request.form.get('price_note'),
+            icon_svg=request.form.get('icon_svg'),
+            panel_title=request.form.get('panel_title'),
+            panel_type=request.form.get('panel_type'),
+            panel_content=request.form.get('panel_content'),
+            display_order=request.form.get('display_order', type=int) or 0,
+            is_published=request.form.get('is_published') == 'on'
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        flash('Service added successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding service: {e}', 'danger')
+    return redirect(url_for('admin.services_page'))
+
+
+@admin_bp.route('/admin/update_service/<int:service_id>', methods=['POST'])
+@login_required
+def update_service(service_id):
+    try:
+        service = Service.query.get_or_404(service_id)
+        service.title = request.form.get('title')
+        service.eyebrow = request.form.get('eyebrow')
+        service.lead_text = request.form.get('lead_text')
+        service.description = request.form.get('description')
+        service.features = request.form.get('features')
+        service.price_range = request.form.get('price_range')
+        service.price_label = request.form.get('price_label')
+        service.price_note = request.form.get('price_note')
+        service.icon_svg = request.form.get('icon_svg')
+        service.panel_title = request.form.get('panel_title')
+        service.panel_type = request.form.get('panel_type')
+        service.panel_content = request.form.get('panel_content')
+        service.display_order = request.form.get('display_order', type=int) or 0
+        service.is_published = request.form.get('is_published') == 'on'
+        
+        # Explicitly update slug if title changed (slug is handled by event listener but if title is passed it might be useful)
+        # But let's trust the event listener for now.
+        
+        db.session.commit()
+        flash('Service updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating service: {e}', 'danger')
+    return redirect(url_for('admin.services_page'))
+
+
+@admin_bp.route('/admin/delete_service/<int:service_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_service(service_id):
+    try:
+        service = Service.query.get_or_404(service_id)
+        db.session.delete(service)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Service deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@admin_bp.route('/admin/delete_faq_submission/<int:sub_id>', methods=['POST', 'DELETE'])
+@login_required
+def delete_faq_submission(sub_id):
+    try:
+        sub = FAQSubmission.query.get_or_404(sub_id)
+        db.session.delete(sub)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Submission deleted successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
 @admin_bp.route('/admin/add_faq', methods=['POST'])

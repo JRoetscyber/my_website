@@ -40,6 +40,11 @@
           Projects
           <span class="sidebar-nav-badge">{{ projects|length }}</span>
         </a>
+        <a href="{{ url_for('admin.services_page') }}" class="sidebar-nav-item{% if active_page == 'services' %} active{% endif %}">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+          Services
+          <span class="sidebar-nav-badge">{{ services|length }}</span>
+        </a>
         <a href="{{ url_for('admin.blogs') }}" class="sidebar-nav-item{% if active_page == 'blogs' %} active{% endif %}">
           <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
           Blogs
@@ -97,6 +102,7 @@
         {% endif %}
 
         {% block admin_content %}{% endblock %}
+        {% block admin_content_after %}{% endblock %}
       </div>
     </main>
   </div>
