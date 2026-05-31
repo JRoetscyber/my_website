@@ -57,7 +57,7 @@
 
   --section-py:   clamp(80px, 10vw, 130px);
   --max-w:        1280px;
-  --nav-h:        98px;
+  --nav-h:        clamp(72px, 8vw, 98px);
   --pad-x:        clamp(20px, 5vw, 60px);
   --ease:         200ms ease;
   --ease-slow:    400ms ease;
@@ -171,7 +171,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .nav-logo:hover { opacity: 0.75; }
 .nav-logo span { color: var(--accent); }
-.nav-logo-img { height: 108px; width: auto; display: block; object-fit: contain; padding: 8px 0; }
+.nav-logo-img { height: clamp(56px, 6vw, 84px); width: auto; display: block; object-fit: contain; padding: 4px 0; }
 .nav-logo-img--footer { height: 90px; filter: brightness(0) invert(1); }
 
 .nav-links { display: flex; align-items: center; justify-content: center; gap: 32px; list-style: none; }
@@ -647,20 +647,33 @@ h1, h2, h3, h4, h5, h6 {
    RESPONSIVE
 ============================================================ */
 
-/* Tablet — hide process panel, centre copy */
+/* Tablet — stack process panel below copy */
 @media (max-width: 991px) {
   .hero-inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     padding-top: clamp(48px, 8vw, 80px);
     padding-bottom: clamp(48px, 8vw, 80px);
   }
-  .hero-process-wrap { display: none; }
-  .hero-content { max-width: 100%; }
+  .hero-content { 
+    max-width: 100%; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-process-wrap { 
+    margin-top: 48px;
+    width: 100%;
+    max-width: 520px;
+  }
 }
 
-/* Mobile — tighten spacing */
+/* Mobile — hide process panel for speed, tighten spacing */
 @media (max-width: 575px) {
+  .hero-process-wrap { display: none; }
+  .hero-inner { align-items: flex-start; text-align: left; }
+  .hero-content { align-items: flex-start; }
   .hero-actions { gap: 18px; }
   .hero-headline { margin-bottom: 18px; }
   .hero-lead    { margin-bottom: 32px; }
@@ -1075,7 +1088,7 @@ h1, h2, h3, h4, h5, h6 {
 .flip-card {
   perspective: 1200px;
   cursor: pointer;
-  height: 460px;
+  height: clamp(380px, 50vh, 460px);
   outline: none;
   display: block;
 }
@@ -1489,6 +1502,9 @@ textarea.form-control-custom { resize: vertical; min-height: 90px; line-height: 
 }
 .booking-availability { margin-top: 12px; }
 .booking-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+@media (max-width: 480px) {
+  .booking-slots { grid-template-columns: repeat(2, 1fr); }
+}
 .booking-slot {
   width: 100%;
   border: 1px solid var(--border);
