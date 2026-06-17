@@ -189,6 +189,32 @@ def get_booking_settings():
     return settings
 
 
+class InvoiceSettings(db.Model):
+    __tablename__ = 'invoice_settings'
+    id = db.Column(db.Integer, primary_key=True)
+    biz_name = db.Column(db.String(200), default='JO4 Dev')
+    biz_address = db.Column(db.String(400), default='')
+    biz_phone = db.Column(db.String(50), default='')
+    biz_email = db.Column(db.String(120), default='jroetscyber@gmail.com')
+    bank_name = db.Column(db.String(200), default='')
+    account_holder = db.Column(db.String(200), default='')
+    account_number = db.Column(db.String(100), default='')
+    branch_code = db.Column(db.String(50), default='')
+    vat_number = db.Column(db.String(50), default='')
+    payment_terms = db.Column(db.Text, default='')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+def get_invoice_settings():
+    s = InvoiceSettings.query.first()
+    if s:
+        return s
+    s = InvoiceSettings()
+    db.session.add(s)
+    db.session.commit()
+    return s
+
+
 class AutomationLog(db.Model):
     __tablename__ = 'automation_logs'
     id = db.Column(db.Integer, primary_key=True)

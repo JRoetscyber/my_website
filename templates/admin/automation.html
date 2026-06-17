@@ -89,100 +89,6 @@
     cursor: text;
   }
   .wa-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
-
-  /* ── Quote Builder ───────────────────────────────────────── */
-  .quote-header-row {
-    display: grid;
-    grid-template-columns: 1fr 140px;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .q-col-header {
-    display: grid;
-    grid-template-columns: 1fr 60px 96px 80px 28px;
-    gap: 8px;
-    margin-bottom: 6px;
-    padding: 0 2px;
-  }
-  .q-col-label {
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-  }
-  .q-line {
-    display: grid;
-    grid-template-columns: 1fr 60px 96px 80px 28px;
-    gap: 8px;
-    align-items: center;
-    margin-bottom: 7px;
-  }
-  .q-line input {
-    width: 100%;
-    background: var(--color-surface-3);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    padding: 8px 10px;
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: 0.83rem;
-    outline: none;
-    transition: border-color var(--transition-base);
-  }
-  .q-line input:focus { border-color: var(--accent); }
-  .q-line-amt {
-    font-family: var(--font-mono);
-    font-size: 0.76rem;
-    color: var(--accent);
-    text-align: right;
-    white-space: nowrap;
-  }
-  .q-remove {
-    background: none;
-    border: none;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    font-size: 1.1rem;
-    line-height: 1;
-    transition: color var(--transition-base);
-  }
-  .q-remove:hover { color: var(--status-red); }
-  .q-totals {
-    border-top: 1px solid var(--color-border);
-    margin-top: 10px;
-    padding-top: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-  }
-  .q-total-row {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    color: var(--color-text-muted);
-  }
-  .q-total-row .amt { color: var(--color-text-secondary); min-width: 88px; text-align: right; }
-  .q-total-row.grand { font-size: 0.95rem; color: var(--color-text-primary); margin-top: 4px; }
-  .q-total-row.grand .amt { color: var(--accent); font-weight: 700; }
-  .q-output {
-    margin-top: 14px;
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 6px;
-    padding: 14px;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    line-height: 1.85;
-    color: var(--color-text-secondary);
-    white-space: pre;
-    overflow-x: auto;
-    max-height: 200px;
-    overflow-y: auto;
-  }
 </style>
 {% endblock %}
 
@@ -223,8 +129,8 @@
 
 <div class="row g-4">
 
-  <!-- ── Left col: WhatsApp Arsenal + Automation ─────────── -->
-  <div class="col-12 col-xl-5">
+  <!-- ── Left col: WhatsApp Arsenal + Automation Triggers ─── -->
+  <div class="col-12 col-xl-7">
 
     <!-- WhatsApp Arsenal -->
     <div class="widget-card mb-4">
@@ -317,54 +223,8 @@
 
   </div><!-- /left col -->
 
-  <!-- ── Right col: Quote Builder + System Log ────────────── -->
-  <div class="col-12 col-xl-7">
-
-    <!-- Quote Builder -->
-    <div class="widget-card mb-4">
-      <div class="widget-header">
-        <div class="widget-title">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          Quote Builder
-        </div>
-        <div class="widget-meta">Instant estimates · incl. 15% VAT</div>
-      </div>
-      <div class="widget-body">
-
-        <div class="quote-header-row">
-          <input class="admin-form-input" id="qClient" placeholder="Client name" style="font-size:0.85rem;padding:9px 12px;">
-          <input class="admin-form-input" id="qRef"    placeholder="Ref: QT-001" style="font-size:0.85rem;padding:9px 12px;">
-        </div>
-
-        <div class="q-col-header">
-          <span class="q-col-label">Service / Description</span>
-          <span class="q-col-label" style="text-align:center;">Qty</span>
-          <span class="q-col-label">Rate (R)</span>
-          <span class="q-col-label" style="text-align:right;">Amount</span>
-          <span></span>
-        </div>
-
-        <div id="qLines"></div>
-
-        <button type="button" id="qAddLine" class="tbl-action-btn mt-2" style="font-size:0.65rem;">+ Add Line Item</button>
-
-        <div class="q-totals">
-          <div class="q-total-row"><span>Subtotal</span><span class="amt" id="qSub">R0</span></div>
-          <div class="q-total-row"><span>VAT (15%)</span><span class="amt" id="qVat">R0</span></div>
-          <div class="q-total-row grand"><span>Total Due</span><span class="amt" id="qTotal">R0</span></div>
-        </div>
-
-        <div class="q-output" id="qOutput">— add line items to generate quote text —</div>
-
-        <div class="d-flex gap-2 mt-3">
-          <button type="button" id="qCopyBtn"  class="tbl-action-btn" style="flex:1;">Copy Quote Text</button>
-          <button type="button" id="qPrintBtn" class="tbl-action-btn" style="flex:1;">Print / Save PDF</button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- System Log -->
+  <!-- ── Right col: System Log ────────────────────────────── -->
+  <div class="col-12 col-xl-5">
     <div class="widget-card">
       <div class="widget-header">
         <div class="widget-title">
@@ -391,8 +251,8 @@
         </div>
       </div>
     </div>
-
   </div><!-- /right col -->
+
 </div>
 {% endblock %}
 
@@ -470,125 +330,6 @@
 
   buildWaMessage();
 
-  /* ════════════════════════════════════════════════════════
-     Quote Builder
-  ════════════════════════════════════════════════════════ */
-  var qLines = [{ desc: '', qty: 1, rate: 0 }];
-
-  function fmtR(n) {
-    return 'R' + Number(n || 0).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  }
-
-  function renderLines() {
-    var container = document.getElementById('qLines');
-    container.innerHTML = '';
-    qLines.forEach(function (line, i) {
-      var row = document.createElement('div');
-      row.className = 'q-line';
-      row.innerHTML =
-        '<input type="text"   placeholder="e.g. Custom CRM Portal Build" value="' + (line.desc || '') + '" data-i="' + i + '" data-f="desc">' +
-        '<input type="number" placeholder="1"  value="' + line.qty  + '" min="1" step="1"    data-i="' + i + '" data-f="qty"  style="text-align:center;">' +
-        '<input type="number" placeholder="0"  value="' + line.rate + '" min="0" step="100"  data-i="' + i + '" data-f="rate">' +
-        '<span  class="q-line-amt">' + fmtR(line.qty * line.rate) + '</span>' +
-        '<button type="button" class="q-remove" data-i="' + i + '" title="Remove">&times;</button>';
-      container.appendChild(row);
-    });
-    recalc();
-  }
-
-  function recalc() {
-    var sub   = qLines.reduce(function (s, l) { return s + (l.qty * l.rate); }, 0);
-    var vat   = sub * 0.15;
-    var total = sub + vat;
-    document.getElementById('qSub').textContent   = fmtR(sub);
-    document.getElementById('qVat').textContent   = fmtR(vat);
-    document.getElementById('qTotal').textContent = fmtR(total);
-    renderOutput(sub, vat, total);
-  }
-
-  function pad(str, len) { return String(str).padEnd(len, ' '); }
-  function lpad(str, len) { return String(str).padStart(len, ' '); }
-
-  function renderOutput(sub, vat, total) {
-    var client = document.getElementById('qClient').value.trim() || 'Client';
-    var ref    = document.getElementById('qRef').value.trim()    || ('QT-' + new Date().toISOString().slice(0,10).replace(/-/g,''));
-    var date   = new Date().toLocaleDateString('en-ZA', { day:'2-digit', month:'long', year:'numeric' });
-    var divider = '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-    var thin    = '─────────────────────────────────────────────────────────';
-
-    var itemLines = qLines
-      .filter(function (l) { return l.desc; })
-      .map(function (l) {
-        return '  ' + pad(l.desc, 28) + lpad(l.qty, 3) + ' x ' + lpad('R'+Number(l.rate).toLocaleString(), 8) + '   ' + lpad(fmtR(l.qty * l.rate), 10);
-      })
-      .join('\n') || '  (no line items added)';
-
-    document.getElementById('qOutput').textContent =
-      divider + '\n' +
-      'JO4 DEV  —  QUOTE / ESTIMATE\n' +
-      divider + '\n' +
-      'Ref:     ' + ref + '\n' +
-      'Date:    ' + date + '\n' +
-      'Client:  ' + client + '\n' +
-      divider + '\n' +
-      'DESCRIPTION                       QTY   RATE        AMOUNT\n' +
-      thin + '\n' +
-      itemLines + '\n' +
-      thin + '\n' +
-      '  Subtotal' + lpad(fmtR(sub), 48) + '\n' +
-      '  VAT (15%)' + lpad(fmtR(vat), 47) + '\n' +
-      divider + '\n' +
-      '  TOTAL DUE' + lpad(fmtR(total), 47) + '\n' +
-      divider + '\n' +
-      'Terms: 50% deposit to start · 50% on delivery\n' +
-      'Valid: 14 days from date above';
-  }
-
-  document.getElementById('qLines').addEventListener('input', function (e) {
-    var i = +e.target.dataset.i;
-    var f =  e.target.dataset.f;
-    if (!f || isNaN(i)) return;
-    if (f === 'desc') qLines[i].desc = e.target.value;
-    if (f === 'qty')  qLines[i].qty  = Math.max(1, Number(e.target.value) || 1);
-    if (f === 'rate') qLines[i].rate = Math.max(0, Number(e.target.value) || 0);
-    renderLines();
-  });
-
-  document.getElementById('qLines').addEventListener('click', function (e) {
-    if (!e.target.classList.contains('q-remove')) return;
-    var i = +e.target.dataset.i;
-    qLines.splice(i, 1);
-    if (!qLines.length) qLines.push({ desc: '', qty: 1, rate: 0 });
-    renderLines();
-  });
-
-  document.getElementById('qAddLine').addEventListener('click', function () {
-    qLines.push({ desc: '', qty: 1, rate: 0 });
-    renderLines();
-    var inputs = document.getElementById('qLines').querySelectorAll('.q-line input[data-f="desc"]');
-    if (inputs.length) inputs[inputs.length - 1].focus();
-  });
-
-  ['qClient', 'qRef'].forEach(function (id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener('input', recalc);
-  });
-
-  document.getElementById('qCopyBtn').addEventListener('click', function () {
-    var text = document.getElementById('qOutput').textContent;
-    navigator.clipboard.writeText(text).then(function () {
-      var btn = document.getElementById('qCopyBtn');
-      var orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(function () { btn.textContent = orig; }, 1800);
-    });
-  });
-
-  document.getElementById('qPrintBtn').addEventListener('click', function () {
-    window.print();
-  });
-
-  renderLines();
 }());
 </script>
 {% endblock %}

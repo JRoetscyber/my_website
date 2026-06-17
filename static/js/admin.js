@@ -869,6 +869,550 @@
       });
   }());
 
+  /* ── INVOICE / QUOTE GENERATOR ─────────────────────────────── */
+  (function () {
+    var STORE_KEY   = 'jo4_invoices';
+    var CNT_INV     = 'jo4_inv_cnt';
+    var CNT_QUO     = 'jo4_quo_cnt';
+
+    var invNumber  = document.getElementById('invNumber');
+    if (!invNumber) return;
+
+    var invDate    = document.getElementById('invDate');
+    var invDueDate = document.getElementById('invDueDate');
+    var invStatus  = document.getElementById('invDocStatus');
+    var invCName   = document.getElementById('invClientName');
+    var invCCo     = document.getElementById('invClientCompany');
+    var invCEmail  = document.getElementById('invClientEmail');
+    var invCPhone  = document.getElementById('invClientPhone');
+    var invVatOn   = document.getElementById('invVatEnabled');
+    var invVatRate = document.getElementById('invVatRate');
+    var invNotes   = document.getElementById('invNotes');
+    var invItems   = document.getElementById('invItemsContainer');
+    var invDoc     = document.getElementById('invDoc');
+    var savedTbody = document.getElementById('invSavedTbody');
+    var savedBadge = document.getElementById('invSavedBadge');
+    var savedMeta  = document.getElementById('invSavedMeta');
+    var invPage    = document.getElementById('invPage');
+    var logoUrl    = invPage ? (invPage.dataset.logoUrl || '') : '';
+    var bizSettings = (function () {
+      try { return JSON.parse((invPage && invPage.dataset.bizSettings) || '{}'); } catch (e) { return {}; }
+    }());
+
+    var currentType = 'Invoice';
+    var editingId   = null;
+
+    /* helpers */
+    function peekNum(type) {
+      var key = type === 'Invoice' ? CNT_INV : CNT_QUO;
+      var n   = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+      return (type === 'Invoice' ? 'INV-' : 'QUO-') + String(n).padStart(3, '0');
+    }
+
+    function nextNum(type) {
+      var key = type === 'Invoice' ? CNT_INV : CNT_QUO;
+      var n   = parseInt(localStorage.getItem(key) || '0', 10) + 1;
+      localStorage.setItem(key, n);
+      return (type === 'Invoice' ? 'INV-' : 'QUO-') + String(n).padStart(3, '0');
+    }
+
+    function todayStr() {
+      var d = new Date();
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function dueStr(days) {
+      var d = new Date();
+      d.setDate(d.getDate() + (days || 30));
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      var p = iso.split('-');
+      if (p.length < 3) return iso;
+      var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return p[2] + ' ' + mo[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+
+    function fmtCur(n) {
+      var v = parseFloat(n) || 0;
+      return 'R ' + v.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function getItems() {
+      return Array.from(invItems.querySelectorAll('.inv-line-row')).map(function (r) {
+        return {
+          desc:  r.querySelector('.inv-row-desc').value.trim(),
+          qty:   parseFloat(r.querySelector('.inv-row-qty').value) || 0,
+          price: parseFloat(r.querySelector('.inv-row-price').value) || 0
+        };
+      });
+    }
+
+    function totals(items) {
+      var sub  = items.reduce(function (s, i) { return s + i.qty * i.price; }, 0);
+      var on   = invVatOn  ? invVatOn.checked : false;
+      var rate = invVatRate ? (parseFloat(invVatRate.value) || 0) : 0;
+      var vat  = on ? sub * rate / 100 : 0;
+      return { sub: sub, rate: rate, vat: vat, total: sub + vat, vatOn: on };
+    }
+
+    function getSaved() {
+      try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function updateBadges() {
+      var c = getSaved().length;
+      if (savedBadge) savedBadge.textContent = c;
+      if (savedMeta) savedMeta.textContent = c + ' document' + (c === 1 ? '' : 's');
+    }
+
+    /* render preview */
+    function renderPreview() {
+      if (!invDoc) return;
+      var items   = getItems();
+      var t       = totals(items);
+      var date    = invDate   ? invDate.value   : '';
+      var due     = invDueDate ? invDueDate.value : '';
+      var cName   = invCName  ? invCName.value.trim()  : '';
+      var cCo     = invCCo    ? invCCo.value.trim()    : '';
+      var cEmail  = invCEmail ? invCEmail.value.trim() : '';
+      var cPhone  = invCPhone ? invCPhone.value.trim() : '';
+      var notes   = invNotes  ? invNotes.value.trim()  : '';
+
+      var logoHtml = logoUrl
+        ? '<img src="' + esc(logoUrl) + '" alt="JO4 Dev" class="inv-doc-logo-img">'
+        : '<div class="inv-doc-logo-text">JO4<span>.</span>DEV</div>';
+
+      var rows = items.length
+        ? items.map(function (i) {
+            return '<tr>' +
+              '<td>' + esc(i.desc || '—') + '</td>' +
+              '<td class="inv-col-center">' + i.qty + '</td>' +
+              '<td class="inv-col-right">' + fmtCur(i.price) + '</td>' +
+              '<td class="inv-col-right">' + fmtCur(i.qty * i.price) + '</td>' +
+            '</tr>';
+          }).join('')
+        : '<tr><td colspan="4" style="text-align:center;padding:20px;color:#ccc;font-style:italic;font-size:.85rem;">No items added yet</td></tr>';
+
+      var vatRow = t.vatOn
+        ? '<div class="inv-total-row"><span>VAT (' + t.rate + '%)</span><span>' + fmtCur(t.vat) + '</span></div>'
+        : '';
+
+      var notesHtml = notes
+        ? '<div class="inv-doc-notes"><div class="inv-notes-label">Notes &amp; Payment Terms</div><div class="inv-notes-body">' + esc(notes).replace(/\n/g,'<br>') + '</div></div>'
+        : '';
+
+      var bankHtml = '';
+      if (bizSettings.bank_name || bizSettings.account_number) {
+        var bLines = [];
+        if (bizSettings.bank_name)       bLines.push('<strong>Bank:</strong> '    + esc(bizSettings.bank_name));
+        if (bizSettings.account_holder)  bLines.push('<strong>Holder:</strong> '  + esc(bizSettings.account_holder));
+        if (bizSettings.account_number)  bLines.push('<strong>Account:</strong> ' + esc(bizSettings.account_number));
+        if (bizSettings.branch_code)     bLines.push('<strong>Branch:</strong> '  + esc(bizSettings.branch_code));
+        bankHtml = '<div class="inv-doc-bank"><div class="inv-notes-label">Banking Details</div><div class="inv-notes-body">' + bLines.join(' &nbsp;·&nbsp; ') + '</div></div>';
+      }
+
+      invDoc.innerHTML =
+        '<div class="inv-doc-header">' +
+          '<div class="inv-doc-logo-block">' + logoHtml + '</div>' +
+          '<div class="inv-doc-meta">' +
+            '<div class="inv-doc-type">' + currentType + '</div>' +
+            '<div class="inv-doc-number">' + esc(invNumber.value || '—') + '</div>' +
+            '<div class="inv-doc-dates">' +
+              (date ? '<div class="inv-doc-date-row"><span>Issue Date</span><span>' + fmtDate(date) + '</span></div>' : '') +
+              (due  ? '<div class="inv-doc-date-row"><span>Due Date</span><span>'   + fmtDate(due)  + '</span></div>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="inv-doc-parties">' +
+          '<div class="inv-party"><div class="inv-party-label">From</div>' +
+            '<div class="inv-party-name">' + esc(bizSettings.biz_name || 'JO4 Dev') + '</div>' +
+            (bizSettings.biz_address ? '<div class="inv-party-line">' + esc(bizSettings.biz_address).replace(/\n/g,'<br>') + '</div>' : '') +
+            (bizSettings.biz_phone   ? '<div class="inv-party-line">' + esc(bizSettings.biz_phone)   + '</div>' : '') +
+            (bizSettings.biz_email   ? '<div class="inv-party-line">' + esc(bizSettings.biz_email)   + '</div>' : '<div class="inv-party-line">jroetscyber@gmail.com</div>') +
+            (bizSettings.vat_number  ? '<div class="inv-party-line">VAT: ' + esc(bizSettings.vat_number) + '</div>' : '') +
+          '</div>' +
+          '<div class="inv-party"><div class="inv-party-label">Bill To</div><div class="inv-party-name">' + esc(cName || '—') + '</div>' +
+            (cCo    ? '<div class="inv-party-line">' + esc(cCo)    + '</div>' : '') +
+            (cEmail ? '<div class="inv-party-line">' + esc(cEmail) + '</div>' : '') +
+            (cPhone ? '<div class="inv-party-line">' + esc(cPhone) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<table class="inv-doc-table"><thead><tr>' +
+          '<th>Description</th><th class="inv-col-center">Qty</th><th class="inv-col-right">Unit Price</th><th class="inv-col-right">Total</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<div class="inv-doc-totals">' +
+          '<div class="inv-total-row"><span>Subtotal</span><span>' + fmtCur(t.sub) + '</span></div>' +
+          vatRow +
+          '<div class="inv-total-row inv-total-grand"><span>Total</span><span>' + fmtCur(t.total) + '</span></div>' +
+        '</div>' +
+        notesHtml +
+        bankHtml;
+    }
+
+    /* add item row */
+    function addItemRow(item) {
+      item = item || {};
+      var row = document.createElement('div');
+      row.className = 'inv-line-row';
+      row.innerHTML =
+        '<input class="admin-form-input inv-row-desc"  placeholder="Service / description" value="' + esc(item.desc || '') + '">' +
+        '<input class="admin-form-input inv-row-qty"   type="number" min="0" step="0.01" placeholder="1"    value="' + (item.qty   || '') + '">' +
+        '<input class="admin-form-input inv-row-price" type="number" min="0" step="0.01" placeholder="0.00" value="' + (item.price || '') + '">' +
+        '<button class="inv-remove-row" type="button" aria-label="Remove">' +
+          '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>';
+
+      row.querySelector('.inv-remove-row').addEventListener('click', function () { row.remove(); renderPreview(); });
+      row.querySelectorAll('input').forEach(function (inp) { inp.addEventListener('input', renderPreview); });
+      invItems.appendChild(row);
+      renderPreview();
+    }
+
+    /* tab switching */
+    document.querySelectorAll('.inv-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.inv-tab').forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        var target = tab.getAttribute('data-inv-tab');
+        document.querySelectorAll('.inv-tab-pane').forEach(function (p) { p.style.display = 'none'; });
+        var pane = document.getElementById(target);
+        if (pane) pane.style.display = '';
+        if (target === 'invSavedPane') renderSavedTable();
+        if (target === 'invBizPane') populateBizForm();
+      });
+    });
+
+    /* business settings form */
+    function populateBizForm() {
+      var fields = {
+        bizName: bizSettings.biz_name || '',
+        bizAddress: bizSettings.biz_address || '',
+        bizPhone: bizSettings.biz_phone || '',
+        bizEmail: bizSettings.biz_email || '',
+        bizVatNumber: bizSettings.vat_number || '',
+        bizBankName: bizSettings.bank_name || '',
+        bizAccountHolder: bizSettings.account_holder || '',
+        bizAccountNumber: bizSettings.account_number || '',
+        bizBranchCode: bizSettings.branch_code || '',
+        bizPaymentTerms: bizSettings.payment_terms || ''
+      };
+      Object.keys(fields).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = fields[id];
+      });
+    }
+
+    var bizSaveBtn = document.getElementById('bizSaveBtn');
+    if (bizSaveBtn) {
+      bizSaveBtn.addEventListener('click', function () {
+        var fd = new FormData();
+        fd.append('biz_name',        (document.getElementById('bizName')          || {}).value || '');
+        fd.append('biz_address',     (document.getElementById('bizAddress')        || {}).value || '');
+        fd.append('biz_phone',       (document.getElementById('bizPhone')          || {}).value || '');
+        fd.append('biz_email',       (document.getElementById('bizEmail')          || {}).value || '');
+        fd.append('vat_number',      (document.getElementById('bizVatNumber')      || {}).value || '');
+        fd.append('bank_name',       (document.getElementById('bizBankName')       || {}).value || '');
+        fd.append('account_holder',  (document.getElementById('bizAccountHolder')  || {}).value || '');
+        fd.append('account_number',  (document.getElementById('bizAccountNumber')  || {}).value || '');
+        fd.append('branch_code',     (document.getElementById('bizBranchCode')     || {}).value || '');
+        fd.append('payment_terms',   (document.getElementById('bizPaymentTerms')   || {}).value || '');
+
+        bizSaveBtn.disabled = true;
+        bizSaveBtn.textContent = 'Saving…';
+
+        fetch('/admin/save_invoice_settings', { method: 'POST', body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.ok) {
+              bizSettings.biz_name       = fd.get('biz_name');
+              bizSettings.biz_address    = fd.get('biz_address');
+              bizSettings.biz_phone      = fd.get('biz_phone');
+              bizSettings.biz_email      = fd.get('biz_email');
+              bizSettings.vat_number     = fd.get('vat_number');
+              bizSettings.bank_name      = fd.get('bank_name');
+              bizSettings.account_holder = fd.get('account_holder');
+              bizSettings.account_number = fd.get('account_number');
+              bizSettings.branch_code    = fd.get('branch_code');
+              bizSettings.payment_terms  = fd.get('payment_terms');
+              renderPreview();
+              bizSaveBtn.style.background = 'var(--status-green)';
+              bizSaveBtn.textContent = 'Saved!';
+              setTimeout(function () {
+                bizSaveBtn.style.background = '';
+                bizSaveBtn.disabled = false;
+                bizSaveBtn.innerHTML = 'Save Settings <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+              }, 2000);
+            } else {
+              bizSaveBtn.style.background = 'var(--status-red, #e53e3e)';
+              bizSaveBtn.textContent = 'Error — try again';
+              setTimeout(function () { bizSaveBtn.style.background = ''; bizSaveBtn.disabled = false; bizSaveBtn.textContent = 'Save Settings'; }, 2500);
+            }
+          })
+          .catch(function () {
+            bizSaveBtn.style.background = 'var(--status-red, #e53e3e)';
+            bizSaveBtn.textContent = 'Error — try again';
+            setTimeout(function () { bizSaveBtn.style.background = ''; bizSaveBtn.disabled = false; bizSaveBtn.textContent = 'Save Settings'; }, 2500);
+          });
+      });
+    }
+
+    /* type toggle */
+    document.querySelectorAll('.inv-type-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.inv-type-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentType = btn.getAttribute('data-type');
+        var meta = document.getElementById('invDocTypeMeta');
+        if (meta) meta.textContent = currentType;
+        if (!editingId) invNumber.value = peekNum(currentType);
+        renderPreview();
+      });
+    });
+
+    /* live update on field change */
+    [invDate, invDueDate, invCName, invCCo, invCEmail, invCPhone, invNotes, invVatRate].forEach(function (el) {
+      if (el) el.addEventListener('input', renderPreview);
+    });
+    if (invVatOn) invVatOn.addEventListener('change', function () {
+      if (invVatRate) invVatRate.disabled = !invVatOn.checked;
+      renderPreview();
+    });
+
+    /* add row button */
+    var addRowBtn = document.getElementById('invAddRow');
+    if (addRowBtn) addRowBtn.addEventListener('click', function () { addItemRow(); });
+
+    /* save */
+    document.getElementById('invSaveBtn').addEventListener('click', function () {
+      var items = getItems();
+      var t     = totals(items);
+      var docNum;
+
+      if (editingId) {
+        docNum = invNumber.value;
+      } else {
+        docNum = nextNum(currentType);
+        invNumber.value = docNum;
+      }
+
+      var doc = {
+        id:            editingId || ('inv_' + Date.now()),
+        type:          currentType,
+        number:        docNum,
+        date:          invDate    ? invDate.value    : '',
+        dueDate:       invDueDate ? invDueDate.value : '',
+        status:        invStatus  ? invStatus.value  : 'Draft',
+        clientName:    invCName   ? invCName.value.trim()   : '',
+        clientCompany: invCCo     ? invCCo.value.trim()     : '',
+        clientEmail:   invCEmail  ? invCEmail.value.trim()  : '',
+        clientPhone:   invCPhone  ? invCPhone.value.trim()  : '',
+        items:         items,
+        vatEnabled:    t.vatOn,
+        vatRate:       t.rate,
+        notes:         invNotes   ? invNotes.value.trim()   : '',
+        subtotal:      t.sub,
+        vatAmount:     t.vat,
+        total:         t.total,
+        savedAt:       todayStr()
+      };
+
+      var saved = getSaved();
+      if (editingId) {
+        var idx = saved.findIndex(function (d) { return d.id === editingId; });
+        if (idx >= 0) saved[idx] = doc; else saved.push(doc);
+      } else {
+        saved.push(doc);
+        editingId = doc.id;
+      }
+
+      localStorage.setItem(STORE_KEY, JSON.stringify(saved));
+      updateBadges();
+
+      var btn = document.getElementById('invSaveBtn');
+      var orig = btn.innerHTML;
+      btn.style.background = 'var(--status-green)';
+      btn.style.color = '#fff';
+      btn.textContent = 'Saved!';
+      setTimeout(function () { btn.style.background = ''; btn.style.color = ''; btn.innerHTML = orig; }, 1800);
+    });
+
+    /* print / PDF */
+    document.getElementById('invPrintBtn').addEventListener('click', function () {
+      renderPreview();
+      var docEl = document.getElementById('invDoc');
+      if (!docEl) return;
+
+      var w = window.open('', '_blank', 'width=860,height=720');
+      if (!w) { alert('Allow popups to print.'); return; }
+
+      var css = [
+        'body{margin:0;padding:40px;background:#fff;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}',
+        '.inv-doc{max-width:760px;margin:0 auto;}',
+        '.inv-doc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #eeece8;}',
+        '.inv-doc-logo-img{max-height:50px;max-width:150px;object-fit:contain;}',
+        '.inv-doc-logo-text{font-size:1.7rem;font-weight:800;letter-spacing:-0.04em;color:#111;}',
+        '.inv-doc-logo-text span{color:#0d9488;}',
+        '.inv-doc-meta{text-align:right;}',
+        '.inv-doc-type{font-size:1.8rem;font-weight:800;text-transform:uppercase;color:#111;line-height:1;}',
+        '.inv-doc-number{font-family:monospace;font-size:.8rem;color:#0d9488;letter-spacing:.06em;margin-top:6px;}',
+        '.inv-doc-dates{margin-top:12px;}',
+        '.inv-doc-date-row{display:flex;justify-content:flex-end;gap:14px;font-size:.82rem;color:#444;margin-top:4px;}',
+        '.inv-doc-date-row span:first-child{font-family:monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#bbb;min-width:76px;text-align:right;}',
+        '.inv-doc-parties{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid #eeece8;}',
+        '.inv-party-label{font-family:monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:#bbb;margin-bottom:8px;}',
+        '.inv-party-name{font-size:1rem;font-weight:700;color:#111;margin-bottom:4px;}',
+        '.inv-party-line{font-size:.82rem;color:#555;line-height:1.5;}',
+        '.inv-doc-table{width:100%;border-collapse:collapse;margin-bottom:20px;}',
+        '.inv-doc-table thead tr{background:#f7f6f3;}',
+        '.inv-doc-table thead th{font-family:monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:#999;padding:10px 14px;text-align:left;border-bottom:1px solid #e8e6e2;}',
+        '.inv-doc-table tbody tr:nth-child(even){background:#faf9f7;}',
+        '.inv-doc-table td{padding:10px 14px;font-size:.88rem;color:#333;border-bottom:1px solid #f0eee9;}',
+        '.inv-col-center{text-align:center!important;}',
+        '.inv-col-right{text-align:right!important;}',
+        '.inv-doc-totals{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding:14px 0 4px;border-top:1px solid #e8e6e2;}',
+        '.inv-total-row{display:flex;gap:44px;font-size:.88rem;color:#555;}',
+        '.inv-total-row span:first-child{font-family:monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#bbb;min-width:90px;text-align:right;}',
+        '.inv-total-row span:last-child{min-width:110px;text-align:right;}',
+        '.inv-total-grand{margin-top:8px;padding-top:10px;border-top:2px solid #111;}',
+        '.inv-total-grand span:first-child{font-size:.78rem;font-weight:700;color:#111!important;}',
+        '.inv-total-grand span:last-child{font-size:1.15rem;font-weight:800;color:#0d9488!important;}',
+        '.inv-doc-notes{margin-top:20px;padding:14px 18px;background:#f7f6f3;border-radius:6px;border-left:3px solid #0d9488;}',
+        '.inv-doc-bank{margin-top:12px;padding:14px 18px;background:#f7f6f3;border-radius:6px;border-left:3px solid #ccc;}',
+        '.inv-notes-label{font-family:monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:#bbb;margin-bottom:8px;}',
+        '.inv-notes-body{font-size:.82rem;color:#555;line-height:1.7;}'
+      ].join('');
+
+      w.document.write(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+        '<title>' + esc(invNumber.value || 'Document') + '</title>' +
+        '<style>' + css + '</style></head>' +
+        '<body><div class="inv-doc">' + docEl.innerHTML + '</div></body></html>'
+      );
+      w.document.close();
+      w.focus();
+      setTimeout(function () { w.print(); }, 500);
+    });
+
+    /* reset / new */
+    document.getElementById('invResetBtn').addEventListener('click', function () {
+      if (!confirm('Start a new document? Unsaved changes will be lost.')) return;
+      resetForm();
+    });
+
+    function resetForm() {
+      editingId   = null;
+      currentType = 'Invoice';
+      document.querySelectorAll('.inv-type-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-type') === 'Invoice');
+      });
+      var meta = document.getElementById('invDocTypeMeta');
+      if (meta) meta.textContent = 'Invoice';
+      invNumber.value = peekNum('Invoice');
+      if (invDate)    invDate.value    = todayStr();
+      if (invDueDate) invDueDate.value = dueStr(30);
+      if (invStatus)  invStatus.value  = 'Draft';
+      if (invCName)   invCName.value   = '';
+      if (invCCo)     invCCo.value     = '';
+      if (invCEmail)  invCEmail.value  = '';
+      if (invCPhone)  invCPhone.value  = '';
+      if (invNotes)   invNotes.value   = '';
+      if (invVatOn)   invVatOn.checked = true;
+      if (invVatRate) { invVatRate.value = '15'; invVatRate.disabled = false; }
+      invItems.innerHTML = '';
+      addItemRow();
+      renderPreview();
+    }
+
+    /* render saved table */
+    function statusClass(s) {
+      return { Draft:'inv-status-draft', Sent:'inv-status-sent', Paid:'inv-status-paid', Overdue:'inv-status-overdue' }[s] || 'inv-status-draft';
+    }
+
+    function renderSavedTable() {
+      if (!savedTbody) return;
+      var saved = getSaved().slice().reverse();
+      updateBadges();
+
+      if (!saved.length) {
+        savedTbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center" style="font-family:var(--font-mono);font-size:.8rem;color:var(--color-text-muted);">No documents saved yet.</td></tr>';
+        return;
+      }
+
+      savedTbody.innerHTML = saved.map(function (d) {
+        return '<tr>' +
+          '<td><span style="font-family:var(--font-mono);font-size:.75rem;color:var(--accent);">' + esc(d.number) + '</span></td>' +
+          '<td><div class="client-name">' + esc(d.clientName || '—') + '</div><div class="client-company">' + esc(d.clientCompany || '') + '</div></td>' +
+          '<td><span style="font-family:var(--font-mono);font-size:.72rem;color:var(--color-text-secondary);">' + esc(d.type) + '</span></td>' +
+          '<td><span class="text-muted" style="font-family:var(--font-mono);font-size:.72rem;">' + esc(fmtDate(d.date) || '—') + '</span></td>' +
+          '<td><span style="font-family:var(--font-mono);font-size:.82rem;font-weight:600;color:var(--color-text-primary);">' + fmtCur(d.total) + '</span></td>' +
+          '<td><span class="inv-status-badge ' + statusClass(d.status) + '">' + esc(d.status) + '</span></td>' +
+          '<td style="white-space:nowrap;">' +
+            '<button class="tbl-action-btn inv-open-btn" data-doc-id="' + esc(d.id) + '" type="button">Open</button>&nbsp;' +
+            '<button class="tbl-action-btn inv-del-btn" data-doc-id="' + esc(d.id) + '" type="button">Delete</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+
+      savedTbody.querySelectorAll('.inv-open-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id  = btn.getAttribute('data-doc-id');
+          var doc = getSaved().find(function (d) { return d.id === id; });
+          if (!doc) return;
+          loadDoc(doc);
+          document.querySelector('.inv-tab[data-inv-tab="invBuilderPane"]').click();
+        });
+      });
+
+      savedTbody.querySelectorAll('.inv-del-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (!confirm('Delete this document permanently?')) return;
+          var id = btn.getAttribute('data-doc-id');
+          localStorage.setItem(STORE_KEY, JSON.stringify(getSaved().filter(function (d) { return d.id !== id; })));
+          renderSavedTable();
+        });
+      });
+    }
+
+    function loadDoc(doc) {
+      editingId   = doc.id;
+      currentType = doc.type || 'Invoice';
+      document.querySelectorAll('.inv-type-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-type') === currentType);
+      });
+      var meta = document.getElementById('invDocTypeMeta');
+      if (meta) meta.textContent = currentType;
+      invNumber.value = doc.number || '';
+      if (invDate)    invDate.value    = doc.date    || '';
+      if (invDueDate) invDueDate.value = doc.dueDate || '';
+      if (invStatus)  invStatus.value  = doc.status  || 'Draft';
+      if (invCName)   invCName.value   = doc.clientName    || '';
+      if (invCCo)     invCCo.value     = doc.clientCompany || '';
+      if (invCEmail)  invCEmail.value  = doc.clientEmail   || '';
+      if (invCPhone)  invCPhone.value  = doc.clientPhone   || '';
+      if (invVatOn)   invVatOn.checked = doc.vatEnabled !== false;
+      if (invVatRate) invVatRate.value = doc.vatRate || 15;
+      if (invNotes)   invNotes.value   = doc.notes   || '';
+      invItems.innerHTML = '';
+      (doc.items || []).forEach(addItemRow);
+      if (!doc.items || !doc.items.length) addItemRow();
+      renderPreview();
+    }
+
+    /* init */
+    resetForm();
+    updateBadges();
+  }());
+
   (function () {
     var ctx = document.getElementById('pipelineFunnelChart');
     if (!ctx || !window.Chart || !window.pipelineFunnelData) return;

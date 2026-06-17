@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, logout_user
-from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, FAQ, BookingSettings, Transaction, Service, FAQSubmission, get_booking_settings, make_slug
+from database import db, Lead, Project, AutomationLog, Analytics, BlogPost, FAQ, BookingSettings, Transaction, Service, FAQSubmission, get_booking_settings, InvoiceSettings, get_invoice_settings, make_slug
 from google_calendar import google_calendar_available
 from datetime import datetime, timedelta, date
 from sqlalchemy import func, text
@@ -107,7 +107,20 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         services_list = Service.query.order_by(Service.display_order.asc()).all()
         faq_submissions = FAQSubmission.query.order_by(FAQSubmission.created_at.desc()).all()
         booking_settings = get_booking_settings()
-        
+        inv_s = get_invoice_settings()
+        invoice_settings = {
+            'biz_name': inv_s.biz_name or '',
+            'biz_address': inv_s.biz_address or '',
+            'biz_phone': inv_s.biz_phone or '',
+            'biz_email': inv_s.biz_email or '',
+            'bank_name': inv_s.bank_name or '',
+            'account_holder': inv_s.account_holder or '',
+            'account_number': inv_s.account_number or '',
+            'branch_code': inv_s.branch_code or '',
+            'vat_number': inv_s.vat_number or '',
+            'payment_terms': inv_s.payment_terms or '',
+        }
+
         transactions_query = Transaction.query
         if selected_month and selected_year:
             # Filter transactions for the selected month and year
@@ -208,6 +221,7 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         services_list = []
         faq_submissions = []
         booking_settings = BookingSettings()
+        invoice_settings = {'biz_name': 'JO4 Dev', 'biz_email': 'jroetscyber@gmail.com', 'biz_address': '', 'biz_phone': '', 'bank_name': '', 'account_holder': '', 'account_number': '', 'branch_code': '', 'vat_number': '', 'payment_terms': ''}
         transactions_list = []
         logs_list = []
         total_views = 0
@@ -253,7 +267,8 @@ def build_admin_context(active_page, selected_month=None, selected_year=None):
         'now': datetime.utcnow(),
         'active_page': active_page,
         'selected_month': selected_month,
-        'selected_year': selected_year
+        'selected_year': selected_year,
+        'invoice_settings': invoice_settings,
     }
 
 @admin_bp.route('/admin')
@@ -546,6 +561,35 @@ def run_script():
         return jsonify({"status": "success", "message": f"Script {script_name} executed successfully"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@admin_bp.route('/admin/invoices')
+@login_required
+def invoices_page():
+    return render_template('admin/invoices.html', **build_admin_context('invoices'))
+
+
+@admin_bp.route('/admin/save_invoice_settings', methods=['POST'])
+@login_required
+def save_invoice_settings():
+    try:
+        s = get_invoice_settings()
+        s.biz_name = request.form.get('biz_name', '').strip()
+        s.biz_address = request.form.get('biz_address', '').strip()
+        s.biz_phone = request.form.get('biz_phone', '').strip()
+        s.biz_email = request.form.get('biz_email', '').strip()
+        s.bank_name = request.form.get('bank_name', '').strip()
+        s.account_holder = request.form.get('account_holder', '').strip()
+        s.account_number = request.form.get('account_number', '').strip()
+        s.branch_code = request.form.get('branch_code', '').strip()
+        s.vat_number = request.form.get('vat_number', '').strip()
+        s.payment_terms = request.form.get('payment_terms', '').strip()
+        db.session.commit()
+        return jsonify({'ok': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
 
 @admin_bp.route('/admin/delete_lead/<int:lead_id>', methods=['POST', 'DELETE'])
 @login_required
