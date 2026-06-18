@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebP Converter</title>
+    <style>
+        body { font-family: monospace; max-width: 600px; margin: 40px auto; padding: 20px; }
+        input, button, select { margin: 8px 0; padding: 8px; width: 100%; }
+        button { background: #000; color: #fff; cursor: pointer; border: none; }
+        #stats { background: #f4f4f4; padding: 16px; margin-top: 20px; display: none; }
+        .big { font-size: 2em; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <h1>WebP Converter</h1>
+
+    <input type="file" id="imageInput" accept=".jpg,.jpeg,.png">
+
+    <label>Quality (0-100): <strong id="qualityVal">80</strong></label>
+    <input type="range" id="quality" min="0" max="100" value="80"
+           oninput="document.getElementById('qualityVal').innerText = this.value">
+
+    <label>Method (0-6):</label>
+    <select id="method">
+        <option value="4">4 - Fast</option>
+        <option value="5">5 - Balanced</option>
+        <option value="6" selected>6 - Best compression (slower)</option>
+    </select>
+
+    <button onclick="convert()">Convert to WebP</button>
+
+    <div id="stats">
+        <p>Original: <span id="origSize"></span> KB</p>
+        <p>WebP:     <span id="webpSize"></span> KB</p>
+        <p class="big">Saved: <span id="saving"></span>%</p>
+        <pre id="log"></pre>
+    </div>
+
+    <script>
+        async function convert() {
+            const file = document.getElementById("imageInput").files[0];
+            if (!file) { alert("Pick an image first!"); return; }
+
+            const form = new FormData();
+            form.append("image",   file);
+            form.append("quality", document.getElementById("quality").value);
+            form.append("method",  document.getElementById("method").value);
+
+            const res  = await fetch("/convert", { method: "POST", body: form });
+            const data = await res.json();
+
+            if (data.error) { alert("Error: " + data.error); return; }
+
+            document.getElementById("origSize").innerText = data.input_size_kb;
+            document.getElementById("webpSize").innerText = data.output_size_kb;
+            document.getElementById("saving").innerText   = data.saving_percent;
+            document.getElementById("log").innerText      = data.converter_log;
+            document.getElementById("stats").style.display = "block";
+        }
+    </script>
+</body>
+</html>
+
