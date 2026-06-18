@@ -7,32 +7,32 @@
   <meta name="description" content="{% block meta_description %}Custom websites, CRM tools and automation systems for faster leads, cleaner workflows and owned software.{% endblock %}">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts — non-blocking -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  </noscript>
 
-  <!-- Bootstrap 5 -->
-  <link href="{{ static_url('css/bootstrap.min.css') }}" rel="stylesheet">
+  <!-- Bootstrap 5 — non-blocking (grid is below fold; nav/hero use custom styles) -->
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="{{ static_url('css/bootstrap.min.css') }}">
+  <noscript><link rel="stylesheet" href="{{ static_url('css/bootstrap.min.css') }}"></noscript>
 
-  <!-- AOS -->
-  <link href="{{ static_url('css/aos.css') }}" rel="stylesheet">
+  <!-- AOS — non-blocking (animations only, not layout-critical) -->
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="{{ static_url('css/aos.css') }}">
+  <noscript><link rel="stylesheet" href="{{ static_url('css/aos.css') }}"></noscript>
 
-  <!-- Site stylesheet -->
+  <!-- Site stylesheet — blocking (critical nav/hero styles) -->
   <link rel="stylesheet" href="{{ static_url('css/style.css') }}">
 
   <!-- Canonical Link -->
   <link rel="canonical" href="https://{{ request.host }}{{ request.path }}">
 
   <script src="https://analytics.ahrefs.com/analytics.js" data-key="Ux1JVBSMDqBkdjYsu1cxiA" async></script>
-
-  <script>
-    var ahrefs_analytics_script = document.createElement('script');
-    ahrefs_analytics_script.async = true;
-    ahrefs_analytics_script.src = 'https://analytics.ahrefs.com/analytics.js';
-    ahrefs_analytics_script.setAttribute('data-key', 'Ux1JVBSMDqBkdjYsu1cxiA');
-    document.getElementsByTagName('head')[0].appendChild(ahrefs_analytics_script);
-  </script>
   
   {% block head_extra %}{% endblock %}
   {% block json_ld_schema %}{% endblock %}
@@ -43,7 +43,7 @@
   <nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="{{ url_for('home') }}" class="nav-logo">
-        <img src="{{ static_url('assets/logo.png') }}" alt="JO4 Dev" class="nav-logo-img">
+        <img src="{{ static_url('assets/logo.png') }}" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
       </a>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -75,7 +75,7 @@
 
         <div class="footer-brand">
           <a href="{{ url_for('home') }}" class="nav-logo">
-            <img src="{{ static_url('assets/logo.png') }}" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer">
+            <img src="{{ static_url('assets/logo.png') }}" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="90" height="83" loading="lazy">
           </a>
           <p>Premium web systems for businesses that demand results.</p>
         </div>
