@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}Application Security Testing South Africa Penetration Testing & DevSecOps | JO4 Dev{% endblock %}
+
+{% block meta_description %}Enterprise application security testing, web application penetration testing, SAST/DAST analysis and DevSecOps pipeline integration. Developer-led assessments that find logic flaws automated tools miss.{% endblock %}
+
+{% block head_extra %}
+<meta name="keywords" content="application security testing, application testing services, web application penetration testing, static application security testing, dynamic application security testing, devsecops, appsec south africa, penetration testing south africa">
+<meta property="og:title" content="Application Security Testing & Penetration Testing | JO4 Dev">
+<meta property="og:description" content="Developer-led application security testing, web application penetration testing, SAST/DAST, and DevSecOps integration for South African and global enterprises.">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block json_ld_schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Application Security Testing South Africa",
+  "serviceType": "Application Security Testing & Penetration Testing",
+  "provider": {
+    "@type": "LocalBusiness",
+    "name": "JO4 Dev",
+    "url": "https://jo4.co.za",
+    "email": "jroetscyber@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Nigel",
+      "addressRegion": "Gauteng",
+      "addressCountry": "ZA"
+    },
+    "areaServed": [
+      { "@type": "Country", "name": "South Africa" },
+      { "@type": "AdministrativeArea", "name": "Global" }
+    ]
+  },
+  "description": "Enterprise application security testing including web application penetration testing, SAST/DAST analysis, and DevSecOps pipeline integration. Developer-led assessments that identify business-logic vulnerabilities automated scanners cannot detect.",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web Application Penetration Testing" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Static Application Security Testing (SAST)" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Dynamic Application Security Testing (DAST)" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "DevSecOps Pipeline Integration" } }
+    ]
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     HERO DARK
+============================================================ -->
+<section class="appsec-hero" aria-label="Application security testing hero">
+  <div class="svc-page-hero-inner">
+    <div data-aos="fade-up">
+      <span class="eyebrow appsec-eyebrow" style="margin-bottom:24px; display:inline-flex;">Application Security Testing &middot; South Africa &amp; Global</span>
+      <h1 class="display-hero" style="max-width:920px; color:var(--dark-text);">
+        Application Security Testing<br>Built by Developers Who Know<br>
+        <span style="color:var(--accent-light);">How Systems Break.</span>
+      </h1>
+      <p class="lead-text" style="margin-top:24px; max-width:660px; color:var(--dark-text-muted);">
+        Comprehensive web application penetration testing, static and dynamic analysis, and DevSecOps integration delivered by engineers who design and build production systems from the ground up. We don't run automated scanners and call it a security assessment. <strong style="color:var(--dark-text);">We find what the scanners miss.</strong>
+      </p>
+      <div style="margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ url_for('booking.book') }}" class="btn-light-custom">
+          Schedule a Scoped Assessment
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#methodology" class="btn-ghost-custom" style="color:var(--dark-text); border-color:rgba(240,238,234,0.2);">
+          View Methodology <span aria-hidden="true">&#8595;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     DARK TRUST BAR
+============================================================ -->
+<div class="wd-trust-bar appsec-trust-bar" data-aos="fade-up">
+  <div class="wd-trust-inner">
+    <div class="wd-trust-item">
+      <strong>OWASP</strong>
+      <span>Top 10 Aligned</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>CVSS v3.1</strong>
+      <span>Scored Findings</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Developer</strong>
+      <span>Led Testing</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Confidential</strong>
+      <span>Engagement Policy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CORE CAPABILITIES
+============================================================ -->
+<section class="section appsec-cap-section" aria-labelledby="cap-heading">
+
+  <div class="section-header" data-aos="fade-up" style="text-align:center; margin-bottom:clamp(48px, 6vw, 72px);">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Core Capabilities</span>
+    <h2 class="display-section" id="cap-heading">
+      Application security testing<br>across your entire attack surface.
+    </h2>
+    <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:20px; max-width:600px; margin-left:auto; margin-right:auto;">
+      Every engagement is scoped to your application's specific architecture, technology stack, and threat model not a templated checklist deployed against every client regardless of context.
+    </p>
+  </div>
+
+  <div class="appsec-cap-grid">
+
+    <!-- CAPABILITY 1 -->
+    <div class="appsec-cap-card" data-aos="fade-up">
+      <div class="appsec-cap-header">
+        <div class="appsec-cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="appsec-cap-tag">Manual &amp; Automated Testing</div>
+          <h3 class="appsec-cap-title">Web &amp; Mobile Application Penetration Testing</h3>
+        </div>
+      </div>
+      <p class="appsec-cap-body">
+        Simulating the actions of a real-world threat actor against your application's authentication flows, session management, API endpoints, and business logic. Unlike automated scanners, manual web application penetration testing uncovers logical vulnerabilities broken access control, privilege escalation, and insecure direct object references that no tool can find autonomously.
+      </p>
+      <ul class="appsec-cap-list">
+        <li>OWASP Top 10 vulnerability coverage</li>
+        <li>Authentication &amp; session management abuse</li>
+        <li>Broken access control &amp; IDOR testing</li>
+        <li>API security testing (REST, GraphQL, WebSocket)</li>
+        <li>Business logic flaw identification</li>
+        <li>Mobile application binary analysis &amp; runtime testing</li>
+      </ul>
+    </div>
+
+    <!-- CAPABILITY 2 -->
+    <div class="appsec-cap-card" data-aos="fade-up" data-aos-delay="80">
+      <div class="appsec-cap-header">
+        <div class="appsec-cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div>
+          <div class="appsec-cap-tag">SAST &amp; DAST</div>
+          <h3 class="appsec-cap-title">Static &amp; Dynamic Application Security Testing</h3>
+        </div>
+      </div>
+      <p class="appsec-cap-body">
+        A dual-mode approach to application security testing that eliminates vulnerabilities at two distinct stages. Static application security testing (SAST) analyses source code and dependency manifests before build catching injection flaws, insecure deserialization, and hardcoded credentials at origin. Dynamic application security testing (DAST) engages the running application in a production-equivalent environment to surface exploitable runtime weaknesses invisible to static analysis.
+      </p>
+      <ul class="appsec-cap-list">
+        <li>Source code review &amp; manual SAST audit</li>
+        <li>Dependency vulnerability analysis (SCA)</li>
+        <li>Runtime injection testing (SQLi, XSS, SSRF, XXE)</li>
+        <li>Authentication token analysis in live environments</li>
+        <li>Encrypted traffic inspection &amp; TLS configuration audit</li>
+        <li>Error handling &amp; information disclosure testing</li>
+      </ul>
+    </div>
+
+    <!-- CAPABILITY 3 -->
+    <div class="appsec-cap-card" data-aos="fade-up" data-aos-delay="160">
+      <div class="appsec-cap-header">
+        <div class="appsec-cap-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        </div>
+        <div>
+          <div class="appsec-cap-tag">Pipeline &amp; Continuous Security</div>
+          <h3 class="appsec-cap-title">DevSecOps &amp; Pipeline Integration</h3>
+        </div>
+      </div>
+      <p class="appsec-cap-body">
+        Security findings are only valuable if they're addressed before they reach production. We integrate automated security gates directly into your CI/CD pipeline blocking insecure builds, flagging new dependency vulnerabilities, and enforcing code quality thresholds without disrupting your release velocity. DevSecOps shifts security left, reducing remediation cost by an order of magnitude compared to post-deployment discovery.
+      </p>
+      <ul class="appsec-cap-list">
+        <li>CI/CD pipeline security gate configuration</li>
+        <li>Pre-commit &amp; pre-merge security hooks</li>
+        <li>SAST tool integration (GitHub Actions, GitLab CI, Jenkins)</li>
+        <li>Container &amp; infrastructure-as-code security scanning</li>
+        <li>Secret detection &amp; key rotation enforcement</li>
+        <li>Security findings dashboard &amp; alerting</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     DEVELOPER ADVANTAGE
+============================================================ -->
+<section class="section appsec-advantage-section" aria-labelledby="advantage-heading">
+  <div class="wd-why-grid">
+
+    <div class="wd-why-copy" data-aos="fade-right">
+      <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">The Developer Advantage</span>
+      <h2 class="display-section" id="advantage-heading">
+        Built securely.<br>Tested accurately.<br><span class="accent-line">From the inside out.</span>
+      </h2>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:24px; max-width:500px;">
+        Most penetration testing firms are IT consultancies. They run Burp Suite, export the scanner report, reformat it as a PDF, and deliver it as an "assessment." They test the surface. They miss the logic.
+      </p>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:16px; max-width:500px;">
+        We build production systems using Python/Flask architectures and clean, structured code. We have designed authentication systems, built API gateways, written ORM queries, and implemented session management. <strong>When we test your application, we test it the way another developer would attack it</strong> with full understanding of how the code is structured, where shortcuts are taken, and where trust assumptions break down.
+      </p>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:16px; max-width:500px;">
+        That depth of knowledge allows us to identify business-logic flaws, privilege escalation paths, and insecure API trust relationships that automated tooling and most consultants will never find.
+      </p>
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="margin-top:36px;">
+        Request a Confidential Consultation
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+
+    <div class="wd-why-compare" data-aos="fade-left" data-aos-delay="100">
+
+      <div class="wd-compare-card wd-compare-card--bad">
+        <div class="wd-compare-header">
+          <svg class="wd-compare-icon wd-compare-icon--no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <span>Standard IT Security Firm</span>
+        </div>
+        <ul class="wd-compare-list">
+          <li>Automated scanner output repackaged as a report</li>
+          <li>No understanding of your application's code structure</li>
+          <li>Misses business-logic flaws entirely</li>
+          <li>Generic CVSS scores with no remediation context</li>
+          <li>Cannot advise developers on root-cause fixes</li>
+        </ul>
+      </div>
+
+      <div class="wd-compare-card wd-compare-card--good">
+        <div class="wd-compare-header">
+          <svg class="wd-compare-icon wd-compare-icon--yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>JO4 Dev Application Security Testing</span>
+        </div>
+        <ul class="wd-compare-list">
+          <li>Manual testing by engineers who build the same systems</li>
+          <li>Deep ORM, API, and authentication logic analysis</li>
+          <li>Business-logic and trust-boundary exploitation</li>
+          <li>Developer-readable remediation with code-level guidance</li>
+          <li>Optional retesting after remediation is applied</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     METHODOLOGY
+============================================================ -->
+<section class="section appsec-method-section" id="methodology" aria-labelledby="method-heading">
+  <div class="section-header" data-aos="fade-up" style="text-align:center; margin-bottom:clamp(48px, 6vw, 72px);">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Assessment Methodology</span>
+    <h2 class="display-section" id="method-heading">
+      A structured process.<br><span class="accent-line">No guesswork. No black boxes.</span>
+    </h2>
+    <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:20px; max-width:580px; margin-left:auto; margin-right:auto;">
+      Every application security testing engagement follows a repeatable, documented methodology so you know exactly what we test, how we test it, and what the findings mean for your development team.
+    </p>
+  </div>
+
+  <div class="appsec-method-grid" data-aos="fade-up" data-aos-delay="60">
+
+    <div class="appsec-step">
+      <div class="appsec-step-num" aria-hidden="true">01</div>
+      <h3 class="appsec-step-title">Discovery &amp; Scoping</h3>
+      <p class="appsec-step-body">
+        Define the engagement perimeter, agree on rules of engagement, and document the application's architecture, technology stack, authentication mechanisms, and API surface. We establish a shared threat model identifying the most probable adversarial objectives against your specific system before any active testing begins.
+      </p>
+      <ul class="appsec-step-list">
+        <li>Architecture documentation review</li>
+        <li>Rules of engagement agreement</li>
+        <li>Threat model definition</li>
+        <li>Test environment provisioning</li>
+      </ul>
+    </div>
+
+    <div class="appsec-step">
+      <div class="appsec-step-num" aria-hidden="true">02</div>
+      <h3 class="appsec-step-title">Reconnaissance &amp; Attack Surface Mapping</h3>
+      <p class="appsec-step-body">
+        Passive and active reconnaissance to enumerate all accessible endpoints, map permission boundaries, fingerprint technology components, and identify third-party dependencies with known CVEs. Attack surface mapping ensures that no entry point including undocumented API routes and legacy endpoints is excluded from testing scope.
+      </p>
+      <ul class="appsec-step-list">
+        <li>Technology &amp; framework fingerprinting</li>
+        <li>Endpoint enumeration (API &amp; web)</li>
+        <li>Dependency &amp; CVE inventory</li>
+        <li>Permission boundary mapping</li>
+      </ul>
+    </div>
+
+    <div class="appsec-step">
+      <div class="appsec-step-num" aria-hidden="true">03</div>
+      <h3 class="appsec-step-title">Active Testing &amp; Controlled Exploitation</h3>
+      <p class="appsec-step-body">
+        Systematic, manual-led testing across all in-scope attack vectors injection, broken authentication, broken access control, security misconfigurations, cryptographic failures, and business-logic abuse. Exploitability is confirmed through controlled, non-destructive proof-of-concept exploitation to eliminate false positives before findings are reported.
+      </p>
+      <ul class="appsec-step-list">
+        <li>OWASP Top 10 vector coverage</li>
+        <li>Manual business-logic testing</li>
+        <li>Authentication &amp; session abuse</li>
+        <li>PoC exploitation (non-destructive)</li>
+      </ul>
+    </div>
+
+    <div class="appsec-step appsec-step--accent">
+      <div class="appsec-step-num" aria-hidden="true">04</div>
+      <h3 class="appsec-step-title">Remediation Report &amp; Developer Guidance</h3>
+      <p class="appsec-step-body">
+        A structured, CVSS v3.1-scored vulnerability report delivered in a developer-readable format. Each finding includes a root-cause analysis, proof-of-concept reproduction steps, business impact assessment, and actionable remediation guidance not generic fix recommendations copied from OWASP. Optional retesting engagement available after remediation is applied.
+      </p>
+      <ul class="appsec-step-list">
+        <li>CVSS v3.1-scored findings</li>
+        <li>Root cause &amp; reproduction steps</li>
+        <li>Developer-targeted remediation guidance</li>
+        <li>Optional post-remediation retesting</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BAND
+============================================================ -->
+<section class="cta-band" aria-label="Call to action">
+  <div class="section" style="text-align:center; padding-top:var(--section-py); padding-bottom:var(--section-py);">
+    <span class="eyebrow" style="justify-content:center; margin-bottom:24px;" data-aos="fade-up">Begin your assessment</span>
+    <h2 class="display-section" style="max-width:720px; margin:0 auto 22px;" data-aos="fade-up" data-aos-delay="60">
+      Your application has attack vectors.<br>The question is whether you know<br>where they are.
+    </h2>
+    <p class="lead-text" style="margin:0 auto 44px; text-align:center;" data-aos="fade-up" data-aos-delay="120">
+      Schedule a scoped vulnerability assessment or request a confidential consultation. We'll define the engagement scope, align on your compliance requirements, and provide a clear-scope proposal with no obligation to proceed.<br>
+      <strong>All engagements are conducted under strict confidentiality agreements.</strong>
+    </p>
+    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;" data-aos="fade-up" data-aos-delay="180">
+      <a href="{{ url_for('booking.book') }}" class="btn-light-custom">
+        Schedule a Confidential Consultation
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="#methodology" class="btn-ghost-custom" style="color:var(--dark-text); border-color:rgba(240,238,234,0.25);">View Methodology</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

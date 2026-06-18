@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}Web Design, SEO & Business Automation Services — JO4 Dev South Africa{% endblock %}
+{% block title %}Web Design, SEO & Business Automation Services JO4 Dev South Africa{% endblock %}
 
 {% block meta_description %}Web design, local SEO, Google Business Profile setup and automation for South African contractors and small businesses.{% endblock %}
 
 {% block head_extra %}
 <meta name="keywords" content="web design South Africa, SEO South Africa, Google Business Profile setup, business automation, website for construction company, contractor website, web developer Johannesburg">
-<meta property="og:title" content="Web Design, SEO & Business Automation — JO4 Dev South Africa">
+<meta property="og:title" content="Web Design, SEO & Business Automation JO4 Dev South Africa">
 <meta property="og:description" content="Web design, local SEO and automation for South African contractors and small businesses.">
 <meta property="og:type" content="website">
 {% endblock %}
@@ -63,7 +63,7 @@
 
 {% for service in services %}
 <!-- ============================================================
-     SERVICE {{ loop.index }} — {{ service.title }}
+     SERVICE {{ loop.index }} {{ service.title }}
 ============================================================ -->
 <article class="svc-detail {{ 'svc-detail--alt' if loop.index is even }}" id="{{ service.slug }}" aria-labelledby="svc-{{ service.slug }}-heading">
   <div class="section">
@@ -100,10 +100,19 @@
           <span class="svc-price-note">{{ service.price_note }}</span>
         </div>
 
-        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="margin-top:36px;">
-          Discuss Your Project
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-        </a>
+        {% set _dedicated = {'web-design': '/web-design-services', 'seo': '/seo-services', 'local-seo': '/seo-services', 'appsec': '/application-security-testing', 'application-security': '/application-security-testing', 'automation': '/business-automation-software'} %}
+        <div style="margin-top:36px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
+          {% if service.slug in _dedicated %}
+          <a href="{{ _dedicated[service.slug] }}" class="btn-ghost-custom">
+            Learn More
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
+          {% endif %}
+          <a href="{{ url_for('booking.book') }}" class="btn-primary-custom">
+            Discuss Your Project
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
+        </div>
       </div>
 
       <!-- Dark card / use-case panel -->
@@ -184,7 +193,7 @@
 {% endfor %}
 
 <!-- ============================================================
-     FAQ — SEO RICH CONTENT
+     FAQ SEO RICH CONTENT
 ============================================================ -->
 <section class="svc-faq-section" aria-labelledby="faq-heading">
   <div class="section">

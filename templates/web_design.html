@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+
+{% block title %}Web Design Services South Africa Lightning-Fast Custom Websites | JO4 Dev{% endblock %}
+
+{% block meta_description %}Custom web design services for South African businesses. Lightning-fast sites built without WordPress bloat 100/100 Google PageSpeed. Based in Nigel, Gauteng. Serving nationwide.{% endblock %}
+
+{% block head_extra %}
+<meta name="keywords" content="web design services South Africa, web design company South Africa, custom web development South Africa, web design Nigel, web design Gauteng, fast website South Africa">
+<meta property="og:title" content="Web Design Services South Africa Lightning-Fast Custom Websites | JO4 Dev">
+<meta property="og:description" content="Custom web design for South African businesses. Fast, secure, no WordPress bloat. 100/100 Google PageSpeed scores.">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block json_ld_schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Web Design Services South Africa",
+  "serviceType": "Web Design & Custom Web Development",
+  "provider": {
+    "@type": "LocalBusiness",
+    "name": "JO4 Dev",
+    "url": "https://jo4.co.za",
+    "email": "jroetscyber@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Nigel",
+      "addressRegion": "Gauteng",
+      "addressCountry": "ZA"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "South Africa"
+    },
+    "priceRange": "R4,500 – R25,000+"
+  },
+  "description": "Custom web design and development services for South African businesses. We build lightning-fast websites without WordPress bloat, achieving 100/100 Google PageSpeed scores.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "South Africa"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<section class="svc-page-hero wd-hero" aria-label="Web design services hero">
+  <div class="svc-page-hero-inner">
+    <div data-aos="fade-up">
+      <span class="eyebrow" style="margin-bottom:24px; display:inline-flex;">Web Design Services &middot; South Africa</span>
+      <h1 class="display-hero" style="max-width:860px;">
+        Lightning-Fast Web Design<br>for South African Businesses<br>
+        <span class="accent-line">That Want More Clients.</span>
+      </h1>
+      <p class="lead-text" style="margin-top:24px; max-width:640px;">
+        Your website is your hardest-working salesperson. If it loads slowly, looks amateur, or breaks on mobile &mdash; it's costing you deals every day. We build <strong>custom websites that are fast, professional, and built to convert.</strong>
+      </p>
+      <div style="margin-top:40px; display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ url_for('booking.book') }}" class="btn-primary-custom">
+          Get a Free Quote
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="#pricing" class="btn-ghost-custom">See Pricing <span aria-hidden="true">&#8595;</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TRUST BAR
+============================================================ -->
+<div class="wd-trust-bar" data-aos="fade-up">
+  <div class="wd-trust-inner">
+    <div class="wd-trust-item">
+      <strong>100/100</strong>
+      <span>Google PageSpeed Score</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Zero</strong>
+      <span>WordPress Plugins</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Custom</strong>
+      <span>Code. Always.</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>SA-Based</strong>
+      <span>Nigel, Gauteng</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     INTRO WHY SPEED MATTERS
+============================================================ -->
+<section class="section" aria-labelledby="intro-heading">
+  <div data-aos="fade-up" style="max-width:760px; margin:0 auto; text-align:center;">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Why It Matters</span>
+    <h2 class="display-section" id="intro-heading">
+      A slow website is a<br><span class="accent-line">silent sales killer.</span>
+    </h2>
+    <p style="color:var(--text-secondary); font-size:1.05rem; line-height:1.8; margin-top:24px;">
+      <strong>53% of mobile visitors abandon a site that takes more than 3 seconds to load.</strong> Google penalises slow sites in search rankings pushing you below competitors who invest in performance. A bloated website built on WordPress with 40 plugins doesn't just feel slow; it actively destroys your lead pipeline.
+    </p>
+    <p style="color:var(--text-secondary); font-size:1.05rem; line-height:1.8; margin-top:16px;">
+      We build differently. Every site we deliver is written from scratch in clean, lean code with a secure Python backend no themes, no page-builder garbage, no plugin soup. The result: a site that loads instantly, ranks higher, and converts more visitors into paying clients.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHAT WE OFFER 3 SERVICE PILLARS
+============================================================ -->
+<section class="section wd-pillars-section" aria-labelledby="services-heading">
+  <div class="section-header" data-aos="fade-up" style="text-align:center; margin-bottom:60px;">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Our Web Design Services</span>
+    <h2 class="display-section" id="services-heading">
+      What you get.
+    </h2>
+  </div>
+
+  <div class="row g-4 justify-content-center" data-aos="fade-up" data-aos-delay="80">
+
+    <div class="col-12 col-md-4">
+      <div class="wd-pillar-card">
+        <div class="wd-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3>Custom Web Design</h3>
+        <p>No templates. No stock layouts. Your website is designed from the ground up to reflect your brand and speak directly to your customers. Every pixel has a purpose.</p>
+        <ul class="wd-pillar-list">
+          <li>Mobile-first, fully responsive</li>
+          <li>Brand-aligned visual design</li>
+          <li>Conversion-focused page structure</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="wd-pillar-card wd-pillar-card--accent">
+        <div class="wd-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Lightning-Fast Development</h3>
+        <p>We build with clean vanilla HTML/CSS/JS and a Python Flask backend the same stack used by high-performance web apps. No WordPress. No bloat. Just raw speed.</p>
+        <ul class="wd-pillar-list">
+          <li>100/100 Google PageSpeed guaranteed</li>
+          <li>Sub-2-second load times</li>
+          <li>Core Web Vitals compliant</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="wd-pillar-card">
+        <div class="wd-pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Secure Backend &amp; Hosting</h3>
+        <p>Your site runs on a Python Flask backend not a WordPress install waiting to be hacked. No outdated plugins, no CMS exploits, no 3am "your website is down" calls.</p>
+        <ul class="wd-pillar-list">
+          <li>Python/Flask backend architecture</li>
+          <li>SSL certificate included</li>
+          <li>Regular backups &amp; maintenance</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     WHY CHOOSE US NO BLOAT SECTION
+============================================================ -->
+<section class="section wd-why-section" aria-labelledby="why-heading">
+  <div class="wd-why-grid">
+
+    <div class="wd-why-copy" data-aos="fade-right">
+      <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Why Choose Our Web Design Company?</span>
+      <h2 class="display-section" id="why-heading">
+        No bloat.<br>Pure speed.<br><span class="accent-line">Real results.</span>
+      </h2>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:24px; max-width:500px;">
+        Most web design companies in South Africa hand you a WordPress site stitched together with off-the-shelf themes and a stack of plugins. It looks fine on day one but it slows down, breaks on updates, and becomes a security liability within a year.
+      </p>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:16px; max-width:500px;">
+        <strong>We don't do that.</strong> We write every line of code ourselves. Our backend is Python Flask a lightweight, industrial-strength framework used by Pinterest, LinkedIn, and high-traffic apps worldwide. It's fast, secure, and needs zero plugins.
+      </p>
+      <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:16px; max-width:500px;">
+        The result: your website stays fast, stays secure, and stays yours without a monthly "maintenance retainer" to keep it from falling apart.
+      </p>
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom" style="margin-top:36px;">
+        Discuss Your Project
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+
+    <div class="wd-why-compare" data-aos="fade-left" data-aos-delay="100">
+
+      <div class="wd-compare-card wd-compare-card--bad">
+        <div class="wd-compare-header">
+          <svg class="wd-compare-icon wd-compare-icon--no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <span>Typical WordPress Agency</span>
+        </div>
+        <ul class="wd-compare-list">
+          <li>40+ plugins slowing your site</li>
+          <li>Constant security vulnerabilities</li>
+          <li>Hidden "maintenance fees" forever</li>
+          <li>PageSpeed scores of 40&ndash;65/100</li>
+          <li>Template used by hundreds of others</li>
+        </ul>
+      </div>
+
+      <div class="wd-compare-card wd-compare-card--good">
+        <div class="wd-compare-header">
+          <svg class="wd-compare-icon wd-compare-icon--yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>JO4 Dev Custom Web Design</span>
+        </div>
+        <ul class="wd-compare-list">
+          <li>Zero plugins &mdash; pure, clean code</li>
+          <li>Python/Flask backend, secure by design</li>
+          <li>Transparent pricing, no surprise invoices</li>
+          <li>100/100 Google PageSpeed, every time</li>
+          <li>Unique design built for your business</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TRANSPARENT PRICING
+============================================================ -->
+<section class="section wd-pricing-section" id="pricing" aria-labelledby="pricing-heading">
+  <div class="section-header" data-aos="fade-up" style="text-align:center; margin-bottom:16px;">
+    <span class="eyebrow" style="margin-bottom:20px; display:inline-flex; justify-content:center;">Transparent Pricing</span>
+    <h2 class="display-section" id="pricing-heading">
+      No hidden fees.<br><span class="accent-line">Ever.</span>
+    </h2>
+    <p style="color:var(--text-secondary); font-size:1rem; line-height:1.8; margin-top:20px; max-width:560px; margin-left:auto; margin-right:auto;">
+      We publish our prices because we have nothing to hide. Every quote is fixed-price no surprise invoices at the end of a project.
+    </p>
+  </div>
+
+  <div class="wd-pricing-grid" data-aos="fade-up" data-aos-delay="80">
+
+    <!-- TIER 1 -->
+    <div class="wd-pricing-card">
+      <div class="wd-pricing-tier">Starter</div>
+      <h3 class="wd-pricing-name">Basic Business Site</h3>
+      <div class="wd-pricing-price">
+        <span class="wd-pricing-from">From</span>
+        <span class="wd-pricing-amount">R4,500</span>
+      </div>
+      <p class="wd-pricing-desc">Clean, professional online presence for businesses that need to get online fast.</p>
+      <ul class="wd-pricing-list">
+        <li>Up to 3 pages (Home, About, Contact)</li>
+        <li>Mobile-responsive design</li>
+        <li>Contact form</li>
+        <li>Google Analytics setup</li>
+        <li>Basic on-page SEO</li>
+        <li>SSL certificate</li>
+      </ul>
+      <a href="{{ url_for('booking.book') }}" class="btn-ghost-custom wd-pricing-btn">
+        Get Started
+      </a>
+    </div>
+
+    <!-- TIER 2 FEATURED -->
+    <div class="wd-pricing-card wd-pricing-card--featured">
+      <div class="wd-pricing-badge">Most Popular</div>
+      <div class="wd-pricing-tier">Professional</div>
+      <h3 class="wd-pricing-name">Multi-Page Business Site</h3>
+      <div class="wd-pricing-price">
+        <span class="wd-pricing-from">From</span>
+        <span class="wd-pricing-amount">R8,500</span>
+      </div>
+      <p class="wd-pricing-desc">For businesses serious about generating leads and standing out from competitors.</p>
+      <ul class="wd-pricing-list">
+        <li>Up to 7 pages</li>
+        <li>Custom visual design</li>
+        <li>Blog or news section</li>
+        <li>Full on-page SEO optimisation</li>
+        <li>Google Business Profile setup</li>
+        <li>100/100 PageSpeed guaranteed</li>
+        <li>Lead capture forms</li>
+        <li>1 month post-launch support</li>
+      </ul>
+      <a href="{{ url_for('booking.book') }}" class="btn-primary-custom wd-pricing-btn">
+        Get Started
+      </a>
+    </div>
+
+    <!-- TIER 3 -->
+    <div class="wd-pricing-card">
+      <div class="wd-pricing-tier">Custom</div>
+      <h3 class="wd-pricing-name">Web Application</h3>
+      <div class="wd-pricing-price">
+        <span class="wd-pricing-from">From</span>
+        <span class="wd-pricing-amount">R15,000</span>
+      </div>
+      <p class="wd-pricing-desc">Custom functionality booking systems, client portals, CRM tools, or e-commerce.</p>
+      <ul class="wd-pricing-list">
+        <li>Unlimited pages</li>
+        <li>Custom Python/Flask backend</li>
+        <li>Database integration</li>
+        <li>User login &amp; client portal</li>
+        <li>Booking / quote systems</li>
+        <li>Custom automation workflows</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="{{ url_for('booking.book') }}" class="btn-ghost-custom wd-pricing-btn">
+        Get a Custom Quote
+      </a>
+    </div>
+
+  </div>
+
+  <p class="wd-pricing-note" data-aos="fade-up">
+    All prices are once-off project fees in ZAR. Hosting &amp; domain renewal billed separately. Monthly retainer packages available on request.
+  </p>
+</section>
+
+<!-- ============================================================
+     CTA BAND
+============================================================ -->
+<section class="cta-band" aria-label="Call to action">
+  <div class="section" style="text-align:center; padding-top:var(--section-py); padding-bottom:var(--section-py);">
+    <span class="eyebrow" style="justify-content:center; margin-bottom:24px;" data-aos="fade-up">Ready to start</span>
+    <h2 class="display-section" style="max-width:700px; margin:0 auto 22px;" data-aos="fade-up" data-aos-delay="60">
+      Stop losing clients to a<br>website that doesn't work.
+    </h2>
+    <p class="lead-text" style="margin:0 auto 44px; text-align:center;" data-aos="fade-up" data-aos-delay="120">
+      Book a free 30-minute discovery call. We'll audit your current site, identify what's hurting your rankings, and show you exactly what a faster, cleaner website would do for your business.<br>
+      <strong>No pitch deck. No pressure. Just honest answers.</strong>
+    </p>
+    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;" data-aos="fade-up" data-aos-delay="180">
+      <a href="{{ url_for('booking.book') }}" class="btn-light-custom">
+        Book Your Free Call
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="#pricing" class="btn-ghost-custom" style="color:var(--dark-text); border-color:rgba(240,238,234,0.25);">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
