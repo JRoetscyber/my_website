@@ -25,6 +25,14 @@
   <link rel="canonical" href="https://{{ request.host }}{{ request.path }}">
 
   <script src="https://analytics.ahrefs.com/analytics.js" data-key="Ux1JVBSMDqBkdjYsu1cxiA" async></script>
+
+  <script>
+    var ahrefs_analytics_script = document.createElement('script');
+    ahrefs_analytics_script.async = true;
+    ahrefs_analytics_script.src = 'https://analytics.ahrefs.com/analytics.js';
+    ahrefs_analytics_script.setAttribute('data-key', 'Ux1JVBSMDqBkdjYsu1cxiA');
+    document.getElementsByTagName('head')[0].appendChild(ahrefs_analytics_script);
+  </script>
   
   {% block head_extra %}{% endblock %}
   {% block json_ld_schema %}{% endblock %}
