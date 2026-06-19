@@ -161,6 +161,18 @@ def init_db():
             print(f"Error migrating leads table: {e}")
             db.session.rollback()
 
+        # Migrate services table schema
+        try:
+            service_cols = {
+                row[1] for row in db.session.execute(text("PRAGMA table_info(services)")).fetchall()
+            }
+            if 'has_dedicated_page' not in service_cols:
+                db.session.execute(text("ALTER TABLE services ADD COLUMN has_dedicated_page BOOLEAN DEFAULT 0"))
+            db.session.commit()
+        except Exception as e:
+            print(f"Error migrating services table: {e}")
+            db.session.rollback()
+
         # Migrate projects table schema
         try:
             project_cols = {

@@ -31,8 +31,40 @@
     {% endif %}
     {% endfor %}
 
+
+    <url>
+        <loc>{{ url_for('services.services', _external=True, _scheme='https') }}</loc>
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>{{ url_for('services.web_design', _external=True, _scheme='https') }}</loc>
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>{{ url_for('services.seo_services', _external=True, _scheme='https') }}</loc>
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>{{ url_for('services.appsec', _external=True, _scheme='https') }}</loc>
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>{{ url_for('services.automation', _external=True, _scheme='https') }}</loc>
+        <lastmod>{{ now.strftime('%Y-%m-%d') }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
     {% for service in services %}
-    {% if service.slug %}
+    {% if service.slug and service.has_dedicated_page %}
     <url>
         <loc>{{ url_for('services.service_detail', slug=service.slug, _external=True, _scheme='https') }}</loc>
         <lastmod>{{ service.updated_at.strftime('%Y-%m-%d') if service.updated_at else now.strftime('%Y-%m-%d') }}</lastmod>

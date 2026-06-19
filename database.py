@@ -263,6 +263,7 @@ class Service(db.Model):
     panel_type = db.Column(db.String(50)) # 'use-case', 'audit', 'stats', 'auto'
     panel_content = db.Column(db.Text) # JSON or structured text
     is_published = db.Column(db.Boolean, default=True)
+    has_dedicated_page = db.Column(db.Boolean, default=False)
     display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
