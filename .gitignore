@@ -208,3 +208,13 @@ __marimo__/
 
 
 claude.exe
+# Go & Fiber artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.fiber.gz
+*.db
+*.db-journal
+.vs/
