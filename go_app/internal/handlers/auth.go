@@ -1,6 +1,7 @@
-﻿package handlers
+package handlers
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -8,8 +9,8 @@ import (
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
+	"github.com/JRoetscyber/my_website/go_app/internal/utils"
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -41,37 +42,64 @@ func (h *AuthHandler) LoginSubmit(c *fiber.Ctx) error {
 	username := strings.TrimSpace(c.FormValue("username"))
 	password := strings.TrimSpace(c.FormValue("password"))
 
+	if username == "" || password == "" {
+		return c.Status(http.StatusBadRequest).Render("login", fiber.Map{
+			"error":   "Please enter both username and password",
+			"request": c,
+		})
+	}
+
 	var user models.User
-	if err := h.DB.Where("username = ?", username).First(&user).Error; err != nil {
+	if err := h.DB.Where("LOWER(username) = LOWER(?)", username).First(&user).Error; err != nil {
+		log.Printf("[AUTH] Login failed: User '%s' not found", username)
 		return c.Status(http.StatusUnauthorized).Render("login", fiber.Map{
 			"error":   "Invalid username or password",
 			"request": c,
 		})
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+	if !utils.CheckPasswordHash(user.PasswordHash, password) {
+		log.Printf("[AUTH] Login failed: Incorrect password for user '%s'", username)
 		return c.Status(http.StatusUnauthorized).Render("login", fiber.Map{
 			"error":   "Invalid username or password",
 			"request": c,
 		})
+	}
+
+	// If password hash was from legacy Flask (Werkzeug) or plaintext, upgrade to bcrypt
+	if !strings.HasPrefix(user.PasswordHash, "$2a$") && !strings.HasPrefix(user.PasswordHash, "$2b$") {
+		if newHash, err := utils.HashPassword(password); err == nil {
+			h.DB.Model(&user).Update("password_hash", newHash)
+			log.Printf("[AUTH] Upgraded legacy password hash to Bcrypt for user '%s'", user.Username)
+		}
 	}
 
 	// Generate session token
 	token := middleware.GenerateAuthToken(user.Username, h.Cfg.SecretKey)
 
+	// Set session cookie with root path so it applies across /admin and all subpaths
 	c.Cookie(&fiber.Cookie{
 		Name:     "jo4_session",
 		Value:    token,
+		Path:     "/",
 		Expires:  time.Now().Add(24 * 7 * time.Hour),
 		HTTPOnly: true,
 		SameSite: "Lax",
-		Secure:   false, // Set to true in production HTTPS
+		Secure:   false, // Keep false so it works across HTTP and HTTPS reverse proxies
 	})
 
+	log.Printf("[AUTH] User '%s' logged in successfully", user.Username)
 	return c.Redirect("/admin")
 }
 
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
-	c.ClearCookie("jo4_session")
+	c.Cookie(&fiber.Cookie{
+		Name:     "jo4_session",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		HTTPOnly: true,
+		SameSite: "Lax",
+	})
 	return c.Redirect("/login")
 }

@@ -294,16 +294,17 @@ func main() {
 		Expiration: 1 * time.Minute,
 	})
 
-	// Brute-force rate limiter for Login (5 attempts per minute per IP)
+	// Brute-force rate limiter for Login (20 attempts per minute per IP)
 	loginLimiter := limiter.New(limiter.Config{
-		Max:        5,
+		Max:        20,
 		Expiration: 1 * time.Minute,
 		KeyGenerator: func(c *fiber.Ctx) string {
 			return c.IP()
 		},
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).Render("login", fiber.Map{
-				"error": "Too many failed login attempts. Please wait 1 minute before trying again.",
+				"error":   "Too many failed login attempts. Please wait 1 minute before trying again.",
+				"request": c,
 			})
 		},
 	})

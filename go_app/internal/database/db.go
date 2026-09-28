@@ -6,8 +6,8 @@ import (
 
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
+	"github.com/JRoetscyber/my_website/go_app/internal/utils"
 	"github.com/glebarez/sqlite"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -97,17 +97,29 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 		})
 	}
 
-	// Seed Default Admin User if no users exist
-	var userCount int64
-	db.Model(&models.User{}).Count(&userCount)
-	if userCount == 0 {
-		hash, err := bcrypt.GenerateFromPassword([]byte(cfg.DefaultAdminPass), bcrypt.DefaultCost)
-		if err == nil {
-			db.Create(&models.User{
-				Username:     cfg.DefaultAdminUser,
-				PasswordHash: string(hash),
-			})
-			log.Printf("[DB] Created default admin user: %s", cfg.DefaultAdminUser)
+	// Ensure Admin User from environment configuration is always synchronized and active
+	if cfg.DefaultAdminUser != "" && cfg.DefaultAdminPass != "" {
+		var adminUser models.User
+		err := db.Where("LOWER(username) = LOWER(?)", cfg.DefaultAdminUser).First(&adminUser).Error
+		if err != nil {
+			// Admin user does not exist: create it with password from environment
+			hash, err := utils.HashPassword(cfg.DefaultAdminPass)
+			if err == nil {
+				db.Create(&models.User{
+					Username:     cfg.DefaultAdminUser,
+					PasswordHash: hash,
+				})
+				log.Printf("[DB] Created admin user '%s' from environment config", cfg.DefaultAdminUser)
+			}
+		} else {
+			// Admin user exists: ensure the password from environment config matches
+			if !utils.CheckPasswordHash(adminUser.PasswordHash, cfg.DefaultAdminPass) {
+				hash, err := utils.HashPassword(cfg.DefaultAdminPass)
+				if err == nil {
+					db.Model(&adminUser).Update("password_hash", hash)
+					log.Printf("[DB] Synchronized password hash for admin user '%s' from environment config", cfg.DefaultAdminUser)
+				}
+			}
 		}
 	}
 
