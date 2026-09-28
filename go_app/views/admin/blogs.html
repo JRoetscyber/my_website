@@ -76,33 +76,33 @@
       <div class="widget-body flex-grow-1">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <span class="status-badge status-new">Published</span>
-          <span class="topbar-date" style="font-size: 0.65rem;">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+          <span class="topbar-date" style="font-size: 0.65rem;">{{ post.CreatedAt|date:"2006-01-02" }}</span>
         </div>
         
-        <h3 class="mb-3" style="font-size: 1.15rem; line-height: 1.3;">{{ post.title }}</h3>
+        <h3 class="mb-3" style="font-size: 1.15rem; line-height: 1.3;">{{ post.Title }}</h3>
         <p class="text-secondary mb-4" style="font-size: 0.85rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-          {{ post.summary }}
+          {{ post.Summary }}
         </p>
         
         <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            <span class="topbar-date" style="font-size: 0.75rem;">{{ post.views }}</span>
+            <span class="topbar-date" style="font-size: 0.75rem;">{{ post.Views }}</span>
           </div>
           
           <div class="d-flex gap-2">
-            <a href="/blog/{{ post.slug }}" target="_blank" class="btn-admin-outline btn-admin-sm">
+            <a href="/blog/{{ post.Slug }}" target="_blank" class="btn-admin-outline btn-admin-sm">
               View
             </a>
             <button class="btn-admin-outline btn-admin-sm edit-blog-btn" 
-                    data-id="{{ post.id }}"
-                    data-title="{{ post.title|escape }}"
-                    data-summary="{{ post.summary|escape }}"
-                    data-content="{{ post.content|escape }}"
-                    data-media-path="{{ post.media_path or '' }}">
+                    data-id="{{ post.ID }}"
+                    data-title="{{ post.Title|escape }}"
+                    data-summary="{{ post.Summary|escape }}"
+                    data-content="{{ post.Content|escape }}"
+                    data-media-path="{{ post.MediaPath or '' }}">
               Edit
             </button>
-            <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-blog" data-id="{{ post.id }}">
+            <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-blog" data-id="{{ post.ID }}">
               Delete
             </button>
           </div>

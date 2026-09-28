@@ -30,8 +30,8 @@ RUN if [ -f /src/webp_converter/converter.cpp ]; then \
 # Stage 2: Ultra-Lightweight Production Runtime
 FROM alpine:3.20
 
-# Install runtime dependencies including Google cwebp and OpenMP runtime
-RUN apk add --no-cache ca-certificates tzdata curl libwebp libwebp-tools libgomp
+# Install runtime dependencies including Google cwebp, OpenMP runtime, and SQLite3
+RUN apk add --no-cache ca-certificates tzdata curl libwebp libwebp-tools libgomp sqlite
 
 # Security: Non-root user execution
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

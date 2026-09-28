@@ -46,13 +46,13 @@
         {% if faqs %}
         <div class="faq-list">
           {% for faq in faqs %}
-          <details class="faq-item" id="{{ faq.slug }}"{% if loop.first %} open{% endif %}>
+          <details class="faq-item" id="{{ faq.Slug }}"{% if loop.first %} open{% endif %}>
             <summary>
-              <span>{{ faq.question }}</span>
+              <span>{{ faq.Question }}</span>
             </summary>
             <div class="faq-answer">
-              {{ faq.answer|markdown|safe }}
-              <a href="/faq/{$1}" class="faq-permalink">Open answer</a>
+              {{ faq.Answer|markdown|safe }}
+              <a href="/faq/{{ faq.Slug }}" class="faq-permalink">Open answer</a>
             </div>
           </details>
           {% endfor %}

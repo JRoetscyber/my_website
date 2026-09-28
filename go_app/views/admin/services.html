@@ -24,11 +24,11 @@
         <tbody>
             {% for service in services %}
             <tr>
-                <td>{{ service.display_order }}</td>
-                <td><strong>{{ service.title }}</strong></td>
-                <td><code>/services/{{ service.slug }}</code></td>
+                <td>{{ service.DisplayOrder }}</td>
+                <td><strong>{{ service.Title }}</strong></td>
+                <td><code>/services/{{ service.Slug }}</code></td>
                 <td>
-                    {% if service.is_published %}
+                    {% if service.IsPublished %}
                     <span class="status-badge status-new">Published</span>
                     {% else %}
                     <span class="status-badge status-lost">Draft</span>
@@ -40,87 +40,87 @@
                     </span>
                 </td>
                 <td>
-                    <button class="btn-admin-outline btn-admin-sm" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ service.id }}">Edit</button>
-                    <button class="btn-admin-outline btn-admin-sm btn-admin-danger" onclick="deleteService({{ service.id }})">Delete</button>
+                    <button class="btn-admin-outline btn-admin-sm" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ service.ID }}">Edit</button>
+                    <button class="btn-admin-outline btn-admin-sm btn-admin-danger" onclick="deleteService({{ service.ID }})">Delete</button>
                 </td>
             </tr>
 
             <!-- Edit Modal -->
-            <div class="modal fade" id="editServiceModal{{ service.id }}" tabindex="-1">
+            <div class="modal fade" id="editServiceModal{{ service.ID }}" tabindex="-1">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
-                        <form action="/admin/update_service/{{ service.id }}" method="POST">
+                        <form action="/admin/update_service/{{ service.ID }}" method="POST">
                             <div class="modal-header">
-                                <h5 class="modal-title">Edit Service: {{ service.title }}</h5>
+                                <h5 class="modal-title">Edit Service: {{ service.Title }}</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row g-3">
                                     <div class="col-md-8">
                                         <label class="form-label">Title</label>
-                                        <input type="text" name="title" class="form-control" value="{{ service.title }}" required>
+                                        <input type="text" name="title" class="form-control" value="{{ service.Title }}" required>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Display Order</label>
-                                        <input type="number" name="display_order" class="form-control" value="{{ service.display_order }}">
+                                        <input type="number" name="display_order" class="form-control" value="{{ service.DisplayOrder }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Eyebrow (e.g. Service 01)</label>
-                                        <input type="text" name="eyebrow" class="form-control" value="{{ service.eyebrow }}">
+                                        <input type="text" name="eyebrow" class="form-control" value="{{ service.Eyebrow }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Slug (Auto-generated if blank)</label>
-                                        <input type="text" name="slug" class="form-control" value="{{ service.slug }}">
+                                        <input type="text" name="slug" class="form-control" value="{{ service.Slug }}">
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Lead Text</label>
-                                        <textarea name="lead_text" class="form-control" rows="2">{{ service.lead_text }}</textarea>
+                                        <textarea name="lead_text" class="form-control" rows="2">{{ service.LeadText }}</textarea>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Description</label>
-                                        <textarea name="description" class="form-control" rows="4">{{ service.description }}</textarea>
+                                        <textarea name="description" class="form-control" rows="4">{{ service.Description }}</textarea>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Features (One per line)</label>
-                                        <textarea name="features" class="form-control" rows="4">{{ service.features }}</textarea>
+                                        <textarea name="features" class="form-control" rows="4">{{ service.Features }}</textarea>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Price Range</label>
-                                        <input type="text" name="price_range" class="form-control" value="{{ service.price_range }}">
+                                        <input type="text" name="price_range" class="form-control" value="{{ service.PriceRange }}">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Price Label</label>
-                                        <input type="text" name="price_label" class="form-control" value="{{ service.price_label }}">
+                                        <input type="text" name="price_label" class="form-control" value="{{ service.PriceLabel }}">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Price Note</label>
-                                        <input type="text" name="price_note" class="form-control" value="{{ service.price_note }}">
+                                        <input type="text" name="price_note" class="form-control" value="{{ service.PriceNote }}">
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Icon SVG (Path/Code)</label>
-                                        <textarea name="icon_svg" class="form-control" rows="2">{{ service.icon_svg }}</textarea>
+                                        <textarea name="icon_svg" class="form-control" rows="2">{{ service.IconSVG }}</textarea>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Panel Title</label>
-                                        <input type="text" name="panel_title" class="form-control" value="{{ service.panel_title }}">
+                                        <input type="text" name="panel_title" class="form-control" value="{{ service.PanelTitle }}">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Panel Type</label>
                                         <select name="panel_type" class="form-select">
-                                            <option value="use-case" {% if service.panel_type == 'use-case'  %}selected{% endif %}>Use Case</option>
-                                            <option value="audit" {% if service.panel_type == 'audit'  %}selected{% endif %}>Audit List</option>
-                                            <option value="stats" {% if service.panel_type == 'stats'  %}selected{% endif %}>Stats Stack</option>
-                                            <option value="auto" {% if service.panel_type == 'auto'  %}selected{% endif %}>Automation List</option>
+                                            <option value="use-case" {% if service.PanelType == 'use-case'  %}selected{% endif %}>Use Case</option>
+                                            <option value="audit" {% if service.PanelType == 'audit'  %}selected{% endif %}>Audit List</option>
+                                            <option value="stats" {% if service.PanelType == 'stats'  %}selected{% endif %}>Stats Stack</option>
+                                            <option value="auto" {% if service.PanelType == 'auto'  %}selected{% endif %}>Automation List</option>
                                         </select>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Panel Content (JSON)</label>
-                                        <textarea name="panel_content" class="form-control" rows="4">{{ service.panel_content }}</textarea>
+                                        <textarea name="panel_content" class="form-control" rows="4">{{ service.PanelContent }}</textarea>
                                     </div>
                                     <div class="col-12">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="is_published" id="pub{{ service.id }}" {% if service.is_published  %}checked{% endif %}>
-                                            <label class="form-check-label" for="pub{{ service.id }}">Published</label>
+                                            <input class="form-check-input" type="checkbox" name="is_published" id="pub{{ service.ID }}" {% if service.IsPublished  %}checked{% endif %}>
+                                            <label class="form-check-label" for="pub{{ service.ID }}">Published</label>
                                         </div>
                                     </div>
                                 </div>

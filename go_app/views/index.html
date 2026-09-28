@@ -196,17 +196,17 @@
     <div class="services-grid">
 
       {% for service in services %}
-      <!-- {{ service.title }} -->
+      <!-- {{ service.Title }} -->
       <div class="service-card-v2" data-aos="fade-up" data-aos-delay="{{ 100 }}">
-        <a href="/services#{{ service.slug }}" class="service-card-v2-inner">
+        <a href="/services#{{ service.Slug }}" class="service-card-v2-inner">
           <div class="service-icon-v2" aria-hidden="true">
             <!-- SWAP: replace this SVG with your custom animated icon component -->
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="svc-icon-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              {{ service.icon_svg | safe }}
+              {{ service.IconSVG | safe }}
             </svg>
           </div>
-          <h3>{{ service.title }}</h3>
-          <p>{{ service.lead_text }}</p>
+          <h3>{{ service.Title }}</h3>
+          <p>{{ service.LeadText }}</p>
           <span class="svc-learn-more">Learn More &rsaquo;</span>
         </a>
       </div>
@@ -317,19 +317,19 @@
 
   <div class="row row-cols-1 row-cols-md-3 g-4" data-aos="fade-up" data-aos-delay="100">
     {% for project in projects %}
-    {% if project.slug %}
+    {% if project.Slug %}
     <div class="col">
-      <a href="/projects/{{ project.slug }}" class="project-mini-card">
+      <a href="/projects/{{ project.Slug }}" class="project-mini-card">
         <div class="mini-card-image">
-          {% if project.media_path %}
-          <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy" width="600" height="338">
+          {% if project.MediaPath %}
+          <img src="{{ project.MediaPath }}" alt="{{ project.Title }}" loading="lazy" width="600" height="338">
           {% else %}
           <div class="mini-card-placeholder">Project Preview</div>
           {% endif %}
         </div>
         <div class="mini-card-body">
-          <span class="mini-card-tag">{{ project.category or 'System' }}</span>
-          <h4>{{ project.title }}</h4>
+          <span class="mini-card-tag">{{ project.Category or 'System' }}</span>
+          <h4>{{ project.Title }}</h4>
         </div>
       </a>
     </div>

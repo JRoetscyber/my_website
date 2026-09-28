@@ -29,10 +29,10 @@
       {% for post in posts %}
       <div class="col" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 100 }}">
         <article class="blog-card">
-          <a href="/blog/{{ post.slug }}" class="blog-card-link">
+          <a href="/blog/{{ post.Slug }}" class="blog-card-link">
             <div class="blog-card-image">
-              {% if post.media_path %}
-              <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy" width="600" height="338">
+              {% if post.MediaPath %}
+              <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="600" height="338">
               {% else %}
               <div class="blog-placeholder">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -45,10 +45,10 @@
             <div class="blog-card-body">
               <div class="blog-card-meta">
                 <time datetime="{{ post.CreatedAt|date:"2006-01-02" }}">{{ post.CreatedAt|date:"2006-01-02" }}</time>
-                <span class="blog-read-time">{{ post.views }} views</span>
+                <span class="blog-read-time">{{ post.Views }} views</span>
               </div>
-              <h3 class="blog-card-title">{{ post.title }}</h3>
-              <p class="blog-card-summary">{{ post.summary }}</p>
+              <h3 class="blog-card-title">{{ post.Title }}</h3>
+              <p class="blog-card-summary">{{ post.Summary }}</p>
               <span class="blog-more">Read Article <span class="arrow">→</span></span>
             </div>
           </a>

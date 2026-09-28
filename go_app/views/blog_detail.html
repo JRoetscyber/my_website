@@ -1,15 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ seo_title }}{% endblock %}
+{% block title %}{{ post.Title }} — JO4 Dev Insights{% endblock %}
 
-{% block meta_description %}{{ seo_description|striptags|truncate:145 }}{% endblock %}
+{% block meta_description %}{{ post.Summary|striptags|truncate:145 }}{% endblock %}
 
 {% block json_ld_schema %}
-  {% if json_ld_schema  %}
   <script type="application/ld+json">
-  {{ json_ld_schema | safe }}
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "{{ post.Title }}",
+    "description": "{{ post.Summary|striptags|truncate:145 }}",
+    "datePublished": "{{ post.CreatedAt|date:"2006-01-02T15:04:05Z07:00" }}",
+    "dateModified": "{{ post.UpdatedAt|date:"2006-01-02T15:04:05Z07:00" }}",
+    "author": {
+      "@type": "Organization",
+      "name": "JO4 Dev"
+    }
+  }
   </script>
-  {% endif %}
 {% endblock %}
 
 {% block head_extra %}
@@ -22,30 +31,30 @@
   <header class="blog-post-header">
     <div class="container-narrow">
       <span class="eyebrow" style="margin-bottom: 24px; display: inline-flex;">
-        Published {{ post.created_at.strftime('%B %d, %Y') }}
+        Published {{ post.CreatedAt|date:"January 02, 2006" }}
       </span>
-      <h1 class="display-hero">{{ post.title }}</h1>
-      <p class="lead-text">{{ post.summary }}</p>
+      <h1 class="display-hero">{{ post.Title }}</h1>
+      <p class="lead-text">{{ post.Summary }}</p>
     </div>
   </header>
 
-  {% if post.media_path %}
+  {% if post.MediaPath %}
   <div class="blog-post-hero-image">
-    <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy" width="1200" height="630">
+    <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="1200" height="630">
   </div>
   {% endif %}
 
   <div class="container-narrow">
     <div class="blog-post-content">
-      {{ post.content | markdown | safe }}
+      {{ post.Content | markdown | safe }}
     </div>
 
     <div class="blog-post-footer">
       <div class="blog-post-share">
         <span>Share this article:</span>
         <div class="share-links">
-          <a href="https://www.linkedin.com/sharing/share-offsite/?url=/blog/{$1}" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="https://twitter.com/intent/tweet?url=/blog/{$1}&text={{ post.title }}" target="_blank" rel="noopener">Twitter</a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://jo4.co.za/blog/{{ post.Slug }}" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://twitter.com/intent/tweet?url=https://jo4.co.za/blog/{{ post.Slug }}&text={{ post.Title }}" target="_blank" rel="noopener">Twitter</a>
         </div>
       </div>
       

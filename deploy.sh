@@ -102,13 +102,27 @@ docker compose build "$TARGET_SERVICE"
 echo "🚀 Step 2/5: Launching $TARGET_SERVICE..."
 docker compose up -d "$TARGET_SERVICE"
 
-# Auto-restore existing database backup if present on host and container database is empty
-if [ -f "jo4dev_backup.db" ]; then
-    DB_SIZE=$(docker compose exec -T "$TARGET_SERVICE" stat -c%s /app/data/jo4dev.db 2>/dev/null || echo "0")
-    if [ "$DB_SIZE" -lt 65536 ]; then
-        echo "📥 Detected jo4dev_backup.db! Restoring existing blogs & projects into $TARGET_SERVICE..."
-        docker compose cp jo4dev_backup.db "$TARGET_SERVICE":/app/data/jo4dev.db
+# Auto-restore existing database if container has 0 blog posts and backup is available
+BLOG_COUNT=$(docker compose exec -T "$TARGET_SERVICE" sqlite3 /app/data/jo4dev.db "SELECT count(*) FROM blog_posts;" 2>/dev/null || echo "0")
+if [ "$BLOG_COUNT" -eq 0 ]; then
+    BACKUP_SRC=""
+    if [ -f "jo4dev_backup.db" ]; then
+        BACKUP_SRC="jo4dev_backup.db"
+    elif [ -f "/root/my_website/jo4dev_backup.db" ]; then
+        BACKUP_SRC="/root/my_website/jo4dev_backup.db"
+    elif docker ps -a --format '{{.Names}}' | grep -q '^jo4-site$'; then
+        echo "📦 Extracting database from legacy jo4-site container..."
+        docker cp jo4-site:/app/instance/jo4dev.db ./jo4dev_backup.db 2>/dev/null || true
+        [ -f "./jo4dev_backup.db" ] && BACKUP_SRC="./jo4dev_backup.db"
+    fi
+
+    if [ -n "$BACKUP_SRC" ]; then
+        echo "📥 Restoring historical blogs, projects, and leads from $BACKUP_SRC into $TARGET_SERVICE..."
+        docker compose cp "$BACKUP_SRC" "$TARGET_SERVICE":/app/data/jo4dev.db
+        docker compose exec -u 0 -T "$TARGET_SERVICE" chown -R appuser:appgroup /app/data
+        docker compose exec -u 0 -T "$TARGET_SERVICE" chmod 664 /app/data/jo4dev.db
         docker compose restart "$TARGET_SERVICE"
+        echo "✅ Database restored successfully."
     fi
 fi
 

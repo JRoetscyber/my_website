@@ -25,8 +25,8 @@
   <!-- Content for a single project detail page -->
   <header class="page-hero">
     <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Case Study</span>
-    <h1>{{ project.title }}</h1>
-    <p class="lead-text">{{ project.description or 'No description added yet.' }}</p>
+    <h1>{{ project.Title }}</h1>
+    <p class="lead-text">{{ project.Description or 'No description added yet.' }}</p>
   </header>
 
   <div class="divider"></div>
@@ -34,8 +34,8 @@
   <section class="section">
     <div class="project-card"> {# Simplified for detail view #}
       <div class="project-card-media">
-        {% if project.media_path %}
-        <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy" width="800" height="450">
+        {% if project.MediaPath %}
+        <img src="{{ project.MediaPath }}" alt="{{ project.Title }}" class="uploaded-project-image" loading="lazy" width="800" height="450">
         {% else %}
         <div class="video-placeholder">
           <div class="play-btn" aria-hidden="true">
@@ -48,23 +48,23 @@
         {% endif %}
       </div>
       <div class="project-card-body">
-        <div class="project-tag">{{ project.category or 'Project' }}</div>
-        <h3>{{ project.title }}</h3>
-        <p>{{ project.description or 'No description added yet.' }}</p>
-        {% if project.tech_stack %}
+        <div class="project-tag">{{ project.Category or 'Project' }}</div>
+        <h3>{{ project.Title }}</h3>
+        <p>{{ project.Description or 'No description added yet.' }}</p>
+        {% if project.TechStack %}
         <div class="tag-list">
-            {% for tech in project.tech_stack.split(',') %}
+            {% for tech in project.TechStack.split(',') %}
             <span class="tag">{{ tech.strip() }}</span>
             {% endfor %}
         </div>
         {% endif %}
-        {% if project.project_url or project.youtube_url %}
+        {% if project.ProjectURL or project.YoutubeURL %}
         <div class="uploaded-project-links">
-          {% if project.project_url %}
-          <a href="{{ project.project_url }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
+          {% if project.ProjectURL %}
+          <a href="{{ project.ProjectURL }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
           {% endif %}
-          {% if project.youtube_url %}
-          <a href="{{ project.youtube_url }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
+          {% if project.YoutubeURL %}
+          <a href="{{ project.YoutubeURL }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
           {% endif %}
         </div>
         {% endif %}
@@ -115,14 +115,14 @@
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         {% for project in projects %}
         <div class="col" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
-          <div class="flip-card" tabindex="0" role="button" aria-label="View details for {{ project.title }}" aria-pressed="false">
+          <div class="flip-card" tabindex="0" role="button" aria-label="View details for {{ project.Title }}" aria-pressed="false">
             <div class="flip-card-inner">
 
               <!-- FRONT -->
               <div class="flip-card-front">
                 <div class="fc-front-content">
-                  <span class="fc-tag">{{ project.category or 'Project' }}</span>
-                  <h3 class="fc-title">{{ project.title }}</h3>
+                  <span class="fc-tag">{{ project.Category or 'Project' }}</span>
+                  <h3 class="fc-title">{{ project.Title }}</h3>
                   <div class="fc-flip-cue" aria-hidden="true">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
@@ -132,8 +132,8 @@
                   </div>
                 </div>
                 <div class="fc-front-image">
-                  {% if project.media_path %}
-                  <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy" width="400" height="260">
+                  {% if project.MediaPath %}
+                  <img src="{{ project.MediaPath }}" alt="{{ project.Title }}" loading="lazy" width="400" height="260">
                   {% else %}
                   <div class="fc-front-placeholder">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -146,15 +146,12 @@
 
               <!-- BACK -->
               <div class="flip-card-back">
-                <span class="fc-tag">{{ project.category or 'Project' }}</span>
-                <h3 class="fc-back-title">{{ project.title }}</h3>
+                <span class="fc-tag">{{ project.Category or 'Project' }}</span>
+                <h3 class="fc-back-title">{{ project.Title }}</h3>
 
-                
-                
                 {% if project.Performance or project.SEO %}
                 <div class="lh-gauges">
                   {% if project.Performance %}
-                  
                   <div class="lh-gauge {% if project.Performance >= 90 %}lh-high{% elif project.Performance >= 50 %}lh-mid{% else %}lh-low{% endif %}">
                     <div class="lh-gauge-ring">
                       <svg viewBox="0 0 60 60" aria-hidden="true">
@@ -167,14 +164,13 @@
                   </div>
                   {% endif %}
                   {% if project.SEO %}
-                  
-                  <div class="lh-gauge {% if s >= 90 %}lh-high{% elif s >= 50 %}lh-mid{% else %}lh-low{% endif %}">
+                  <div class="lh-gauge {% if project.SEO >= 90 %}lh-high{% elif project.SEO >= 50 %}lh-mid{% else %}lh-low{% endif %}">
                     <div class="lh-gauge-ring">
                       <svg viewBox="0 0 60 60" aria-hidden="true">
                         <circle class="lh-bg" cx="30" cy="30" r="24"/>
-                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: {{ s }};"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: {{ project.SEO }};"/>
                       </svg>
-                      <span class="lh-score">{{ s }}</span>
+                      <span class="lh-score">{{ project.SEO }}</span>
                     </div>
                     <span class="lh-label">SEO</span>
                   </div>
@@ -182,22 +178,22 @@
                 </div>
                 {% endif %}
 
-                <p class="fc-desc">{{ project.description or 'No description added yet.' }}</p>
+                <p class="fc-desc">{{ project.Description or 'No description added yet.' }}</p>
 
-                {% if project.tech_stack %}
+                {% if project.TechStack %}
                 <div class="tag-list">
-                  {% for tech in project.tech_stack.split(',') %}
+                  {% for tech in project.TechStack.split(',') %}
                   <span class="tag">{{ tech.strip() }}</span>
                   {% endfor %}
                 </div>
                 {% endif %}
-                {% if project.project_url or project.youtube_url %}
+                {% if project.ProjectURL or project.YoutubeURL %}
                 <div class="uploaded-project-links">
-                  {% if project.project_url %}
-                  <a href="{{ project.project_url }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
+                  {% if project.ProjectURL %}
+                  <a href="{{ project.ProjectURL }}" target="_blank" rel="noopener" class="uploaded-project-link">View Site</a>
                   {% endif %}
-                  {% if project.youtube_url %}
-                  <a href="{{ project.youtube_url }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
+                  {% if project.YoutubeURL %}
+                  <a href="{{ project.YoutubeURL }}" target="_blank" rel="noopener" class="uploaded-project-link">Watch Video</a>
                   {% endif %}
                 </div>
                 {% endif %}

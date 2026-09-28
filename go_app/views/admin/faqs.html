@@ -51,11 +51,11 @@
         <tbody>
           {% for faq in faqs %}
           <tr>
-            <td>{{ faq.display_order }}</td>
-            <td>{{ faq.question }}</td>
-            <td>/faq/{{ faq.slug }}</td>
+            <td>{{ faq.DisplayOrder }}</td>
+            <td>{{ faq.Question }}</td>
+            <td>/faq/{{ faq.Slug }}</td>
             <td>
-              {% if faq.is_published %}
+              {% if faq.IsPublished %}
               <span class="status-badge status-new">Published</span>
               {% else %}
               <span class="status-badge status-lost">Draft</span>
@@ -63,19 +63,19 @@
             </td>
             <td>
               <div class="d-flex gap-2">
-                {% if faq.is_published %}
-                <a href="/faq/{$1}" target="_blank" class="btn-admin-outline btn-admin-sm">View</a>
+                {% if faq.IsPublished %}
+                <a href="/faq/{{ faq.Slug }}" target="_blank" class="btn-admin-outline btn-admin-sm">View</a>
                 {% endif %}
                 <button class="btn-admin-outline btn-admin-sm edit-faq-btn"
-                        data-id="{{ faq.id }}"
-                        data-question="{{ faq.question|escape }}"
-                        data-slug="{{ faq.slug|escape }}"
-                        data-answer="{{ faq.answer|escape }}"
-                        data-display-order="{{ faq.display_order }}"
-                        data-is-published="{% if faq.is_published %}true{% else %}false{% endif %}">
+                        data-id="{{ faq.ID }}"
+                        data-question="{{ faq.Question|escape }}"
+                        data-slug="{{ faq.Slug|escape }}"
+                        data-answer="{{ faq.Answer|escape }}"
+                        data-display-order="{{ faq.DisplayOrder }}"
+                        data-is-published="{% if faq.IsPublished %}true{% else %}false{% endif %}">
                   Edit
                 </button>
-                <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-faq" data-id="{{ faq.id }}">Delete</button>
+                <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-faq" data-id="{{ faq.ID }}">Delete</button>
               </div>
             </td>
           </tr>

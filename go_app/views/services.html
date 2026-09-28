@@ -44,36 +44,37 @@
 <nav class="svc-nav-strip" id="services-nav" aria-label="Jump to service">
   <div class="svc-nav-inner">
     {% for service in services %}
-    <a href="#{{ service.slug }}" class="svc-nav-pill">{{ service.title }}</a>
+    <a href="#{{ service.Slug }}" class="svc-nav-pill">{{ service.Title }}</a>
     {% endfor %}
   </div>
 </nav>
 
 {% for service in services %}
 <!-- ============================================================
-     SERVICE {{ forloop.Counter }} {{ service.title }}
+     SERVICE {{ forloop.Counter }} {{ service.Title }}
 ============================================================ -->
-<article class="svc-detail {% if forloop.Counter|divisibleby:2 %}svc-detail--alt{% endif %}" id="{{ service.slug }}" aria-labelledby="svc-{{ service.slug }}-heading">
+<article class="svc-detail {% if forloop.Counter|divisibleby:2 %}svc-detail--alt{% endif %}" id="{{ service.Slug }}" aria-labelledby="svc-{{ service.Slug }}-heading">
   <div class="section">
 
     <div class="svc-detail-grid {% if forloop.Counter|divisibleby:2 %}svc-detail-grid--reversed{% endif %}">
 
       <!-- Copy -->
       <div class="svc-detail-copy" data-aos="fade-up">
-        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">{% if service.eyebrow %}{{ service.eyebrow }}{% else %}Service {{ forloop.Counter }}{% endif %}</span>
-        <h2 class="display-section" id="svc-{{ service.slug }}-heading">
-          {{ service.title }}
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">{% if service.Eyebrow %}{{ service.Eyebrow }}{% else %}Service {{ forloop.Counter }}{% endif %}</span>
+        <h2 class="display-section" id="svc-{{ service.Slug }}-heading">
+          {{ service.Title }}
         </h2>
         <p class="lead-text" style="margin-top:20px;">
-          {{ service.lead_text }}
+          {{ service.LeadText }}
         </p>
         <p style="color:var(--text-secondary); font-size:0.92rem; line-height:1.78; margin-top:16px; max-width:520px;">
-          {{ service.description }}
+          {{ service.Description }}
         </p>
 
         <div class="svc-feature-list">
           {% for feature in service.FeatureList %}
           {% if feature %}
+          <div class="svc-feature-item">
             <span class="svc-feature-check" aria-hidden="true">
               <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.53 8.351a1.473 1.473 0 0 1 2.083-2.083l4.004 4.003 6.868-8.84z"/></svg>
             </span>
@@ -84,14 +85,14 @@
         </div>
 
         <div class="svc-price-hint">
-          <span class="svc-price-label">{{ service.price_label or 'Typical project range' }}</span>
-          <span class="svc-price-value">{{ service.price_range }}</span>
-          <span class="svc-price-note">{{ service.price_note }}</span>
+          <span class="svc-price-label">{{ service.PriceLabel or 'Typical project range' }}</span>
+          <span class="svc-price-value">{{ service.PriceRange }}</span>
+          <span class="svc-price-note">{{ service.PriceNote }}</span>
         </div>
 
         
         <div style="margin-top:36px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
-          <a href="/services#{{ service.slug }}" class="btn-ghost-custom">Learn More</a>
+          <a href="/services#{{ service.Slug }}" class="btn-ghost-custom">Learn More</a>
           <a href="/book" class="btn-primary-custom">
             Discuss Your Project
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
@@ -102,11 +103,11 @@
       <!-- Dark card / use-case panel -->
       <div class="svc-detail-panel" data-aos="fade-up" data-aos-delay="120">
         <div class="svc-panel-card">
-          <div class="svc-panel-label">{{ service.panel_title }}</div>
+          <div class="svc-panel-label">{{ service.PanelTitle }}</div>
           
-          {% set panel_items = service.panel_content|from_json %}
+          {% set panel_items = service.PanelContent|from_json %}
           
-          {% if service.panel_type == 'use-case' %}
+          {% if service.PanelType == 'use-case' %}
           <div class="svc-panel-usecase">
             {% for item in panel_items %}
             <div class="svc-usecase-item">
@@ -127,7 +128,7 @@
             {% endfor %}
           </div>
           
-          {% elif service.panel_type == 'audit' %}
+          {% elif service.PanelType == 'audit' %}
           <div class="svc-audit-list">
             {% for item in panel_items %}
             <div class="svc-audit-row">
@@ -140,7 +141,7 @@
             {% endfor %}
           </div>
           
-          {% elif service.panel_type == 'stats' %}
+          {% elif service.PanelType == 'stats' %}
           <div class="svc-stat-stack">
             {% for item in panel_items %}
             <div class="svc-stat-block">
@@ -150,7 +151,7 @@
             {% endfor %}
           </div>
           
-          {% elif service.panel_type == 'auto' %}
+          {% elif service.PanelType == 'auto' %}
           <div class="svc-auto-list">
             {% for item in panel_items %}
             <div class="svc-auto-item">
@@ -193,8 +194,8 @@
 
       {% for faq in faqs %}
       <div class="svc-faq-item">
-        <h3>{{ faq.question }}</h3>
-        <p>{{ faq.answer }}</p>
+        <h3>{{ faq.Question }}</h3>
+        <p>{{ faq.Answer }}</p>
       </div>
       {% endfor %}
 

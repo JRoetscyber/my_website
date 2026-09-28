@@ -1,4 +1,4 @@
-﻿{% extends "admin/admin.html" %}
+{% extends "admin/admin.html" %}
 
 {% block admin_title %}Studio — Admin{% endblock %}
 {% block admin_heading %}Studio{% endblock %}
@@ -135,8 +135,8 @@
                 {% for project in projects %}
                 <tr>
                   <td>
-                    <div class="client-name">{{ project.title }}</div>
-                    <div class="client-company">{{ project.category or 'Project' }}</div>
+                    <div class="client-name">{{ project.Title }}</div>
+                    <div class="client-company">{{ project.Category or 'Project' }}</div>
                   </td>
                   <td>
                     {% set perf = project.Performance %}
@@ -154,16 +154,16 @@
                   <td>
                     <div class="d-flex gap-2">
                       <button class="btn-admin-outline btn-admin-sm btn-edit-project" type="button"
-                        data-id="{{ project.id }}"
-                        data-title="{{ project.title | e }}"
-                        data-tag="{{ project.category  | e }}"
-                        data-description="{{ project.description  | e }}"
-                        data-youtube="{{ project.youtube_url  | e }}"
-                        data-url="{{ project.project_url  | e }}"
-                        data-tech="{{ project.tech_stack  | e }}"
-                        data-performance="{{ project.performance  }}"
-                        data-seo="{{ project.seo  }}">Edit</button>
-                      <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-project" data-id="{{ project.id }}" type="button">Delete</button>
+                        data-id="{{ project.ID }}"
+                        data-title="{{ project.Title | e }}"
+                        data-tag="{{ project.Category  | e }}"
+                        data-description="{{ project.Description  | e }}"
+                        data-youtube="{{ project.YoutubeURL  | e }}"
+                        data-url="{{ project.ProjectURL  | e }}"
+                        data-tech="{{ project.TechStack  | e }}"
+                        data-performance="{{ project.Performance }}"
+                        data-seo="{{ project.SEO }}">Edit</button>
+                      <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-project" data-id="{{ project.ID }}" type="button">Delete</button>
                     </div>
                   </td>
                 </tr>
