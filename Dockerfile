@@ -20,24 +20,32 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -ldflags="-w -s" \
     -o /app/server ./cmd/server
 
+# Copy and compile high-performance C++ WebP converter
+COPY webp_converter/ /src/webp_converter/
+RUN if [ -f /src/webp_converter/converter.cpp ]; then \
+        apk add --no-cache build-base libwebp-dev libgomp && \
+        g++ /src/webp_converter/converter.cpp -o /app/converter -lwebp -lm -fopenmp -O3 || true; \
+    fi
+
 # Stage 2: Ultra-Lightweight Production Runtime
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates tzdata curl
+# Install runtime dependencies including Google cwebp and OpenMP runtime
+RUN apk add --no-cache ca-certificates tzdata curl libwebp libwebp-tools libgomp
 
 # Security: Non-root user execution
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
-# Copy binary from builder
-COPY --from=builder /app/server /app/server
+# Copy binaries from builder
+COPY --from=builder /app/ /app/
 
 # Copy views and static assets
 COPY go_app/views /app/views
 COPY static /app/static
 
 # Persistent data directory for SQLite WAL database & user uploads
-RUN mkdir -p /app/data /app/static/uploads \
+RUN mkdir -p /app/data /app/static/uploads /app/static/uploads/webp \
     && chown -R appuser:appgroup /app
 
 USER appuser

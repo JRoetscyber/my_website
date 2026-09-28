@@ -372,6 +372,7 @@ func main() {
 	app.Get("/faq/:slug", publicHandler.FAQDetail)
 	app.Post("/faq/submit", publicHandler.SubmitFAQ)
 	app.Get("/book", publicHandler.BookPage)
+	app.Get("/webp-converter", publicHandler.WebPConverterPage)
 	app.Get("/robots.txt", publicHandler.Robots)
 	app.Get("/sitemap.xml", publicHandler.Sitemap)
 	app.Get("/health", func(c *fiber.Ctx) error {
@@ -384,6 +385,7 @@ func main() {
 	api.Post("/book-call", publicHandler.BookCall)
 	api.Post("/new-lead", publicHandler.CreateLead)
 	api.Post("/leads", publicHandler.CreateLead)
+	api.Post("/convert-webp", publicHandler.ConvertWebP)
 
 	// Auth Routes
 	app.Get("/login", authHandler.LoginPage)
