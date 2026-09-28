@@ -5,14 +5,19 @@
 $ErrorActionPreference = "Stop"
 
 $upstreamFile = "nginx/upstream.inc"
+if (-not (Test-Path "nginx/conf.d")) {
+    New-Item -ItemType Directory -Force -Path "nginx/conf.d" | Out-Null
+}
+
 if (-not (Test-Path $upstreamFile)) {
-    New-Item -ItemType Directory -Force -Path "nginx" | Out-Null
     Set-Content -Path $upstreamFile -Value "server web-blue:5000;"
 }
 
 if (-not (Test-Path ".env")) {
-    Write-Host "⚠️ .env file not found! Copying from .env.example..." -ForegroundColor Yellow
-    Copy-Item ".env.example" ".env"
+    if (Test-Path ".env.example") {
+        Write-Host "⚠️ .env file not found! Copying from .env.example..." -ForegroundColor Yellow
+        Copy-Item ".env.example" ".env"
+    }
 }
 
 $currentContent = Get-Content $upstreamFile -Raw
@@ -33,18 +38,20 @@ if ($currentContent -match "web-blue") {
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "🚀 JO4 Dev Zero-Downtime Deployment" -ForegroundColor Cyan
 Write-Host "   Active Environment : $active"
-Write-Host "   Deploy Target      : $target ($targetService)"
+Write-Host "   Deploy Target      : $target ($targetService on port $targetPort)"
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-Write-Host "📦 Ensuring Nginx reverse proxy is running..." -ForegroundColor Gray
-docker compose up -d nginx
-
-Write-Host "🔨 Building and starting $targetService..." -ForegroundColor Gray
+# 1. Build Target Container
+Write-Host "🔨 Step 1/5: Building $targetService..." -ForegroundColor Gray
 docker compose build $targetService
+
+# 2. Launch Target Container
+Write-Host "🚀 Step 2/5: Starting $targetService..." -ForegroundColor Gray
 docker compose up -d $targetService
 
-Write-Host "🔍 Waiting for $targetService health check on port $targetPort..." -ForegroundColor Gray
-$maxAttempts = 20
+# 3. Health Check
+Write-Host "🔍 Step 3/5: Checking http://127.0.0.1:$targetPort/health..." -ForegroundColor Gray
+$maxAttempts = 25
 $attempt = 0
 $healthy = $false
 
@@ -73,7 +80,12 @@ if (-not $healthy) {
 
 Write-Host "✅ Health check PASSED for $targetService!" -ForegroundColor Green
 
-Write-Host "🔄 Switching Nginx upstream to $targetService..." -ForegroundColor Gray
+# 4. Ensure Nginx is running
+Write-Host "🌐 Step 4/5: Ensuring Nginx reverse proxy is active..." -ForegroundColor Gray
+docker compose up -d nginx
+
+# 5. Switch Upstream and Reload
+Write-Host "🔄 Step 5/5: Switching Nginx upstream to $targetService..." -ForegroundColor Gray
 Set-Content -Path $upstreamFile -Value "server $targetService:5000;"
 
 docker compose exec -T nginx nginx -s reload

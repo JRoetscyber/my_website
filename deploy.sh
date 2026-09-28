@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 # ==============================================================================
 # JO4 DEV - ZERO-DOWNTIME RED/BLUE (BLUE/GREEN) DEPLOYMENT SCRIPT
@@ -9,20 +9,64 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_DIR"
 
 UPSTREAM_FILE="nginx/upstream.inc"
+TARGET_SERVICE=""
+OLD_SERVICE=""
+ACTIVE=""
+TARGET=""
 
+# Comprehensive Error Handler
+on_error() {
+    local exit_code="$1"
+    local line_num="$2"
+    echo ""
+    echo "=========================================================="
+    echo "❌ DEPLOYMENT ERROR: Command failed with exit code $exit_code at line $line_num"
+    echo "=========================================================="
+    if [ -n "$TARGET_SERVICE" ]; then
+        echo "🔍 Checking container logs for $TARGET_SERVICE..."
+        docker compose logs --tail=50 "$TARGET_SERVICE" || true
+        echo "🛑 Stopping failed target container ($TARGET_SERVICE)..."
+        docker compose stop "$TARGET_SERVICE" 2>/dev/null || true
+    fi
+    if [ -n "$ACTIVE" ]; then
+        echo "🛡️ Current active environment ($ACTIVE) remains untouched and running."
+    fi
+    exit "$exit_code"
+}
+
+trap 'on_error $? $LINENO' ERR
+
+# 1. Sanity check: Ensure Docker is accessible
+if ! command -v docker >/dev/null 2>&1; then
+    echo "❌ Error: 'docker' CLI is not found or not in PATH."
+    exit 1
+fi
+
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ Error: Docker daemon is not running or current user lacks docker permissions."
+    exit 1
+fi
+
+# 2. Check Environment Configuration
+if [ ! -f ".env" ]; then
+    if [ -f ".env.example" ]; then
+        echo "⚠️ .env file not found! Initializing from .env.example..."
+        cp .env.example .env
+        echo "⚠️ Created .env. Please review it with your production secrets."
+    else
+        echo "❌ Error: Neither .env nor .env.example exists."
+        exit 1
+    fi
+fi
+
+# 3. Ensure Nginx configuration directories and upstream file exist
+mkdir -p nginx/conf.d
 if [ ! -f "$UPSTREAM_FILE" ]; then
-    mkdir -p nginx
     echo "server web-blue:5000;" > "$UPSTREAM_FILE"
 fi
 
-if [ ! -f ".env" ]; then
-    echo "⚠️ .env file not found! Copying from .env.example..."
-    cp .env.example .env
-    echo "⚠️ Please review .env with your production credentials!"
-fi
-
-# Detect currently active environment
-CURRENT_UPSTREAM=$(grep -oE 'web-[a-z]+' "$UPSTREAM_FILE" || echo "web-blue")
+# 4. Determine Active and Target Environments
+CURRENT_UPSTREAM=$(grep -oE 'web-[a-z]+' "$UPSTREAM_FILE" 2>/dev/null || echo "web-blue")
 
 if [ "$CURRENT_UPSTREAM" == "web-blue" ]; then
     ACTIVE="BLUE"
@@ -40,60 +84,75 @@ fi
 
 echo "=========================================================="
 echo "🚀 JO4 Dev Zero-Downtime Deployment"
-echo "   Current Active Environment : $ACTIVE ($CURRENT_UPSTREAM)"
-echo "   Target Deployment Target   : $TARGET ($TARGET_SERVICE)"
+echo "   Current Live Service       : $ACTIVE ($CURRENT_UPSTREAM)"
+echo "   Deploying New Release To   : $TARGET ($TARGET_SERVICE on port $TARGET_PORT)"
 echo "=========================================================="
 
-# 1. Ensure Nginx and network are running
-echo "📦 Ensuring Nginx reverse proxy is running..."
-docker compose up -d nginx
-
-# 2. Build and launch target container
-echo "🔨 Building and starting $TARGET_SERVICE..."
+# 5. Build Target Container
+echo "🔨 Step 1/5: Building $TARGET_SERVICE..."
 docker compose build "$TARGET_SERVICE"
+
+# 6. Start Target Container
+echo "🚀 Step 2/5: Launching $TARGET_SERVICE..."
 docker compose up -d "$TARGET_SERVICE"
 
-# 3. Perform Health Check
-echo "🔍 Waiting for $TARGET_SERVICE to become healthy on port $TARGET_PORT..."
-MAX_ATTEMPTS=20
+# 7. Health Check Target Container
+echo "🔍 Step 3/5: Running health checks on http://127.0.0.1:$TARGET_PORT/health..."
+MAX_ATTEMPTS=25
 ATTEMPT=0
 HEALTHY=0
 
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
     ATTEMPT=$((ATTEMPT + 1))
-    if curl -s -f "http://127.0.0.1:$TARGET_PORT/health" > /dev/null 2>&1; then
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:$TARGET_PORT/health" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" -eq 200 ]; then
         HEALTHY=1
         break
     fi
-    echo "   Attempt $ATTEMPT/$MAX_ATTEMPTS: Waiting for server response..."
+    echo "   Attempt $ATTEMPT/$MAX_ATTEMPTS (HTTP $HTTP_CODE) - Waiting for service..."
     sleep 2
 done
 
 if [ $HEALTHY -eq 0 ]; then
-    echo "❌ HEALTH CHECK FAILED on $TARGET_SERVICE!"
-    echo "   Aborting deployment. Active environment remains $ACTIVE."
+    echo "❌ Health check failed after $MAX_ATTEMPTS attempts."
+    echo "   Dumping last 50 log lines from $TARGET_SERVICE:"
     docker compose logs --tail=50 "$TARGET_SERVICE"
-    docker compose stop "$TARGET_SERVICE"
+    echo "🛑 Halting deployment and stopping $TARGET_SERVICE..."
+    docker compose stop "$TARGET_SERVICE" 2>/dev/null || true
+    echo "🛡️ Live traffic remains on $ACTIVE ($OLD_SERVICE)."
     exit 1
 fi
 
-echo "✅ Health check PASSED for $TARGET_SERVICE!"
+echo "✅ Health check PASSED! $TARGET_SERVICE is healthy and responding with HTTP 200."
 
-# 4. Atomically switch Nginx upstream
-echo "🔄 Switching Nginx traffic to $TARGET_SERVICE..."
+# 8. Ensure Nginx is running
+echo "🌐 Step 4/5: Ensuring Nginx reverse proxy is active..."
+docker compose up -d nginx
+
+# 9. Switch Traffic Atomically
+echo "🔄 Step 5/5: Switching Nginx upstream traffic to $TARGET_SERVICE..."
 echo "server $TARGET_SERVICE:5000;" > "$UPSTREAM_FILE"
 
-# 5. Reload Nginx without dropping connections
+# Test Nginx syntax before reload
+if ! docker compose exec -T nginx nginx -t >/dev/null 2>&1; then
+    echo "❌ Nginx configuration test failed! Reverting upstream..."
+    echo "server $OLD_SERVICE:5000;" > "$UPSTREAM_FILE"
+    docker compose stop "$TARGET_SERVICE" 2>/dev/null || true
+    exit 1
+fi
+
+# Graceful reload: zero dropped requests
 docker compose exec -T nginx nginx -s reload
 
-echo "⏳ Traffic switched. Draining connections from $OLD_SERVICE (5s)..."
+echo "⏳ Waiting 5 seconds to drain in-flight connections from $OLD_SERVICE..."
 sleep 5
 
-# 6. Stop idle environment to conserve resources
-echo "🛑 Stopping old environment ($OLD_SERVICE)..."
-docker compose stop "$OLD_SERVICE"
+# Stop previous container to free server memory
+echo "🛑 Stopping previous container ($OLD_SERVICE)..."
+docker compose stop "$OLD_SERVICE" 2>/dev/null || true
 
 echo "=========================================================="
-echo "🎉 DEPLOYMENT COMPLETE! ZERO DOWNTIME ACHIEVED."
-echo "   Now serving live traffic on: $TARGET ($TARGET_SERVICE)"
+echo "🎉 DEPLOYMENT SUCCESSFUL!"
+echo "   Live Environment is now: $TARGET ($TARGET_SERVICE)"
+echo "   Zero downtime achieved."
 echo "=========================================================="

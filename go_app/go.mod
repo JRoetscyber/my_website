@@ -1,6 +1,6 @@
 module github.com/JRoetscyber/my_website/go_app
 
-go 1.26.7
+go 1.25.0
 
 require (
 	github.com/flosch/pongo2/v6 v6.1.0

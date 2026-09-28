@@ -1,7 +1,10 @@
 # Stage 1: High-Performance Go Compiler
-FROM golang:1.24-alpine AS builder
+FROM golang:alpine AS builder
 
 WORKDIR /src
+
+ENV GOTOOLCHAIN=auto \
+    CGO_ENABLED=0
 
 RUN apk add --no-cache git ca-certificates tzdata
 
