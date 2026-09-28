@@ -111,6 +111,24 @@ func (h *PublicHandler) Projects(c *fiber.Ctx) error {
 	})
 }
 
+// Project detail
+func (h *PublicHandler) ProjectDetail(c *fiber.Ctx) error {
+	slug := c.Params("slug")
+	var project models.Project
+	if err := h.DB.Where("slug = ?", slug).First(&project).Error; err != nil {
+		return c.Status(http.StatusNotFound).SendString("Project not found")
+	}
+
+	h.DB.Model(&project).UpdateColumn("views", gorm.Expr("views + ?", 1))
+
+	return c.Render("projects", fiber.Map{
+		"project":         project,
+		"seo_title":       project.Title + " — JO4 Dev Case Study",
+		"seo_description": project.Description,
+		"request":         c,
+	})
+}
+
 // Blog list
 func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
 	var posts []models.BlogPost

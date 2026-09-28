@@ -315,10 +315,10 @@
     </p>
   </div>
 
-  <div class="row row-cols-1 row-cols-md-3 g-4" data-aos="fade-up" data-aos-delay="100">
+  <div class="projects-mini-grid" data-aos="fade-up" data-aos-delay="100">
     {% for project in projects %}
     {% if project.Slug %}
-    <div class="col">
+    <div>
       <a href="/projects/{{ project.Slug }}" class="project-mini-card">
         <div class="mini-card-image">
           {% if project.MediaPath %}
@@ -328,7 +328,7 @@
           {% endif %}
         </div>
         <div class="mini-card-body">
-          <span class="mini-card-tag">{{ project.Category or 'System' }}</span>
+          <span class="mini-card-tag">{% if project.Category == 'true' or project.Category == 'True' or project.Category == 'TRUE' or not project.Category %}Web Platform{% else %}{{ project.Category }}{% endif %}</span>
           <h4>{{ project.Title }}</h4>
         </div>
       </a>

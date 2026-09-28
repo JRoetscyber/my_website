@@ -366,6 +366,7 @@ func main() {
 	app.Get("/app-development", publicHandler.AppDev)
 	app.Get("/automation", publicHandler.Automation)
 	app.Get("/projects", publicHandler.Projects)
+	app.Get("/projects/:slug", publicHandler.ProjectDetail)
 	app.Get("/blog", publicHandler.BlogList)
 	app.Get("/blog/:slug", publicHandler.BlogDetail)
 	app.Get("/faq", publicHandler.FAQList)

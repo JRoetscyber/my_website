@@ -48,7 +48,7 @@
         {% endif %}
       </div>
       <div class="project-card-body">
-        <div class="project-tag">{{ project.Category or 'Project' }}</div>
+        <div class="project-tag">{% if project.Category == 'true' or project.Category == 'True' or project.Category == 'TRUE' or not project.Category %}Case Study{% else %}{{ project.Category }}{% endif %}</div>
         <h3>{{ project.Title }}</h3>
         <p>{{ project.Description or 'No description added yet.' }}</p>
         {% if project.TechStack %}
@@ -112,16 +112,16 @@
         Tap any card to flip and view project details
       </div>
 
-      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+      <div class="projects-mini-grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));">
         {% for project in projects %}
-        <div class="col" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
+        <div data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
           <div class="flip-card" tabindex="0" role="button" aria-label="View details for {{ project.Title }}" aria-pressed="false">
             <div class="flip-card-inner">
 
               <!-- FRONT -->
               <div class="flip-card-front">
                 <div class="fc-front-content">
-                  <span class="fc-tag">{{ project.Category or 'Project' }}</span>
+                  <span class="fc-tag">{% if project.Category == 'true' or project.Category == 'True' or project.Category == 'TRUE' or not project.Category %}Case Study{% else %}{{ project.Category }}{% endif %}</span>
                   <h3 class="fc-title">{{ project.Title }}</h3>
                   <div class="fc-flip-cue" aria-hidden="true">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -146,7 +146,7 @@
 
               <!-- BACK -->
               <div class="flip-card-back">
-                <span class="fc-tag">{{ project.Category or 'Project' }}</span>
+                <span class="fc-tag">{% if project.Category == 'true' or project.Category == 'True' or project.Category == 'TRUE' or not project.Category %}Case Study{% else %}{{ project.Category }}{% endif %}</span>
                 <h3 class="fc-back-title">{{ project.Title }}</h3>
 
                 {% if project.Performance or project.SEO %}
