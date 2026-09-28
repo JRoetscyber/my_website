@@ -59,6 +59,12 @@ if [ ! -f ".env" ]; then
     fi
 fi
 
+# Ensure external Cloudflare tunnel network exists
+if ! docker network inspect tunnel-net >/dev/null 2>&1; then
+    echo "🌐 Initializing Docker network 'tunnel-net' for Cloudflare Tunnel..."
+    docker network create tunnel-net 2>/dev/null || true
+fi
+
 # 3. Ensure Nginx configuration directories and upstream file exist
 mkdir -p nginx/conf.d
 if [ ! -f "$UPSTREAM_FILE" ]; then

@@ -5,13 +5,16 @@ services:
     restart: always
     ports:
       - "80:80"
-      - "6010:80"
+      - "6010:6010"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./nginx/upstream.inc:/etc/nginx/conf.d/upstream.inc:rw
     networks:
-      - jo4-net
+      jo4-net:
+      tunnel-net:
+        aliases:
+          - jo4-site
 
   web-blue:
     build:
@@ -56,6 +59,8 @@ services:
 networks:
   jo4-net:
     driver: bridge
+  tunnel-net:
+    external: true
 
 volumes:
   db_data:
