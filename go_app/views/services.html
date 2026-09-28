@@ -74,8 +74,9 @@
         <div class="svc-feature-list">
           {% for feature in service.FeatureList %}
           {% if feature %}
-          <div class="svc-feature-item">
-            <span class="svc-feature-check" aria-hidden="true">✓</span>
+            <span class="svc-feature-check" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.485 1.431a1.473 1.473 0 0 1 2.104 2.062l-7.84 9.801a1.473 1.473 0 0 1-2.12.04L.53 8.351a1.473 1.473 0 0 1 2.083-2.083l4.004 4.003 6.868-8.84z"/></svg>
+            </span>
             {{ feature }}
           </div>
           {% endif %}

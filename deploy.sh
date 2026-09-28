@@ -102,6 +102,16 @@ docker compose build "$TARGET_SERVICE"
 echo "🚀 Step 2/5: Launching $TARGET_SERVICE..."
 docker compose up -d "$TARGET_SERVICE"
 
+# Auto-restore existing database backup if present on host and container database is empty
+if [ -f "jo4dev_backup.db" ]; then
+    DB_SIZE=$(docker compose exec -T "$TARGET_SERVICE" stat -c%s /app/data/jo4dev.db 2>/dev/null || echo "0")
+    if [ "$DB_SIZE" -lt 65536 ]; then
+        echo "📥 Detected jo4dev_backup.db! Restoring existing blogs & projects into $TARGET_SERVICE..."
+        docker compose cp jo4dev_backup.db "$TARGET_SERVICE":/app/data/jo4dev.db
+        docker compose restart "$TARGET_SERVICE"
+    fi
+fi
+
 # 7. Health Check Target Container
 echo "🔍 Step 3/5: Running health checks on http://127.0.0.1:$TARGET_PORT/health..."
 MAX_ATTEMPTS=25

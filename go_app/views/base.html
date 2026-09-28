@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow">
+  <meta name="geo.region" content="ZA">
+  <meta name="geo.placename" content="South Africa">
+  <meta name="author" content="JO4 Development Studio">
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:site_name" content="JO4 Dev">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}https://jo4.co.za{{ current_path }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}https://jo4.co.za/static/assets/logo.webp{% endblock %}">
+
+  <!-- Twitter Card Metadata -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block twitter_title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}https://jo4.co.za/static/assets/logo.webp{% endblock %}">
+
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
   <!-- Preload Critical Body Font (Self-Hosted, Zero External Roundtrips) -->
@@ -15,10 +35,52 @@
   <link rel="stylesheet" href="/static/css/core.css">
   {% endblock %}
 
-  <!-- Canonical Link -->
-  <link rel="canonical" href="https://jo4.co.za">
+  <!-- Dynamic Canonical Link -->
+  <link rel="canonical" href="{% block canonical %}https://jo4.co.za{{ current_path }}{% endblock %}">
   
   {% block head_extra %}{% endblock %}
+  
+  <!-- Global JSON-LD Schema (Organization, WebSite & ProfessionalService) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://jo4.co.za/#organization",
+        "name": "JO4 Dev",
+        "url": "https://jo4.co.za",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://jo4.co.za/static/assets/logo.webp"
+        },
+        "description": "High-performance custom web development, native mobile applications, and business automation engineered with Go Fiber and Dragon.",
+        "areaServed": {
+          "@type": "Country",
+          "name": "South Africa"
+        },
+        "knowsAbout": ["Go Fiber", "Custom Web Development", "Search Engine Optimization", "C++", "Kotlin", "Swift", "Docker", "Cloudflare"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://jo4.co.za/#website",
+        "url": "https://jo4.co.za",
+        "name": "JO4 Dev",
+        "publisher": {
+          "@id": "https://jo4.co.za/#organization"
+        }
+      },
+      {
+        "@type": "ProfessionalService",
+        "@id": "https://jo4.co.za/#service",
+        "name": "JO4 Dev",
+        "url": "https://jo4.co.za",
+        "image": "https://jo4.co.za/static/assets/logo.webp",
+        "priceRange": "$$"
+      }
+    ]
+  }
+  </script>
   {% block json_ld_schema %}{% endblock %}
 </head>
 <body>

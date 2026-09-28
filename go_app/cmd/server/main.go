@@ -19,6 +19,7 @@ import (
 	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
 	"github.com/flosch/pongo2/v6"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -266,6 +267,26 @@ func main() {
 	}))
 	app.Use(cors.New())
 	app.Use(middleware.TrackAnalytics(db))
+
+	// In-memory page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers)
+	app.Use(cache.New(cache.Config{
+		Next: func(c *fiber.Ctx) bool {
+			if c.Method() != fiber.MethodGet {
+				return true
+			}
+			path := c.Path()
+			if strings.HasPrefix(path, "/admin") ||
+				strings.HasPrefix(path, "/login") ||
+				strings.HasPrefix(path, "/logout") ||
+				strings.HasPrefix(path, "/api") ||
+				path == "/health" {
+				return true
+			}
+			return false
+		},
+		Expiration:   10 * time.Minute,
+		CacheControl: true,
+	}))
 
 	// Rate limiter for API routes
 	apiLimiter := limiter.New(limiter.Config{
