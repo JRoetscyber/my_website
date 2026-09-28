@@ -55,10 +55,10 @@
   --dark-text:        #f0eeea;
   --dark-text-muted:  #7a7a76;
 
-  --accent:           #0d9488;
-  --accent-light:     #14b8a6;
-  --accent-faint:     rgba(13, 148, 136, 0.07);
-  --accent-mid:       rgba(13, 148, 136, 0.18);
+  --accent:           #0f766e;
+  --accent-light:     #2dd4bf;
+  --accent-faint:     rgba(15, 118, 110, 0.08);
+  --accent-mid:       rgba(15, 118, 110, 0.20);
 
   /* Legacy aliases — keeps projects.html / book.html working */
   --color-bg:             #fafaf8;
@@ -150,6 +150,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--accent);
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -161,6 +162,12 @@ h1, h2, h3, h4, h5, h6 {
   height: 1.5px;
   background: var(--accent);
   flex-shrink: 0;
+}
+.dark .eyebrow, .cta-band .eyebrow, .hero-process-wrap .eyebrow {
+  color: var(--accent-light);
+}
+.dark .eyebrow::before, .cta-band .eyebrow::before, .hero-process-wrap .eyebrow::before {
+  background: var(--accent-light);
 }
 
 /* 4. NAVIGATION */

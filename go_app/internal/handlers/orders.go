@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/JRoetscyber/my_website/go_app/internal/cache"
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/JRoetscyber/my_website/go_app/internal/services"
@@ -95,10 +97,18 @@ func (h *OrderHandler) OrderDisplayDataAPI(c *fiber.Ctx) error {
 	h.DB.Where("created_at >= ? AND status = 'ready'", today).
 		Order("ready_at desc, sequence_number asc").Limit(16).Find(&readyOrders)
 
-	return c.JSON(fiber.Map{
+	payload := fiber.Map{
 		"preparing": preparingOrders,
 		"ready":     readyOrders,
-	})
+	}
+
+	etag := cache.GenerateETag([]byte(fmt.Sprintf("%v", payload)))
+	if cache.HandleETag(c, etag) {
+		return nil
+	}
+	c.Set("ETag", etag)
+
+	return c.JSON(payload)
 }
 
 // AdminOrdersPage renders the orders dashboard in the admin portal
@@ -163,6 +173,10 @@ func (h *OrderHandler) AdminCreateOrder(c *fiber.Ctx) error {
 
 	log.Printf("[ORDERS] Created Order #%d for '%s' (Tracking: %s)", order.SequenceNumber, order.CustomerName, order.TrackingCode)
 
+	if h.AdminHandler != nil && h.AdminHandler.Cache != nil {
+		h.AdminHandler.Cache.Invalidate(c.Context(), "orders:*", "dashboard:*")
+	}
+
 	if strings.Contains(c.Get("Accept"), "application/json") {
 		return c.JSON(fiber.Map{
 			"status": "success",
@@ -206,6 +220,10 @@ func (h *OrderHandler) AdminUpdateOrderStatus(c *fiber.Ctx) error {
 
 	h.DB.Save(&order)
 
+	if h.AdminHandler != nil && h.AdminHandler.Cache != nil {
+		h.AdminHandler.Cache.Invalidate(c.Context(), "orders:*", "dashboard:*")
+	}
+
 	if strings.Contains(c.Get("Accept"), "application/json") || c.Is("json") {
 		return c.JSON(fiber.Map{
 			"status": "success",
@@ -238,6 +256,10 @@ func (h *OrderHandler) AdminNotifyOrder(c *fiber.Ctx) error {
 
 	log.Printf("[ORDERS] Re-notified callout for Order #%d (Notification count: %d)", order.SequenceNumber, order.NotifyCount)
 
+	if h.AdminHandler != nil && h.AdminHandler.Cache != nil {
+		h.AdminHandler.Cache.Invalidate(c.Context(), "orders:*", "dashboard:*")
+	}
+
 	if strings.Contains(c.Get("Accept"), "application/json") || c.Is("json") {
 		return c.JSON(fiber.Map{
 			"status":       "success",
@@ -258,6 +280,10 @@ func (h *OrderHandler) AdminDeleteOrder(c *fiber.Ctx) error {
 
 	h.DB.Delete(&models.Order{}, id)
 	log.Printf("[ORDERS] Deleted order ID %d", id)
+
+	if h.AdminHandler != nil && h.AdminHandler.Cache != nil {
+		h.AdminHandler.Cache.Invalidate(c.Context(), "orders:*", "dashboard:*")
+	}
 
 	if strings.Contains(c.Get("Accept"), "application/json") || c.Is("json") {
 		return c.JSON(fiber.Map{"status": "success"})

@@ -16,6 +16,16 @@ services:
         aliases:
           - jo4-site
 
+  redis:
+    image: redis:7-alpine
+    container_name: jo4-redis
+    restart: always
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru --save ""
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - jo4-net
+
   web-blue:
     build:
       context: .
@@ -30,6 +40,7 @@ services:
       - PORT=5000
       - ENV=production
       - DATABASE_URL=/app/data/jo4dev.db
+      - REDIS_URL=redis:6379
     volumes:
       - db_data:/app/data
       - static_uploads:/app/static/uploads
@@ -50,6 +61,7 @@ services:
       - PORT=5000
       - ENV=production
       - DATABASE_URL=/app/data/jo4dev.db
+      - REDIS_URL=redis:6379
     volumes:
       - db_data:/app/data
       - static_uploads:/app/static/uploads

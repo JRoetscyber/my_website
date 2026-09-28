@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,51 +14,59 @@ import (
 	"sync"
 	"time"
 
+	"github.com/JRoetscyber/my_website/go_app/internal/cache"
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/JRoetscyber/my_website/go_app/internal/services"
+	"github.com/JRoetscyber/my_website/go_app/internal/worker"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type PublicHandler struct {
-	DB  *gorm.DB
-	Cfg *config.Config
+	DB     *gorm.DB
+	Cfg    *config.Config
+	Cache  *cache.Manager
+	Worker *worker.Pool
 }
 
-func NewPublicHandler(db *gorm.DB, cfg *config.Config) *PublicHandler {
-	return &PublicHandler{DB: db, Cfg: cfg}
+func NewPublicHandler(db *gorm.DB, cfg *config.Config, cm *cache.Manager, pool *worker.Pool) *PublicHandler {
+	return &PublicHandler{
+		DB:     db,
+		Cfg:    cfg,
+		Cache:  cm,
+		Worker: pool,
+	}
 }
 
-// Home page
+// Home page with Redis / Memory Cache-Aside & Thundering Herd Singleflight Protection
 func (h *PublicHandler) Home(c *fiber.Ctx) error {
-	var (
-		projects     []models.Project
-		blogPosts    []models.BlogPost
-		faqs         []models.FAQ
-		servicesList []models.Service
-		wg           sync.WaitGroup
-	)
+	ctx := context.Background()
 
-	wg.Add(4)
-	go func() {
-		defer wg.Done()
-		h.DB.Order("id desc").Limit(6).Find(&projects)
-	}()
-	go func() {
-		defer wg.Done()
-		h.DB.Order("created_at desc").Limit(3).Find(&blogPosts)
-	}()
-	go func() {
-		defer wg.Done()
-		h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Limit(6).Find(&faqs)
-	}()
-	go func() {
-		defer wg.Done()
-		h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Find(&servicesList)
-	}()
-	wg.Wait()
+	projects, _ := cache.GetOrSet(h.Cache, ctx, cache.ProjectListKey(), 10*time.Minute, func(ctx context.Context) ([]models.Project, error) {
+		var list []models.Project
+		err := h.DB.WithContext(ctx).Order("id desc").Limit(6).Find(&list).Error
+		return list, err
+	})
+
+	blogPosts, _ := cache.GetOrSet(h.Cache, ctx, cache.BlogListKey(), 10*time.Minute, func(ctx context.Context) ([]models.BlogPost, error) {
+		var list []models.BlogPost
+		err := h.DB.WithContext(ctx).Order("created_at desc").Limit(3).Find(&list).Error
+		return list, err
+	})
+
+	faqs, _ := cache.GetOrSet(h.Cache, ctx, cache.FAQsKey(), 30*time.Minute, func(ctx context.Context) ([]models.FAQ, error) {
+		var list []models.FAQ
+		err := h.DB.WithContext(ctx).Where("is_published = ?", true).Order("display_order asc, id asc").Limit(6).Find(&list).Error
+		return list, err
+	})
+
+	servicesList, _ := cache.GetOrSet(h.Cache, ctx, cache.ServicesKey(), 30*time.Minute, func(ctx context.Context) ([]models.Service, error) {
+		var list []models.Service
+		err := h.DB.WithContext(ctx).Where("is_published = ?", true).Order("display_order asc, id asc").Find(&list).Error
+		return list, err
+	})
 
 	return c.Render("index", fiber.Map{
 		"projects": projects,
@@ -70,8 +79,11 @@ func (h *PublicHandler) Home(c *fiber.Ctx) error {
 
 // Services overview
 func (h *PublicHandler) Services(c *fiber.Ctx) error {
-	var servicesList []models.Service
-	h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Find(&servicesList)
+	servicesList, _ := cache.GetOrSet(h.Cache, context.Background(), cache.ServicesKey(), 30*time.Minute, func(ctx context.Context) ([]models.Service, error) {
+		var list []models.Service
+		err := h.DB.WithContext(ctx).Where("is_published = ?", true).Order("display_order asc, id asc").Find(&list).Error
+		return list, err
+	})
 
 	return c.Render("services", fiber.Map{
 		"services": servicesList,
@@ -102,8 +114,11 @@ func (h *PublicHandler) Automation(c *fiber.Ctx) error {
 
 // Projects / Portfolio
 func (h *PublicHandler) Projects(c *fiber.Ctx) error {
-	var projects []models.Project
-	h.DB.Order("id desc").Find(&projects)
+	projects, _ := cache.GetOrSet(h.Cache, context.Background(), cache.ProjectListKey(), 15*time.Minute, func(ctx context.Context) ([]models.Project, error) {
+		var list []models.Project
+		err := h.DB.WithContext(ctx).Order("id desc").Find(&list).Error
+		return list, err
+	})
 
 	return c.Render("projects", fiber.Map{
 		"projects": projects,
@@ -113,13 +128,23 @@ func (h *PublicHandler) Projects(c *fiber.Ctx) error {
 
 // Project detail
 func (h *PublicHandler) ProjectDetail(c *fiber.Ctx) error {
-	slug := c.Params("slug")
-	var project models.Project
-	if err := h.DB.Where("slug = ?", slug).First(&project).Error; err != nil {
+	slug := strings.Clone(c.Params("slug"))
+	project, err := cache.GetOrSet(h.Cache, context.Background(), cache.ProjectKey(slug), 15*time.Minute, func(ctx context.Context) (models.Project, error) {
+		var p models.Project
+		err := h.DB.WithContext(ctx).Where("slug = ?", slug).First(&p).Error
+		return p, err
+	})
+	if err != nil || project.ID == 0 {
 		return c.Status(http.StatusNotFound).SendString("Project not found")
 	}
 
-	h.DB.Model(&project).UpdateColumn("views", gorm.Expr("views + ?", 1))
+	// Increment view count asynchronously via bounded worker pool (fasthttp safe)
+	if h.Worker != nil {
+		projID := project.ID
+		h.Worker.Enqueue(func(ctx context.Context) {
+			h.DB.WithContext(ctx).Model(&models.Project{}).Where("id = ?", projID).UpdateColumn("views", gorm.Expr("views + ?", 1))
+		})
+	}
 
 	return c.Render("projects", fiber.Map{
 		"project":         project,
@@ -131,8 +156,11 @@ func (h *PublicHandler) ProjectDetail(c *fiber.Ctx) error {
 
 // Blog list
 func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
-	var posts []models.BlogPost
-	h.DB.Order("created_at desc").Find(&posts)
+	posts, _ := cache.GetOrSet(h.Cache, context.Background(), cache.BlogListKey(), 15*time.Minute, func(ctx context.Context) ([]models.BlogPost, error) {
+		var list []models.BlogPost
+		err := h.DB.WithContext(ctx).Order("created_at desc").Find(&list).Error
+		return list, err
+	})
 
 	return c.Render("blog", fiber.Map{
 		"posts":   posts,
@@ -142,16 +170,23 @@ func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
 
 // Blog detail
 func (h *PublicHandler) BlogDetail(c *fiber.Ctx) error {
-	slug := c.Params("slug")
-	var post models.BlogPost
-	if err := h.DB.Where("slug = ?", slug).First(&post).Error; err != nil {
+	slug := strings.Clone(c.Params("slug"))
+	post, err := cache.GetOrSet(h.Cache, context.Background(), cache.BlogKey(slug), 15*time.Minute, func(ctx context.Context) (models.BlogPost, error) {
+		var p models.BlogPost
+		err := h.DB.WithContext(ctx).Where("slug = ?", slug).First(&p).Error
+		return p, err
+	})
+	if err != nil || post.ID == 0 {
 		return c.Status(http.StatusNotFound).SendString("Post not found")
 	}
 
-	// Increment view count asynchronously
-	go func(id uint) {
-		h.DB.Model(&models.BlogPost{}).Where("id = ?", id).UpdateColumn("views", gorm.Expr("views + 1"))
-	}(post.ID)
+	// Increment view count asynchronously via bounded worker pool (fasthttp safe)
+	if h.Worker != nil {
+		postID := post.ID
+		h.Worker.Enqueue(func(ctx context.Context) {
+			h.DB.WithContext(ctx).Model(&models.BlogPost{}).Where("id = ?", postID).UpdateColumn("views", gorm.Expr("views + 1"))
+		})
+	}
 
 	var recentPosts []models.BlogPost
 	h.DB.Where("id != ?", post.ID).Order("created_at desc").Limit(3).Find(&recentPosts)
@@ -165,8 +200,11 @@ func (h *PublicHandler) BlogDetail(c *fiber.Ctx) error {
 
 // FAQ list
 func (h *PublicHandler) FAQList(c *fiber.Ctx) error {
-	var faqs []models.FAQ
-	h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Find(&faqs)
+	faqs, _ := cache.GetOrSet(h.Cache, context.Background(), cache.FAQsKey(), 30*time.Minute, func(ctx context.Context) ([]models.FAQ, error) {
+		var list []models.FAQ
+		err := h.DB.WithContext(ctx).Where("is_published = ?", true).Order("display_order asc, id asc").Find(&list).Error
+		return list, err
+	})
 
 	return c.Render("faq", fiber.Map{
 		"faqs":    faqs,

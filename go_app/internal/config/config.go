@@ -20,6 +20,8 @@ type Config struct {
 	GoogleCalendarID    string
 	DefaultAdminUser    string
 	DefaultAdminPass    string
+	RedisURL            string
+	RedisPassword       string
 }
 
 func LoadConfig() *Config {
@@ -46,6 +48,8 @@ func LoadConfig() *Config {
 		GoogleCalendarID:   getEnv("GOOGLE_CALENDAR_ID", "primary"),
 		DefaultAdminUser:   getEnv("ADMIN_USERNAME", "admin"),
 		DefaultAdminPass:   getEnv("ADMIN_PASSWORD", "password"),
+		RedisURL:           getEnv("REDIS_URL", ""),
+		RedisPassword:      getEnv("REDIS_PASSWORD", ""),
 	}
 }
 

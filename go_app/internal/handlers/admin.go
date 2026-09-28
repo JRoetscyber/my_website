@@ -13,22 +13,31 @@ import (
 	"sync"
 	"time"
 
+	"github.com/JRoetscyber/my_website/go_app/internal/cache"
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/JRoetscyber/my_website/go_app/internal/services"
 	"github.com/JRoetscyber/my_website/go_app/internal/utils"
+	"github.com/JRoetscyber/my_website/go_app/internal/worker"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type AdminHandler struct {
-	DB  *gorm.DB
-	Cfg *config.Config
+	DB     *gorm.DB
+	Cfg    *config.Config
+	Cache  *cache.Manager
+	Worker *worker.Pool
 }
 
-func NewAdminHandler(db *gorm.DB, cfg *config.Config) *AdminHandler {
-	return &AdminHandler{DB: db, Cfg: cfg}
+func NewAdminHandler(db *gorm.DB, cfg *config.Config, cm *cache.Manager, pool *worker.Pool) *AdminHandler {
+	return &AdminHandler{
+		DB:     db,
+		Cfg:    cfg,
+		Cache:  cm,
+		Worker: pool,
+	}
 }
 
 // buildAdminContext provides unified context for the admin sidebar badges and system status
@@ -236,6 +245,10 @@ func (h *AdminHandler) AddLead(c *fiber.Ctx) error {
 		return c.Redirect("/admin/leads")
 	}
 
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "dashboard:*")
+	}
+
 	if isJSON {
 		return c.Status(http.StatusCreated).JSON(fiber.Map{
 			"status":         "success",
@@ -315,6 +328,10 @@ func (h *AdminHandler) UpdateLead(c *fiber.Ctx) error {
 	lead.LastActivityDate = time.Now()
 	h.DB.Save(&lead)
 
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "dashboard:*")
+	}
+
 	if isJSON || c.XHR() {
 		return c.JSON(fiber.Map{
 			"status":  "success",
@@ -329,6 +346,10 @@ func (h *AdminHandler) UpdateLead(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteLead(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.Lead{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "dashboard:*")
+	}
 
 	if strings.Contains(c.Get("Content-Type"), "application/json") || c.XHR() || c.Method() == "DELETE" {
 		return c.JSON(fiber.Map{
@@ -475,6 +496,10 @@ func (h *AdminHandler) SaveProject(c *fiber.Ctx) error {
 
 	h.DB.Create(&project)
 
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
+	}
+
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
 		return c.JSON(fiber.Map{
 			"status":  "success",
@@ -545,6 +570,10 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 
 	h.DB.Save(&project)
 
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
+	}
+
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
 		return c.JSON(fiber.Map{
 			"status":  "success",
@@ -558,6 +587,10 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteProject(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.Project{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
+	}
 
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
 		return c.JSON(fiber.Map{
@@ -613,6 +646,11 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 	}
 
 	h.DB.Create(&post)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	}
+
 	return c.Redirect("/admin/blogs")
 }
 
@@ -643,6 +681,11 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 	}
 
 	h.DB.Save(&post)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	}
+
 	return c.Redirect("/admin/blogs")
 }
 
@@ -650,6 +693,10 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteBlogPost(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.BlogPost{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	}
 
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
 		return c.JSON(fiber.Map{
@@ -691,6 +738,11 @@ func (h *AdminHandler) SaveFAQ(c *fiber.Ctx) error {
 	}
 
 	h.DB.Create(&faq)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
+	}
+
 	return c.Redirect("/admin/faqs")
 }
 
@@ -713,6 +765,11 @@ func (h *AdminHandler) UpdateFAQ(c *fiber.Ctx) error {
 	faq.IsPublished = c.FormValue("is_published") == "on" || c.FormValue("is_published") == "true"
 
 	h.DB.Save(&faq)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
+	}
+
 	return c.Redirect("/admin/faqs")
 }
 
@@ -720,6 +777,10 @@ func (h *AdminHandler) UpdateFAQ(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteFAQ(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.FAQ{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
+	}
 
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
 		return c.JSON(fiber.Map{
@@ -734,6 +795,10 @@ func (h *AdminHandler) DeleteFAQ(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteFAQSubmission(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.FAQSubmission{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
+	}
 
 	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
 		return c.JSON(fiber.Map{
@@ -783,6 +848,11 @@ func (h *AdminHandler) AddService(c *fiber.Ctx) error {
 	}
 
 	h.DB.Create(&service)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
+	}
+
 	return c.Redirect("/admin/services")
 }
 
@@ -815,6 +885,11 @@ func (h *AdminHandler) UpdateService(c *fiber.Ctx) error {
 	service.IsPublished = c.FormValue("is_published") == "on" || c.FormValue("is_published") == "true"
 
 	h.DB.Save(&service)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
+	}
+
 	return c.Redirect("/admin/services")
 }
 
@@ -822,6 +897,10 @@ func (h *AdminHandler) UpdateService(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteService(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.Service{}, id)
+
+	if h.Cache != nil {
+		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
+	}
 
 	return c.JSON(fiber.Map{
 		"status":  "success",

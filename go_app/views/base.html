@@ -27,8 +27,10 @@
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-  <!-- Preload Critical Body Font (Self-Hosted, Zero External Roundtrips) -->
+  <!-- Preload Critical Typography (Self-Hosted, Zero External Roundtrips) -->
   <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/syne-800.woff2" as="font" type="font/woff2" crossorigin>
 
   {% block head_styles %}
   <!-- Core Stylesheet (Pure CSS tokens, layout, nav, footer, and grid) -->
@@ -172,15 +174,20 @@
   {% block scripts %}{% endblock %}
 
   <!-- Completely Deferred Analytics (Zero Network Contention During Critical Rendering) -->
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
-  <script defer>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-SGCPB3FTF8');
-  </script>
   <script>
     window.addEventListener('load', function() {
+      // Defer Google Tag Manager after window load
+      var gtagScript = document.createElement('script');
+      gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8';
+      gtagScript.async = true;
+      document.head.appendChild(gtagScript);
+
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SGCPB3FTF8');
+
+      // Defer Ahrefs
       var ahrefs = document.createElement('script');
       ahrefs.src = 'https://analytics.ahrefs.com/analytics.js';
       ahrefs.dataset.key = 'Ux1JVBSMDqBkdjYsu1cxiA';

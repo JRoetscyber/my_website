@@ -3,6 +3,7 @@ package database
 import (
 	"log"
 	"strings"
+	"time"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
@@ -37,6 +38,14 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	db.Exec("PRAGMA synchronous = NORMAL;")
 	db.Exec("PRAGMA cache_size = -64000;")
 	db.Exec("PRAGMA busy_timeout = 5000;")
+
+	// Database Connection Pool Tuning
+	if sqlDB, err := db.DB(); err == nil {
+		sqlDB.SetMaxOpenConns(50)
+		sqlDB.SetMaxIdleConns(25)
+		sqlDB.SetConnMaxLifetime(15 * time.Minute)
+		sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	}
 
 	// Auto Migrate all models
 	err = db.AutoMigrate(

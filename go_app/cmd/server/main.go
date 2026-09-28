@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -10,16 +9,20 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
+	"github.com/JRoetscyber/my_website/go_app/internal/cache"
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
 	"github.com/JRoetscyber/my_website/go_app/internal/handlers"
 	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
+	"github.com/JRoetscyber/my_website/go_app/internal/worker"
 	"github.com/flosch/pongo2/v6"
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
+	fiberCache "github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -31,6 +34,13 @@ import (
 )
 
 var htmlTagRegex = regexp.MustCompile(`<[^>]*>`)
+
+// Zero-allocation buffer pool for Goldmark markdown parsing
+var mdBufferPool = sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
+}
 
 var routeMap = map[string]string{
 	"home":                         "/",
@@ -65,10 +75,13 @@ var routeMap = map[string]string{
 }
 
 func initPongo2Filters() {
-	// Register markdown filter
+	// Register markdown filter using sync.Pool
 	pongo2.RegisterFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
-		var buf bytes.Buffer
-		if err := goldmark.Convert([]byte(in.String()), &buf); err != nil {
+		buf := mdBufferPool.Get().(*bytes.Buffer)
+		buf.Reset()
+		defer mdBufferPool.Put(buf)
+
+		if err := goldmark.Convert([]byte(in.String()), buf); err != nil {
 			return pongo2.AsSafeValue(in.String()), nil
 		}
 		return pongo2.AsSafeValue(buf.String()), nil
@@ -247,7 +260,15 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		ProxyHeader:  fiber.HeaderXForwardedFor,
+		JSONEncoder:  json.Marshal,
+		JSONDecoder:  json.Unmarshal,
 	})
+
+	// Initialize Cache-Aside Manager with Redis & Singleflight Thundering Herd Protection
+	cacheManager := cache.NewManager(cfg)
+
+	// Initialize Bounded Worker Pool for non-blocking asynchronous operations
+	workerPool := worker.NewPool(16, 2048, 10*time.Second)
 
 	// Global Middlewares
 	app.Use(recover.New())
@@ -266,10 +287,10 @@ func main() {
 		CrossOriginResourcePolicy: "cross-origin",
 	}))
 	app.Use(cors.New())
-	app.Use(middleware.TrackAnalytics(db))
+	app.Use(middleware.TrackAnalytics(db, workerPool))
 
 	// In-memory page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers)
-	app.Use(cache.New(cache.Config{
+	app.Use(fiberCache.New(fiberCache.Config{
 		Next: func(c *fiber.Ctx) bool {
 			if c.Method() != fiber.MethodGet {
 				return true
@@ -326,7 +347,7 @@ func main() {
 		Compress:      true,
 		ByteRange:     true,
 		Browse:        false,
-		CacheDuration: 24 * time.Hour,
+		CacheDuration: 7 * 24 * time.Hour,
 	})
 
 	// Self-hosted fonts route (1 year immutable cache)
@@ -343,7 +364,9 @@ func main() {
 		faviconPath = filepath.Join(staticDir, "favicon.ico")
 	}
 	if fileExists(faviconPath) {
-		app.Static("/favicon.ico", faviconPath)
+		app.Static("/favicon.ico", faviconPath, fiber.Static{
+			CacheDuration: 30 * 24 * time.Hour,
+		})
 	}
 
 	appleIcon := filepath.Join(filepath.Dir(staticDir), "apple-touch-icon.png")
@@ -351,14 +374,17 @@ func main() {
 		appleIcon = filepath.Join(staticDir, "apple-touch-icon.png")
 	}
 	if fileExists(appleIcon) {
-		app.Static("/apple-touch-icon.png", appleIcon)
+		app.Static("/apple-touch-icon.png", appleIcon, fiber.Static{
+			CacheDuration: 30 * 24 * time.Hour,
+		})
 	}
 
 	// Handlers
-	publicHandler := handlers.NewPublicHandler(db, cfg)
+	publicHandler := handlers.NewPublicHandler(db, cfg, cacheManager, workerPool)
 	authHandler := handlers.NewAuthHandler(db, cfg)
-	adminHandler := handlers.NewAdminHandler(db, cfg)
+	adminHandler := handlers.NewAdminHandler(db, cfg, cacheManager, workerPool)
 	orderHandler := handlers.NewOrderHandler(db, cfg, adminHandler)
+	progressiveHandler := handlers.NewProgressiveHandler(db, cacheManager)
 
 	// Public Routes
 	app.Get("/", publicHandler.Home)
@@ -397,6 +423,12 @@ func main() {
 	api.Post("/convert-webp", publicHandler.ConvertWebP)
 	api.Get("/orders/:code/status", orderHandler.OrderStatusAPI)
 	api.Get("/orders/display-data", orderHandler.OrderDisplayDataAPI)
+
+	// Progressive API Endpoints (<2ms Envelope & Deferred Hydration)
+	api.Get("/v1/page/home", progressiveHandler.HomeProgressive)
+	api.Get("/v1/page/home/projects", progressiveHandler.HomeProjectsSubResource)
+	api.Get("/v1/page/home/blogs", progressiveHandler.HomeBlogsSubResource)
+	api.Get("/v1/dashboard/overview", progressiveHandler.DashboardOverviewSkeleton)
 
 	// Auth Routes
 	app.Get("/login", authHandler.LoginPage)
@@ -505,8 +537,13 @@ func main() {
 	<-quit
 
 	log.Println("Shutting down server gracefully...")
-	_ = app.Shutdown()
-	log.Println("Server exited cleanly.")
+	if err := app.Shutdown(); err != nil {
+		log.Printf("Server shutdown error: %v", err)
+	}
+	if err := workerPool.Shutdown(5 * time.Second); err != nil {
+		log.Printf("Worker pool shutdown error: %v", err)
+	}
+	log.Println("Server and background workers exited cleanly.")
 }
 
 func fileExists(path string) bool {

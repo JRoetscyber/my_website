@@ -98,9 +98,9 @@ echo "=========================================================="
 echo "🔨 Step 1/5: Building $TARGET_SERVICE..."
 docker compose build "$TARGET_SERVICE"
 
-# 6. Start Target Container
-echo "🚀 Step 2/5: Launching $TARGET_SERVICE..."
-docker compose up -d "$TARGET_SERVICE"
+# 6. Start Target Container & Supporting Services
+echo "🚀 Step 2/5: Launching redis & $TARGET_SERVICE..."
+docker compose up -d redis "$TARGET_SERVICE"
 
 # Auto-restore existing database if container has 0 blog posts and backup is available
 BLOG_COUNT=$(docker compose exec -T "$TARGET_SERVICE" sqlite3 /app/data/jo4dev.db "SELECT count(*) FROM blog_posts;" 2>/dev/null || echo "0")

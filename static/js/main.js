@@ -30,17 +30,26 @@
   });
 }());
 
-/* ── 2. Sticky nav — add .scrolled class on scroll ── */
+/* ── 2. Sticky nav — add .scrolled class on scroll with rAF debounce ── */
 (function () {
   var nav = document.getElementById('siteNav');
   if (!nav) return;
 
-  function onScroll() {
+  var ticking = false;
+  function updateNav() {
     nav.classList.toggle('scrolled', window.scrollY > 24);
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(updateNav);
+      ticking = true;
+    }
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll(); // run on load in case page is already scrolled
+  updateNav(); // run on load in case page is already scrolled
 }());
 
 /* ── 3. Mobile nav toggle ── */
