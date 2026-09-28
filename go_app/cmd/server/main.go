@@ -279,6 +279,8 @@ func main() {
 				strings.HasPrefix(path, "/login") ||
 				strings.HasPrefix(path, "/logout") ||
 				strings.HasPrefix(path, "/api") ||
+				strings.HasPrefix(path, "/order") ||
+				strings.HasPrefix(path, "/track") ||
 				path == "/health" {
 				return true
 			}
@@ -356,6 +358,7 @@ func main() {
 	publicHandler := handlers.NewPublicHandler(db, cfg)
 	authHandler := handlers.NewAuthHandler(db, cfg)
 	adminHandler := handlers.NewAdminHandler(db, cfg)
+	orderHandler := handlers.NewOrderHandler(db, cfg, adminHandler)
 
 	// Public Routes
 	app.Get("/", publicHandler.Home)
@@ -375,6 +378,10 @@ func main() {
 	app.Post("/faq/submit", publicHandler.SubmitFAQ)
 	app.Get("/book", publicHandler.BookPage)
 	app.Get("/webp-converter", publicHandler.WebPConverterPage)
+	app.Get("/order/:code", orderHandler.OrderTracker)
+	app.Get("/track/:code", orderHandler.OrderTracker)
+	app.Get("/orders/display", orderHandler.OrderDisplay)
+	app.Get("/orders/callout", orderHandler.OrderDisplay)
 	app.Get("/robots.txt", publicHandler.Robots)
 	app.Get("/sitemap.xml", publicHandler.Sitemap)
 	app.Get("/health", func(c *fiber.Ctx) error {
@@ -388,6 +395,8 @@ func main() {
 	api.Post("/new-lead", publicHandler.CreateLead)
 	api.Post("/leads", publicHandler.CreateLead)
 	api.Post("/convert-webp", publicHandler.ConvertWebP)
+	api.Get("/orders/:code/status", orderHandler.OrderStatusAPI)
+	api.Get("/orders/display-data", orderHandler.OrderDisplayDataAPI)
 
 	// Auth Routes
 	app.Get("/login", authHandler.LoginPage)
@@ -397,6 +406,13 @@ func main() {
 	// Admin Routes (Protected)
 	admin := app.Group("/admin", middleware.RequireAuth(cfg.SecretKey))
 	admin.Get("/", adminHandler.Dashboard)
+
+	// Orders & Call-Out Management
+	admin.Get("/orders", orderHandler.AdminOrdersPage)
+	admin.Post("/orders/new", orderHandler.AdminCreateOrder)
+	admin.Post("/orders/:id/status", orderHandler.AdminUpdateOrderStatus)
+	admin.Post("/orders/:id/notify", orderHandler.AdminNotifyOrder)
+	admin.Post("/orders/:id/delete", orderHandler.AdminDeleteOrder)
 
 	// Analytics
 	admin.Get("/analytics", adminHandler.AnalyticsPage)

@@ -1,0 +1,608 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.SequenceNumber }} Tracking | JO4 Dev{% endblock %}
+
+{% block meta_description %}Live order status and instant call-out notifications for Order #{{ order.SequenceNumber }}.{% endblock %}
+
+{% block content %}
+<section class="page-hero" style="text-align: center; padding-bottom: 24px;">
+  <span class="eyebrow" style="margin-bottom: 16px; display: inline-flex;">Live Order Tracker</span>
+  <h1 style="margin-bottom: 12px;">Order #{{ order.SequenceNumber }}</h1>
+  <p class="lead-text" style="margin: 0 auto; max-width: 580px;">
+    Order for <strong>{{ order.CustomerName }}</strong>. Keep this page open to receive instant alerts when your order is called out.
+  </p>
+</section>
+
+<div class="divider"></div>
+
+<section class="section" style="padding-top: 36px; padding-bottom: 80px;">
+  <div style="max-width: 760px; margin: 0 auto; padding: 0 16px;">
+
+    <!-- ============================================================
+         CALL-OUT TICKET BADGE
+    ============================================================ -->
+    <div class="ticket-callout-card" data-aos="fade-up">
+      <div class="ticket-label">CALL-OUT TICKET NUMBER</div>
+      <div class="ticket-number" id="ticketNumber">#{{ order.SequenceNumber }}</div>
+      <div class="ticket-subtext">Listen for this number or watch the live display</div>
+    </div>
+
+    <!-- ============================================================
+         READY ALERT BANNER (Shown when status is ready)
+    ============================================================ -->
+    <div id="readyBanner" class="ready-alert-banner" style="{% if order.Status == 'ready' %}display: block;{% else %}display: none;{% endif %}">
+      <div class="ready-alert-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="ready-alert-title">ORDER #{{ order.SequenceNumber }} IS READY!</div>
+        <div class="ready-alert-desc">Your order is prepared. Please proceed to the counter for collection.</div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         NOTIFICATION PERMISSION BAR
+    ============================================================ -->
+    <div id="notifCard" class="notif-optin-card">
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <div class="notif-bell-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <div style="flex-grow: 1;">
+          <strong style="color: var(--text-primary); font-size: 0.95rem; display: block;">Web Notifications</strong>
+          <span style="font-size: 0.85rem; color: var(--text-secondary);" id="notifStatusText">
+            Enable notifications to be alerted with an audio chime the second your order is ready.
+          </span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button id="enableNotifBtn" class="btn-primary-custom" style="padding: 9px 18px; font-size: 0.85rem; cursor: pointer;">
+            Enable Alerts
+          </button>
+          <button id="testChimeBtn" class="btn-ghost-custom" style="padding: 9px 14px; font-size: 0.85rem; cursor: pointer;" title="Test Audio Chime">
+            Test Sound
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         LIVE PROGRESS STEPPER
+    ============================================================ -->
+    <div class="order-stepper-card" data-aos="fade-up" data-aos-delay="60">
+      <div class="stepper-title">LIVE ORDER STATUS</div>
+      
+      <div class="stepper-track">
+        
+        <!-- Step 1: Received -->
+        <div class="stepper-step {% if order.Status == 'received' or order.Status == 'in_progress' or order.Status == 'ready' or order.Status == 'completed' %}step-done{% endif %}" id="step-received">
+          <div class="step-circle">1</div>
+          <div class="step-label">Received</div>
+        </div>
+
+        <div class="stepper-connector {% if order.Status == 'in_progress' or order.Status == 'ready' or order.Status == 'completed' %}connector-active{% endif %}" id="conn-1"></div>
+
+        <!-- Step 2: Preparing -->
+        <div class="stepper-step {% if order.Status == 'in_progress' %}step-current{% elif order.Status == 'ready' or order.Status == 'completed' %}step-done{% endif %}" id="step-preparing">
+          <div class="step-circle">2</div>
+          <div class="step-label">Preparing</div>
+        </div>
+
+        <div class="stepper-connector {% if order.Status == 'ready' or order.Status == 'completed' %}connector-active{% endif %}" id="conn-2"></div>
+
+        <!-- Step 3: Ready -->
+        <div class="stepper-step {% if order.Status == 'ready' %}step-ready-pulse{% elif order.Status == 'completed' %}step-done{% endif %}" id="step-ready">
+          <div class="step-circle">3</div>
+          <div class="step-label">Ready for Pickup</div>
+        </div>
+
+        <div class="stepper-connector {% if order.Status == 'completed' %}connector-active{% endif %}" id="conn-3"></div>
+
+        <!-- Step 4: Completed -->
+        <div class="stepper-step {% if order.Status == 'completed' %}step-done{% endif %}" id="step-completed">
+          <div class="step-circle">4</div>
+          <div class="step-label">Completed</div>
+        </div>
+
+      </div>
+
+      <div class="stepper-status-badge">
+        <span class="status-pulse-dot" id="pulseDot"></span>
+        <span id="currentStatusText">
+          {% if order.Status == 'received' %}
+            Order received and queued for preparation.
+          {% elif order.Status == 'in_progress' %}
+            Your order is actively being prepared right now.
+          {% elif order.Status == 'ready' %}
+            ORDER IS READY! Please collect at the counter.
+          {% elif order.Status == 'completed' %}
+            Order has been completed and collected. Thank you!
+          {% elif order.Status == 'cancelled' %}
+            This order has been cancelled.
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         ORDER DETAILS CARD
+    ============================================================ -->
+    <div class="order-details-card" data-aos="fade-up" data-aos-delay="100">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        Order Breakdown
+      </h3>
+
+      <div style="margin-bottom: 20px;">
+        <span class="detail-label">Items Ordered:</span>
+        <div class="detail-items-box">{{ order.Items|markdown|safe }}</div>
+      </div>
+
+      {% if order.Notes %}
+      <div style="margin-bottom: 20px;">
+        <span class="detail-label">Special Notes / Instructions:</span>
+        <p style="color: var(--text-secondary); margin: 6px 0 0; font-size: 0.92rem; line-height: 1.6;">{{ order.Notes }}</p>
+      </div>
+      {% endif %}
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px dashed var(--border);">
+        <span style="font-family: var(--font-mono); font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">
+          Total Amount
+        </span>
+        <span style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--accent);">
+          R {{ order.TotalAmount|floatformat:2 }}
+        </span>
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono);">
+        <span>Placed: {{ order.CreatedAt|date:"15:04 (02 Jan)" }}</span>
+        <span>Ticket ID: {{ order.TrackingCode }}</span>
+      </div>
+    </div>
+
+    <!-- Back Home / Questions -->
+    <div style="text-align: center; margin-top: 36px;">
+      <a href="/" class="btn-ghost-custom">Back to JO4 Dev Home</a>
+    </div>
+
+  </div>
+</section>
+
+<style>
+.ticket-callout-card {
+  background: var(--surface-0);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(13, 148, 136, 0.12);
+  margin-bottom: 28px;
+}
+.ticket-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ticket-number {
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 8vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+}
+.ticket-subtext {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.ready-alert-banner {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%);
+  border: 2px solid #10b981;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 28px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  animation: pulseGlow 2s infinite alternate ease-in-out;
+}
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+  100% { box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); }
+}
+.ready-alert-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  background: #10b981;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ready-alert-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: -0.01em;
+}
+.ready-alert-desc {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+
+.notif-optin-card {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+}
+.notif-bell-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 10px;
+  background: var(--accent-faint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-stepper-card {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  margin-bottom: 28px;
+}
+.stepper-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  text-align: center;
+}
+.stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+}
+.step-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 2px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  transition: all 0.3s ease;
+}
+.step-label {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+.stepper-connector {
+  flex-grow: 1;
+  height: 3px;
+  background: var(--border);
+  margin-top: -24px;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+.connector-active {
+  background: var(--accent);
+}
+.step-done .step-circle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.step-done .step-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.step-current .step-circle {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+.step-current .step-label {
+  color: #f59e0b;
+  font-weight: 700;
+}
+.step-ready-pulse .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+  animation: readyPulse 1.2s infinite;
+}
+@keyframes readyPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.step-ready-pulse .step-label {
+  color: #10b981;
+  font-weight: 800;
+}
+
+.stepper-status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 12px 18px;
+  background: var(--surface-1);
+  border-radius: 8px;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+.status-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulseDotAnim 1.4s infinite;
+}
+@keyframes pulseDotAnim {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.order-details-card {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+.detail-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.detail-items-box {
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--surface-1);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+</style>
+
+<!-- ============================================================
+     REAL-TIME NOTIFICATION & SOUND SYNTHESIS ENGINE
+============================================================ -->
+<script>
+(function() {
+  const TRACKING_CODE = "{{ order.TrackingCode }}";
+  let lastStatus = "{{ order.Status }}";
+  let lastNotifyCount = {{ order.NotifyCount }};
+  let pollInterval = null;
+
+  // 1. Web Audio Chime Synthesis (Zero MP3 files needed)
+  function playReadyChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const freqs = [523.25, 659.25, 783.99, 1046.50]; // Clean chord C5, E5, G5, C6
+      
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.11);
+        gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.11);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + idx * 0.11 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.11 + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.11);
+        osc.stop(ctx.currentTime + idx * 0.11 + 0.55);
+      });
+    } catch (e) {
+      console.warn("Audio synthesis error:", e);
+    }
+  }
+
+  // 2. Text-to-Speech Voice Call-Out
+  function speakCallout(seqNum) {
+    if ('speechSynthesis' in window) {
+      try {
+        const text = `Order ${seqNum} is ready for collection`;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {}
+    }
+  }
+
+  // 3. Web Notification Dispatcher
+  function triggerReadyNotification(order) {
+    playReadyChime();
+    speakCallout(order.sequence_number);
+    if (navigator.vibrate) {
+      navigator.vibrate([300, 150, 300, 150, 500]);
+    }
+
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification(`Order #${order.sequence_number} is READY!`, {
+          body: `Hello ${order.customer_name}, your order is prepared and ready for collection!`,
+          icon: '/static/assets/logo.webp',
+          badge: '/static/assets/logo.webp',
+          requireInteraction: true,
+          tag: 'order-ready-' + order.sequence_number
+        });
+      } catch (e) {
+        console.warn("Notification error:", e);
+      }
+    }
+  }
+
+  // 4. UI State Updaters
+  function updateUI(order) {
+    const readyBanner = document.getElementById("readyBanner");
+    const statusText = document.getElementById("currentStatusText");
+    const pulseDot = document.getElementById("pulseDot");
+
+    const stepPrep = document.getElementById("step-preparing");
+    const stepReady = document.getElementById("step-ready");
+    const stepDone = document.getElementById("step-completed");
+    const conn1 = document.getElementById("conn-1");
+    const conn2 = document.getElementById("conn-2");
+    const conn3 = document.getElementById("conn-3");
+
+    // Reset classes
+    stepPrep.className = "stepper-step";
+    stepReady.className = "stepper-step";
+    stepDone.className = "stepper-step";
+    conn1.className = "stepper-connector";
+    conn2.className = "stepper-connector";
+    conn3.className = "stepper-connector";
+
+    if (order.order_status === "received") {
+      statusText.innerText = "Order received and queued for preparation.";
+      readyBanner.style.display = "none";
+    } else if (order.order_status === "in_progress") {
+      stepPrep.classList.add("step-current");
+      conn1.classList.add("connector-active");
+      statusText.innerText = "Your order is actively being prepared right now.";
+      readyBanner.style.display = "none";
+    } else if (order.order_status === "ready") {
+      stepPrep.classList.add("step-done");
+      stepReady.classList.add("step-ready-pulse");
+      conn1.classList.add("connector-active");
+      conn2.classList.add("connector-active");
+      statusText.innerText = "ORDER IS READY! Please collect at the counter.";
+      readyBanner.style.display = "flex";
+    } else if (order.order_status === "completed") {
+      stepPrep.classList.add("step-done");
+      stepReady.classList.add("step-done");
+      stepDone.classList.add("step-done");
+      conn1.classList.add("connector-active");
+      conn2.classList.add("connector-active");
+      conn3.classList.add("connector-active");
+      statusText.innerText = "Order has been completed and collected. Thank you!";
+      readyBanner.style.display = "none";
+    }
+  }
+
+  // 5. Polling Loop
+  async function pollOrderStatus() {
+    try {
+      const res = await fetch(`/api/orders/${TRACKING_CODE}/status?_t=${Date.now()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.status === "success") {
+        const isNowReady = data.order_status === "ready" && lastStatus !== "ready";
+        const wasReNotified = data.notify_count > lastNotifyCount;
+
+        if (isNowReady || wasReNotified) {
+          triggerReadyNotification(data);
+        }
+
+        lastStatus = data.order_status;
+        lastNotifyCount = data.notify_count;
+        updateUI(data);
+      }
+    } catch (e) {
+      console.warn("Status check failed:", e);
+    }
+  }
+
+  // 6. Setup Buttons & Notification Permissions
+  const enableBtn = document.getElementById("enableNotifBtn");
+  const notifCard = document.getElementById("notifCard");
+  const testChimeBtn = document.getElementById("testChimeBtn");
+  const notifStatusText = document.getElementById("notifStatusText");
+
+  testChimeBtn.addEventListener("click", function() {
+    playReadyChime();
+    speakCallout("{{ order.SequenceNumber }}");
+  });
+
+  function refreshNotifState() {
+    if (!("Notification" in window)) {
+      notifStatusText.innerText = "Your browser does not support Web Notifications, but audio alerts will still play.";
+      enableBtn.style.display = "none";
+      return;
+    }
+    if (Notification.permission === "granted") {
+      notifStatusText.innerText = "Web notifications are ACTIVE. You will be alerted the second Order #{{ order.SequenceNumber }} is called.";
+      enableBtn.innerText = "Alerts Enabled";
+      enableBtn.style.background = "#10b981";
+      enableBtn.disabled = true;
+    } else if (Notification.permission === "denied") {
+      notifStatusText.innerText = "Notifications were blocked in your browser. Audio chimes will still sound on this page.";
+      enableBtn.style.display = "none";
+    }
+  }
+
+  enableBtn.addEventListener("click", async function() {
+    playReadyChime(); // also unlocks audio on mobile browsers
+    if ("Notification" in window) {
+      const perm = await Notification.requestPermission();
+      refreshNotifState();
+    }
+  });
+
+  refreshNotifState();
+
+  // Start fast poll (every 2.5s)
+  pollInterval = setInterval(pollOrderStatus, 2500);
+
+})();
+</script>
+{% endblock %}

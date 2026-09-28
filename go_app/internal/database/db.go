@@ -52,6 +52,7 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		&models.User{},
 		&models.Transaction{},
 		&models.FAQSubmission{},
+		&models.Order{},
 	)
 	if err != nil {
 		log.Printf("[DB] Migration warning: %v", err)

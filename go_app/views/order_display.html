@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Order Call-Out Display | JO4 Dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/core.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #090d16;
+      color: #f3f4f6;
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Display Bar */
+    .display-header {
+      background: #0f172a;
+      border-bottom: 2px solid #1e293b;
+      padding: 18px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .display-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .display-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    .display-title span { color: var(--accent); }
+    .display-badge {
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid var(--accent);
+      color: var(--accent-light);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .display-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .clock-display {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .sound-toggle-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .sound-toggle-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #10b981;
+    }
+
+    /* Main Board Screen */
+    .board-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex-grow: 1;
+      gap: 2px;
+      background: #1e293b;
+    }
+    @media (max-width: 800px) {
+      .board-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Columns */
+    .board-col {
+      background: #090d16;
+      padding: clamp(24px, 4vw, 48px);
+      display: flex;
+      flex-direction: column;
+    }
+    .board-col-header {
+      padding-bottom: 20px;
+      border-bottom: 2px solid #1e293b;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .col-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .col-preparing .col-title { color: #f59e0b; }
+    .col-ready .col-title { color: #10b981; }
+
+    .col-counter {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 999px;
+    }
+    .col-preparing .col-counter { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .col-ready .col-counter { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+    /* Number Grids */
+    .tickets-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+      align-content: start;
+    }
+
+    .ticket-tile {
+      background: #0f172a;
+      border: 2px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .ticket-tile .ticket-num {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 4vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .ticket-tile .ticket-name {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 8px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .col-preparing .ticket-tile .ticket-num {
+      color: #e2e8f0;
+    }
+
+    .col-ready .ticket-tile {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: #10b981;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+      animation: readyCardPop 0.8s ease;
+    }
+    .col-ready .ticket-tile .ticket-num {
+      color: #10b981;
+      text-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+    }
+    @keyframes readyCardPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #475569;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      grid-column: 1 / -1;
+    }
+
+    /* Footer Callout Bar */
+    .display-footer {
+      background: #0f172a;
+      border-top: 1px solid #1e293b;
+      padding: 14px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="display-header">
+    <div class="display-brand">
+      <div class="display-title">JO4<span>.</span>DEV</div>
+      <div class="display-badge">Counter Call-Out Screen</div>
+    </div>
+
+    <div class="display-controls">
+      <div class="clock-display" id="liveClock">--:--:--</div>
+      <button class="sound-toggle-btn active" id="soundBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <span id="soundLabel">Sound Active</span>
+      </button>
+      <button class="sound-toggle-btn" id="fullScreenBtn" title="Toggle Fullscreen">
+        ⛶ Fullscreen
+      </button>
+    </div>
+  </header>
+
+  <main class="board-grid">
+    
+    <!-- PREPARING -->
+    <section class="board-col col-preparing">
+      <div class="board-col-header">
+        <div class="col-title">PREPARING</div>
+        <div class="col-counter" id="prepCount">0</div>
+      </div>
+      <div class="tickets-container" id="prepGrid">
+        <div class="empty-state">No orders currently preparing</div>
+      </div>
+    </section>
+
+    <!-- READY FOR PICKUP -->
+    <section class="board-col col-ready">
+      <div class="board-col-header">
+        <div class="col-title">NOW READY FOR PICKUP</div>
+        <div class="col-counter" id="readyCount">0</div>
+      </div>
+      <div class="tickets-container" id="readyGrid">
+        <div class="empty-state">No orders ready for collection</div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="display-footer">
+    <div>Please watch for your order number to appear in green.</div>
+    <div>Auto-refreshing live (sub-second sync)</div>
+  </footer>
+
+  <script>
+    (function() {
+      let soundEnabled = true;
+      let knownReadyIds = new Set();
+      let isFirstLoad = true;
+
+      // Clock
+      function updateClock() {
+        const d = new Date();
+        document.getElementById("liveClock").innerText = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // Sound Engine
+      function playCalloutChime() {
+        if (!soundEnabled) return;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const freqs = [523.25, 659.25, 783.99, 1046.50];
+          freqs.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.12);
+            gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.12);
+            gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + idx * 0.12 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.12 + 0.55);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + idx * 0.12);
+            osc.stop(ctx.currentTime + idx * 0.12 + 0.6);
+          });
+        } catch (e) {}
+      }
+
+      function speakCallout(seqNum) {
+        if (!soundEnabled || !('speechSynthesis' in window)) return;
+        try {
+          const u = new SpeechSynthesisUtterance(`Order ${seqNum} is ready for collection`);
+          u.rate = 0.95;
+          window.speechSynthesis.speak(u);
+        } catch (e) {}
+      }
+
+      // Fetch & Render Display Data
+      async function refreshBoard() {
+        try {
+          const res = await fetch(`/api/orders/display-data?_t=${Date.now()}`);
+          if (!res.ok) return;
+          const data = await res.json();
+
+          // 1. Render Preparing
+          const prepGrid = document.getElementById("prepGrid");
+          const prepCount = document.getElementById("prepCount");
+          const preparing = data.preparing || [];
+          prepCount.innerText = preparing.length;
+
+          if (preparing.length === 0) {
+            prepGrid.innerHTML = `<div class="empty-state">No orders currently preparing</div>`;
+          } else {
+            prepGrid.innerHTML = preparing.map(o => `
+              <div class="ticket-tile">
+                <div class="ticket-num">#${o.sequence_number}</div>
+                <div class="ticket-name">${escapeHtml(o.customer_name || 'Guest')}</div>
+              </div>
+            `).join('');
+          }
+
+          // 2. Render Ready
+          const readyGrid = document.getElementById("readyGrid");
+          const readyCount = document.getElementById("readyCount");
+          const ready = data.ready || [];
+          readyCount.innerText = ready.length;
+
+          const currentReadyIds = new Set(ready.map(o => o.id));
+
+          // Detect new ready orders for callout announcement
+          if (!isFirstLoad) {
+            ready.forEach(o => {
+              if (!knownReadyIds.has(o.id)) {
+                playCalloutChime();
+                speakCallout(o.sequence_number);
+              }
+            });
+          }
+
+          knownReadyIds = currentReadyIds;
+          isFirstLoad = false;
+
+          if (ready.length === 0) {
+            readyGrid.innerHTML = `<div class="empty-state">No orders ready for collection</div>`;
+          } else {
+            readyGrid.innerHTML = ready.map(o => `
+              <div class="ticket-tile">
+                <div class="ticket-num">#${o.sequence_number}</div>
+                <div class="ticket-name">${escapeHtml(o.customer_name || 'Customer')}</div>
+              </div>
+            `).join('');
+          }
+
+        } catch (e) {
+          console.warn("Display refresh error:", e);
+        }
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      // Sound toggle
+      const soundBtn = document.getElementById("soundBtn");
+      soundBtn.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+          soundBtn.classList.add("active");
+          document.getElementById("soundLabel").innerText = "Sound Active";
+          playCalloutChime();
+        } else {
+          soundBtn.classList.remove("active");
+          document.getElementById("soundLabel").innerText = "Muted";
+        }
+      });
+
+      // Fullscreen
+      document.getElementById("fullScreenBtn").addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+
+      refreshBoard();
+      setInterval(refreshBoard, 3000);
+    })();
+  </script>
+</body>
+</html>

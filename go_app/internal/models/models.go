@@ -1,4 +1,4 @@
-﻿package models
+package models
 
 import (
 	"strings"
@@ -216,4 +216,26 @@ type FAQSubmission struct {
 
 func (FAQSubmission) TableName() string {
 	return "faq_submissions"
+}
+
+type Order struct {
+	ID             uint       `gorm:"primaryKey" json:"id"`
+	SequenceNumber int        `gorm:"index;not null" json:"sequence_number"` // Daily or sequential callout number: 101, 102...
+	TrackingCode   string     `gorm:"size:64;uniqueIndex;not null" json:"tracking_code"` // Secure slug: e.g. "ord_a7f92b"
+	CustomerName   string     `gorm:"size:100;not null" json:"customer_name"`
+	CustomerPhone  string     `gorm:"size:50" json:"customer_phone"`
+	CustomerEmail  string     `gorm:"size:100" json:"customer_email"`
+	Items          string     `gorm:"type:text;not null" json:"items"`
+	TotalAmount    float64    `gorm:"default:0" json:"total_amount"`
+	Status         string     `gorm:"size:30;default:'received';index" json:"status"` // 'received', 'in_progress', 'ready', 'completed', 'cancelled'
+	Notes          string     `gorm:"type:text" json:"notes"`
+	NotifyCount    int        `gorm:"default:0" json:"notify_count"`
+	ReadyAt        *time.Time `json:"ready_at"`
+	CompletedAt    *time.Time `json:"completed_at"`
+	CreatedAt      time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt      time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
+}
+
+func (Order) TableName() string {
+	return "orders"
 }
