@@ -1,4 +1,4 @@
-﻿{% extends "admin/admin.html" %}
+{% extends "admin/admin.html" %}
 
 {% block admin_title %}FAQ - Admin{% endblock %}
 {% block admin_heading %}FAQ{% endblock %}
@@ -29,7 +29,7 @@
     <div class="stat-card">
       <div class="stat-card-label">FAQ Page</div>
       <div class="stat-card-value" style="font-size: 1.1rem; margin-top: 16px;">
-        <a href="/admin" target="_blank">View Live</a>
+        <a href="/faq" target="_blank">View Live</a>
       </div>
     </div>
   </div>
@@ -99,7 +99,7 @@
         <h5 class="modal-title" id="faqModalLabel">Add FAQ</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form id="faqForm" method="POST" action="/admin">
+      <form id="faqForm" method="POST" action="/admin/add_faq">
         <div class="modal-body">
           <div class="mb-4">
             <label class="admin-form-label" for="faqQuestion">Question</label>
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.add-faq-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       faqModalLabel.textContent = 'Add FAQ';
-      faqForm.action = "/admin";
+      faqForm.action = "/admin/add_faq";
       faqForm.reset();
       document.getElementById('faqDisplayOrder').value = 0;
       document.getElementById('faqPublished').checked = true;

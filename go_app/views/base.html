@@ -1,38 +1,22 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}JO4 Dev Web Systems & Automation for Modern Businesses{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Custom websites, CRM tools and automation systems for faster leads, cleaner workflows and owned software.{% endblock %}">
+  <title>{% block title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
-  <!-- Google Fonts — non-blocking -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
-        href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-  <noscript>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-  </noscript>
+  <!-- Preload Critical Body Font (Self-Hosted, Zero External Roundtrips) -->
+  <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
 
-  <!-- Bootstrap 5 — non-blocking (grid is below fold; nav/hero use custom styles) -->
-  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
-        href="/static/css/bootstrap.min.css">
-  <noscript><link rel="stylesheet" href="/static/css/bootstrap.min.css"></noscript>
-
-  <!-- AOS — non-blocking (animations only, not layout-critical) -->
-  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
-        href="/static/css/aos.css">
-  <noscript><link rel="stylesheet" href="/static/css/aos.css"></noscript>
-
-  <!-- Site stylesheet — blocking (critical nav/hero styles) -->
-  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head_styles %}
+  <!-- Core Stylesheet (Pure CSS tokens, layout, nav, footer, and grid) -->
+  <link rel="stylesheet" href="/static/css/core.css">
+  {% endblock %}
 
   <!-- Canonical Link -->
   <link rel="canonical" href="https://jo4.co.za">
-
-  <script src="https://analytics.ahrefs.com/analytics.js" data-key="Ux1JVBSMDqBkdjYsu1cxiA" async></script>
   
   {% block head_extra %}{% endblock %}
   {% block json_ld_schema %}{% endblock %}
@@ -43,7 +27,7 @@
   <nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="/" class="nav-logo">
-        <img src="/static/assets/logo.png" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
+        <img src="/static/assets/logo.webp" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
       </a>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -53,6 +37,7 @@
       <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/">Home</a></li>
         <li><a href="/services">Services</a></li>
+        <li><a href="/mobile-apps">Mobile Apps</a></li>
         <li><a href="/projects">Work</a></li>
         <li><a href="/blog">Blog</a></li>
         <li><a href="/faq">FAQ</a></li>
@@ -75,9 +60,15 @@
 
         <div class="footer-brand">
           <a href="/" class="nav-logo">
-            <img src="/static/assets/logo.png" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="90" height="83" loading="lazy">
+            <img src="/static/assets/logo.webp" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="90" height="83" loading="lazy">
           </a>
-          <p>Premium web systems for businesses that demand results.</p>
+          <p style="margin-top: 12px; max-width: 320px;">
+            Ultra-fast websites, automation systems & native apps engineered in Go Fiber & Dragon. No cookie-cutter templates. Hosted battle-ready on Hostinger.
+          </p>
+          <div style="margin-top: 16px; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.82rem; color: #a8a8a0;">
+            <strong style="color: var(--dark-text); display: block; margin-bottom: 2px;">Colossians 3:23</strong>
+            "Work with purpose, build for His Glory."
+          </div>
         </div>
 
         <nav class="footer-links" aria-label="Footer navigation">
@@ -85,36 +76,55 @@
             <h5>Navigation</h5>
             <ul>
               <li><a href="/">Home</a></li>
+              <li><a href="/services">Services</a></li>
+              <li><a href="/mobile-apps">Mobile Apps</a></li>
               <li><a href="/projects">Evidence Room</a></li>
               <li><a href="/faq">FAQ</a></li>
               <li><a href="/book">Book a Call</a></li>
             </ul>
           </div>
           <div class="footer-col">
-            <h5>Services</h5>
+            <h5>Pillars</h5>
             <ul>
-              <li><a href="/web-design">Web Design</a></li>
-              <li><a href="/seo">Local SEO</a></li>
-              <li><a href="/automation">Automation</a></li>
+              <li><a href="/web-design">Web Development (Go Fiber)</a></li>
+              <li><a href="/seo">SEO & Crawl Optimization</a></li>
+              <li><a href="/mobile-apps">Mobile Apps (C++, Kotlin, Swift)</a></li>
+              <li><a href="/appsec">DevSecOps & Hosting</a></li>
             </ul>
           </div>
         </nav>
 
       </div>
 
-      <div class="footer-bottom">
+      <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <p>&copy; <span id="footerYear">{{ year }}</span> JO4 Dev. All rights reserved.</p>
+        <p style="font-size: 0.8rem; color: var(--dark-text-muted);">Faith-driven development &bull; Battle-ready performance &bull; Zero templates</p>
       </div>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="/static/js/bootstrap.bundle.min.js" defer></script>
-  <script src="/static/js/aos.js" defer></script>
   <script src="/static/js/main.js" defer></script>
 
   {% block scripts %}{% endblock %}
 
+  <!-- Completely Deferred Analytics (Zero Network Contention During Critical Rendering) -->
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
+  <script defer>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-SGCPB3FTF8');
+  </script>
+  <script>
+    window.addEventListener('load', function() {
+      var ahrefs = document.createElement('script');
+      ahrefs.src = 'https://analytics.ahrefs.com/analytics.js';
+      ahrefs.dataset.key = 'Ux1JVBSMDqBkdjYsu1cxiA';
+      ahrefs.async = true;
+      document.body.appendChild(ahrefs);
+    });
+  </script>
 </body>
 </html>
 

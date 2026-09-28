@@ -1,20 +1,17 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}JO4 Dev — Web Systems & Automation for Modern Businesses{% endblock %}
 
 {% block meta_description %}Websites, SEO and automation systems that turn your online presence into leads and reduce manual work.{% endblock %}
 
+{% block head_styles %}
+<!-- Combined Critical CSS Bundle (Core tokens + grid + home layout in 1 single HTTP request) -->
+<link rel="stylesheet" href="/static/css/home.bundle.css">
+{% endblock %}
+
+{% block head_extra %}{% endblock %}
+
 {% block content %}
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-SGCPB3FTF8');
-</script>
-
 <!-- ============================================================
      HERO — v2
      Replace your entire existing <section class="hero"> block
@@ -27,30 +24,35 @@
     <div class="hero-content">
 
       <div class="hero-eyebrow" id="/">
-        <span class="eyebrow">Web development studio</span>
+        <span class="eyebrow">⚡ Powered by Dragon &amp; Go Fiber</span>
       </div>
 
       <h1 class="display-hero hero-headline">
-        Websites &amp; Systems<br>
-        That Work While<br>
-        <span class="accent-line">You Work.</span>
+        Fastest Possible<br>
+        Websites &amp; Tools<br>
+        <span class="accent-line">Built To Outrank.</span>
       </h1>
 
       <p class="lead-text hero-lead">
-        We build the websites, SEO foundations, and automation
-        pipelines that turn your online presence into a lead machine —
-        then stick around to make sure it stays that way.
+        We engineer high-speed websites, native mobile apps, and automated business tools using the <strong>Dragon engine</strong> and <strong>Go Fiber</strong>. We eliminate redundant tasks, skyrocket team productivity, and secure top SEO rankings — with <strong>zero cookie-cutter templates</strong>.
       </p>
+
+      <div style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 10px;">
+        <span style="font-size: 0.78rem; font-family: var(--font-mono); padding: 5px 12px; background: rgba(13,148,136,0.1); color: var(--accent); border: 1px solid rgba(13,148,136,0.25); border-radius: 20px;">✓ 0% Templates</span>
+        <span style="font-size: 0.78rem; font-family: var(--font-mono); padding: 5px 12px; background: rgba(13,148,136,0.1); color: var(--accent); border: 1px solid rgba(13,148,136,0.25); border-radius: 20px;">✓ Blue/Green Deployments</span>
+        <span style="font-size: 0.78rem; font-family: var(--font-mono); padding: 5px 12px; background: rgba(13,148,136,0.1); color: var(--accent); border: 1px solid rgba(13,148,136,0.25); border-radius: 20px;">✓ Docker &amp; Cloudflare Tunnels</span>
+        <span style="font-size: 0.78rem; font-family: var(--font-mono); padding: 5px 12px; background: rgba(13,148,136,0.1); color: var(--accent); border: 1px solid rgba(13,148,136,0.25); border-radius: 20px;">✓ Battle-Ready Hostinger Hosting</span>
+      </div>
 
       <div class="hero-actions">
         <a href="/book" class="btn-primary-custom">
-          Book a Free Call
+          Book a Discovery Call
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 8h10M9 4l4 4-4 4"/>
           </svg>
         </a>
         <a href="/projects" class="btn-ghost-custom">
-          View Our Work <span class="arrow">→</span>
+          Evidence Room <span class="arrow">→</span>
         </a>
       </div>
 
@@ -223,18 +225,24 @@
 
       <!-- Left -->
       <div class="col-lg-5" data-aos="fade-up">
-        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Why it's different</span>
+        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Our Philosophy</span>
         <h2 class="display-section">
-          Tired of paying for<br>
-          a website nobody<br>
-          <span class="text-accent">can find?</span>
+          We don't do<br>
+          cookie-cutter<br>
+          <span class="text-accent">templates.</span>
         </h2>
         <p class="lead-text" style="margin-top:20px;">
-          Most small businesses have been let down by a developer who
-          delivered something that looked okay and did nothing. We build
-          sites that rank, convert, and run, then we stick around to
-          prove it.
+          Cookie-cutter templates will never set you apart from your competition. They bloat your servers, drag down your Google ranking, and fail to solve your business bottlenecks. We engineer custom-crafted web systems, automated tools, and native mobile apps designed to win.
         </p>
+        <div style="margin-top:28px; padding:20px; background:var(--surface-1); border-left:4px solid var(--accent); border-radius:0 8px 8px 0;">
+          <h4 style="font-size:1.1rem; margin-bottom:6px;">Faith-Driven Standards</h4>
+          <p style="font-size:0.92rem; color:var(--text-secondary); margin-bottom:8px;">
+            Inspired by <strong>Colossians 3:23</strong>: <em>"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters."</em>
+          </p>
+          <p style="font-size:0.92rem; font-weight:600; color:var(--text-primary); margin-bottom:0;">
+            "Work with purpose, build for His Glory." — We build with unshakeable integrity and Christian discipline. Have a problem with that? Then don't contact us.
+          </p>
+        </div>
       </div>
 
       <!-- Right: proof rows -->
@@ -243,12 +251,36 @@
         <div class="proof-row">
           <div class="proof-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polyline points="20 6 9 17 4 12"/>
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
           </div>
           <div class="proof-body">
-            <h4>Built to rank from day one</h4>
-            <p>Every site ships with on-page SEO, Google Business Profile setup, and a technical foundation that search engines can actually crawl, not an afterthought you pay extra for later.</p>
+            <h4>Dragon &amp; Go Fiber Speed</h4>
+            <p>Built on compiled Go and the Dragon engine for microsecond execution. This raw speed directly powers higher SEO rankings and eliminates redundant internal tasks, boosting your team's everyday productivity.</p>
+          </div>
+        </div>
+
+        <div class="proof-row">
+          <div class="proof-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="proof-body">
+            <h4>Battle-Ready Infrastructure &amp; Security</h4>
+            <p>We deploy using zero-downtime Blue/Green (Red) deployments, Docker containers, Nginx reverse proxy routing, and encrypted Cloudflare Tunnels. Hosted on high-performance Hostinger servers so your operations stay battle-ready 24/7.</p>
+          </div>
+        </div>
+
+        <div class="proof-row">
+          <div class="proof-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </div>
+          <div class="proof-body">
+            <h4>Native Mobile Apps (C++, Kotlin, Swift)</h4>
+            <p>We don't stop at the browser. We develop high-performance native mobile apps using C++ for compute-heavy algorithms, Kotlin for modern Android, and Swift for iOS. Fluid, responsive, and owned by you.</p>
           </div>
         </div>
 
@@ -259,20 +291,8 @@
             </svg>
           </div>
           <div class="proof-body">
-            <h4>No disappearing act after launch</h4>
-            <p>The developer who builds your system is the same person you call when something needs fixing. No handoffs, no support tickets into a void, no surprise invoices to change a button colour.</p>
-          </div>
-        </div>
-
-        <div class="proof-row">
-          <div class="proof-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <div class="proof-body">
-            <h4>You own everything, always</h4>
-            <p>Your domain, your hosting, your code. If you ever walk away you take it all with you, no platform lock-in, no monthly ransom to keep your own site live.</p>
+            <h4>100% Code &amp; Asset Ownership</h4>
+            <p>Your domain, your code, your servers. Zero platform lock-in, zero monthly ransom fees. You own every line of code we write.</p>
           </div>
         </div>
 
@@ -299,10 +319,10 @@
     {% for project in projects %}
     {% if project.slug %}
     <div class="col">
-      <a href="/projects/{$1}" class="project-mini-card">
+      <a href="/projects/{{ project.slug }}" class="project-mini-card">
         <div class="mini-card-image">
           {% if project.media_path %}
-          <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+          <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy" width="600" height="338">
           {% else %}
           <div class="mini-card-placeholder">Project Preview</div>
           {% endif %}

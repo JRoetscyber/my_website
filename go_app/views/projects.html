@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}
   {% if seo_title  %}{{ seo_title }}{% else %}Evidence Room — JO4 Dev{% endif %}
@@ -14,16 +14,11 @@
   {% endif %}
 {% endblock %}
 
-{% block content %}
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/projects.css">
+{% endblock %}
 
-  gtag('config', 'G-SGCPB3FTF8');
-</script>
+{% block content %}
 
 <!-- Conditional content based on whether a single project is being displayed -->
 {% if project  %}
@@ -40,7 +35,7 @@
     <div class="project-card"> {# Simplified for detail view #}
       <div class="project-card-media">
         {% if project.media_path %}
-        <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy">
+        <img src="{{ project.media_path }}" alt="{{ project.title }}" class="uploaded-project-image" loading="lazy" width="800" height="450">
         {% else %}
         <div class="video-placeholder">
           <div class="play-btn" aria-hidden="true">
@@ -138,7 +133,7 @@
                 </div>
                 <div class="fc-front-image">
                   {% if project.media_path %}
-                  <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy">
+                  <img src="{{ project.media_path }}" alt="{{ project.title }}" loading="lazy" width="400" height="260">
                   {% else %}
                   <div class="fc-front-placeholder">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

@@ -217,4 +217,7 @@ claude.exe
 *.fiber.gz
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
+.env
 .vs/

@@ -1,0 +1,118 @@
+/* 11. FAQ */
+.faq-section {
+  background: var(--surface-1);
+  border-top: 1px solid var(--border);
+}
+
+.faq-list {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+}
+
+.faq-item summary {
+  list-style: none;
+  cursor: pointer;
+  padding: clamp(20px, 3vw, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+  transition: color var(--ease), background var(--ease);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: '+';
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--accent-faint);
+  border: 1px solid var(--accent-mid);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform var(--ease), background var(--ease);
+}
+
+.faq-item[open] summary {
+  color: var(--accent);
+  background: var(--bg);
+}
+
+.faq-item[open] summary::after {
+  content: '-';
+  transform: rotate(180deg);
+  background: var(--accent);
+  color: #fff;
+}
+
+.faq-item p {
+  margin: 0;
+  padding: 0 clamp(20px, 3vw, 28px) clamp(22px, 3vw, 30px);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.74;
+}
+
+.faq-answer {
+  padding: 0 clamp(20px, 3vw, 28px) clamp(22px, 3vw, 30px);
+}
+
+.faq-answer p {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.faq-answer p:last-child {
+  margin-bottom: 0;
+}
+
+.faq-permalink {
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: inline-flex;
+}
+
+.faq-empty,
+.faq-detail-card {
+  padding: clamp(28px, 4vw, 48px);
+}
+
+.faq-detail-card {
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  max-width: 860px;
+  margin: 0 auto;
+}
+

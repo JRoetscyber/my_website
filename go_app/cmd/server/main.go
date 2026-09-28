@@ -37,6 +37,7 @@ var routeMap = map[string]string{
 	"services.web_design":          "/web-design",
 	"services.seo_services":        "/seo",
 	"services.automation":          "/automation",
+	"services.mobile_apps":         "/mobile-apps",
 	"services.service_detail":      "/services",
 	"portfolio.projects":           "/projects",
 	"portfolio.project_detail":     "/projects",
@@ -209,9 +210,17 @@ func main() {
 	initPongo2Filters()
 
 	// Locate templates directory
-	templatesDir := "./views"
-	if _, err := os.Stat(templatesDir); os.IsNotExist(err) {
-		templatesDir = "../views"
+	templatesDir := os.Getenv("TEMPLATES_DIR")
+	if templatesDir == "" {
+		if _, err := os.Stat("./views"); err == nil {
+			templatesDir = "./views"
+		} else if _, err := os.Stat("./go_app/views"); err == nil {
+			templatesDir = "./go_app/views"
+		} else if _, err := os.Stat("../views"); err == nil {
+			templatesDir = "../views"
+		} else {
+			templatesDir = "./views"
+		}
 	}
 	engine := django.New(templatesDir, ".html")
 	engine.Reload(cfg.Environment == "development")
@@ -231,11 +240,12 @@ func main() {
 	})
 
 	app := fiber.New(fiber.Config{
-		Views:       engine,
-		AppName:     "JO4 Dev High-Performance Go Fiber Server",
-		BodyLimit:   32 * 1024 * 1024, // 32MB max upload
-		ReadTimeout: 10 * time.Second,
+		Views:        engine,
+		AppName:      "JO4 Dev High-Performance Go Fiber Server",
+		BodyLimit:    32 * 1024 * 1024, // 32MB max upload
+		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
+		ProxyHeader:  fiber.HeaderXForwardedFor,
 	})
 
 	// Global Middlewares
@@ -263,10 +273,30 @@ func main() {
 		Expiration: 1 * time.Minute,
 	})
 
+	// Brute-force rate limiter for Login (5 attempts per minute per IP)
+	loginLimiter := limiter.New(limiter.Config{
+		Max:        5,
+		Expiration: 1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.IP()
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).Render("login", fiber.Map{
+				"error": "Too many failed login attempts. Please wait 1 minute before trying again.",
+			})
+		},
+	})
+
 	// Static Assets
-	staticDir := "../static"
-	if _, err := os.Stat(staticDir); os.IsNotExist(err) {
-		staticDir = "./static"
+	staticDir := os.Getenv("STATIC_DIR")
+	if staticDir == "" {
+		if _, err := os.Stat("./static"); err == nil {
+			staticDir = "./static"
+		} else if _, err := os.Stat("../static"); err == nil {
+			staticDir = "../static"
+		} else {
+			staticDir = "./static"
+		}
 	}
 	app.Static("/static", staticDir, fiber.Static{
 		Compress:      true,
@@ -275,11 +305,28 @@ func main() {
 		CacheDuration: 24 * time.Hour,
 	})
 
+	// Self-hosted fonts route (1 year immutable cache)
+	app.Static("/fonts", filepath.Join(staticDir, "fonts"), fiber.Static{
+		Compress:      true,
+		ByteRange:     true,
+		Browse:        false,
+		CacheDuration: 365 * 24 * time.Hour,
+	})
+
 	// Favicon and root assets
-	if faviconPath := filepath.Join(filepath.Dir(staticDir), "favicon.ico"); fileExists(faviconPath) {
+	faviconPath := filepath.Join(filepath.Dir(staticDir), "favicon.ico")
+	if !fileExists(faviconPath) {
+		faviconPath = filepath.Join(staticDir, "favicon.ico")
+	}
+	if fileExists(faviconPath) {
 		app.Static("/favicon.ico", faviconPath)
 	}
-	if appleIcon := filepath.Join(filepath.Dir(staticDir), "apple-touch-icon.png"); fileExists(appleIcon) {
+
+	appleIcon := filepath.Join(filepath.Dir(staticDir), "apple-touch-icon.png")
+	if !fileExists(appleIcon) {
+		appleIcon = filepath.Join(staticDir, "apple-touch-icon.png")
+	}
+	if fileExists(appleIcon) {
 		app.Static("/apple-touch-icon.png", appleIcon)
 	}
 
@@ -294,6 +341,8 @@ func main() {
 	app.Get("/web-design", publicHandler.WebDesign)
 	app.Get("/seo", publicHandler.SEO)
 	app.Get("/appsec", publicHandler.AppSec)
+	app.Get("/mobile-apps", publicHandler.AppDev)
+	app.Get("/app-development", publicHandler.AppDev)
 	app.Get("/automation", publicHandler.Automation)
 	app.Get("/projects", publicHandler.Projects)
 	app.Get("/blog", publicHandler.BlogList)
@@ -304,6 +353,9 @@ func main() {
 	app.Get("/book", publicHandler.BookPage)
 	app.Get("/robots.txt", publicHandler.Robots)
 	app.Get("/sitemap.xml", publicHandler.Sitemap)
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("OK")
+	})
 
 	// API Endpoints
 	api := app.Group("/api", apiLimiter)
@@ -314,34 +366,89 @@ func main() {
 
 	// Auth Routes
 	app.Get("/login", authHandler.LoginPage)
-	app.Post("/login", authHandler.LoginSubmit)
+	app.Post("/login", loginLimiter, authHandler.LoginSubmit)
 	app.Get("/logout", authHandler.Logout)
 
 	// Admin Routes (Protected)
 	admin := app.Group("/admin", middleware.RequireAuth(cfg.SecretKey))
 	admin.Get("/", adminHandler.Dashboard)
+
+	// Analytics
+	admin.Get("/analytics", adminHandler.AnalyticsPage)
+	admin.Get("/analytics_data", adminHandler.AnalyticsData)
+
+	// Leads
 	admin.Get("/leads", adminHandler.LeadsPage)
 	admin.Get("/leads/export", adminHandler.ExportLeads)
-	admin.Post("/leads/new", adminHandler.CreateLead)
+	admin.Post("/leads/new", adminHandler.AddLead)
+	admin.Post("/add_lead", adminHandler.AddLead)
+	admin.Get("/get_lead/:id", adminHandler.GetLead)
 	admin.Post("/leads/:id/edit", adminHandler.UpdateLead)
+	admin.Post("/update_lead/:id", adminHandler.UpdateLead)
+	admin.Patch("/update_lead/:id", adminHandler.UpdateLead)
 	admin.Post("/leads/:id/delete", adminHandler.DeleteLead)
-	admin.Get("/analytics", adminHandler.AnalyticsPage)
+	admin.Post("/delete_lead/:id", adminHandler.DeleteLead)
+	admin.Delete("/delete_lead/:id", adminHandler.DeleteLead)
+
+	// Projects
 	admin.Get("/projects", adminHandler.ProjectsPage)
 	admin.Post("/projects/new", adminHandler.SaveProject)
+	admin.Post("/add_project", adminHandler.SaveProject)
+	admin.Post("/update_project/:id", adminHandler.UpdateProject)
 	admin.Post("/projects/:id/delete", adminHandler.DeleteProject)
+	admin.Post("/delete_project/:id", adminHandler.DeleteProject)
+	admin.Delete("/delete_project/:id", adminHandler.DeleteProject)
+
+	// Blogs
 	admin.Get("/blogs", adminHandler.BlogsPage)
+	admin.Post("/blogs", adminHandler.SaveBlogPost)
 	admin.Post("/blogs/new", adminHandler.SaveBlogPost)
+	admin.Post("/add_blog", adminHandler.SaveBlogPost)
+	admin.Post("/update_blog/:id", adminHandler.UpdateBlog)
 	admin.Post("/blogs/:id/delete", adminHandler.DeleteBlogPost)
+	admin.Post("/delete_blog/:id", adminHandler.DeleteBlogPost)
+	admin.Delete("/delete_blog/:id", adminHandler.DeleteBlogPost)
+
+	// FAQs
 	admin.Get("/faqs", adminHandler.FAQsPage)
 	admin.Post("/faqs/new", adminHandler.SaveFAQ)
+	admin.Post("/add_faq", adminHandler.SaveFAQ)
+	admin.Post("/update_faq/:id", adminHandler.UpdateFAQ)
 	admin.Post("/faqs/:id/delete", adminHandler.DeleteFAQ)
+	admin.Post("/delete_faq/:id", adminHandler.DeleteFAQ)
+	admin.Delete("/delete_faq/:id", adminHandler.DeleteFAQ)
+	admin.Post("/delete_faq_submission/:id", adminHandler.DeleteFAQSubmission)
+	admin.Delete("/delete_faq_submission/:id", adminHandler.DeleteFAQSubmission)
+
+	// Services
 	admin.Get("/services", adminHandler.ServicesPage)
+	admin.Post("/add_service", adminHandler.AddService)
+	admin.Post("/update_service/:id", adminHandler.UpdateService)
+	admin.Post("/delete_service/:id", adminHandler.DeleteService)
+	admin.Delete("/delete_service/:id", adminHandler.DeleteService)
+
+	// Booking Settings
 	admin.Get("/booking", adminHandler.BookingSettingsPage)
 	admin.Post("/booking", adminHandler.UpdateBookingSettings)
+
+	// Invoices & Quotes
 	admin.Get("/invoices", adminHandler.InvoicesPage)
+	admin.Post("/save_invoice_settings", adminHandler.SaveInvoiceSettings)
 	admin.Post("/invoices/generate", adminHandler.GenerateInvoicePDF)
+
+	// Funds & Financials
 	admin.Get("/funds", adminHandler.FundsPage)
+	admin.Post("/add_transaction", adminHandler.AddTransaction)
+	admin.Post("/delete_transaction/:id", adminHandler.DeleteTransaction)
+	admin.Delete("/delete_transaction/:id", adminHandler.DeleteTransaction)
+	admin.Get("/export_transactions", adminHandler.ExportTransactions)
+
+	// Automation Ops
 	admin.Get("/automation", adminHandler.AutomationPage)
+	admin.Post("/run_script", adminHandler.RunScript)
+
+	// Logout inside admin
+	admin.Get("/logout", authHandler.Logout)
 
 	// Graceful Shutdown
 	go func() {

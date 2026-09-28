@@ -1,4 +1,4 @@
-﻿{% extends "admin/admin.html" %}
+{% extends "admin/admin.html" %}
 
 {% block admin_title %}Funds — Admin{% endblock %}
 {% block admin_heading %}Financial Command{% endblock %}
@@ -6,18 +6,8 @@
 {% block admin_content %}
 <!-- Filter Section -->
 <div class="widget-card p-4 mb-4">
-  <form action="/admin" method="GET" class="d-flex align-items-center gap-3">
-    <label class="admin-form-label mb-0" for="filter_month" style="white-space: nowrap;">View Period:</label>
-    
-    <select name="month" id="filter_month" class="admin-form-input" style="width: auto; flex-grow: 0;">
-      <option value="">All Time</option>
-      {% for month_num in available_months %}
-        <option value="{{ month_num }}" {% if selected_month == month_num %}selected{% endif %}>
-          {{ datetime(2000, month_num, 1).strftime('%B') }} {# Use a dummy year like 2000 to get month name #}
-        </option>
-      {% endfor %}
-    </select>
-    
+  <form action="/admin/funds" method="GET" class="d-flex align-items-center gap-3">
+    <label class="admin-form-label mb-0" for="filter_year" style="white-space: nowrap;">Filter by Year:</label>
     <select name="year" id="filter_year" class="admin-form-input" style="width: auto; flex-grow: 0;">
       <option value="">All Time</option>
       {% for year_num in available_years %}
@@ -28,6 +18,9 @@
     </select>
     
     <button type="submit" class="tbl-action-btn">Apply Filter</button>
+    {% if selected_year %}
+      <a href="/admin/funds" class="btn-admin-outline" style="text-decoration:none; padding:6px 12px; font-size:0.8rem;">Clear</a>
+    {% endif %}
   </form>
 </div>
 
@@ -81,7 +74,7 @@
         Reinvestment Fund (80%)
       </h3>
       <span class="stat-card-value mb-0">R{{ reinvestment_fund|floatformat:2 }}</span>
-      <a href="/admin" class="tbl-action-btn">
+      <a href="/admin/export_transactions" class="tbl-action-btn">
         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.88 18.09A5 5 0 0 0 18 6h-1.26A8 8 0 1 0 3 16.29"></path></svg>
         Export to CSV
       </a>
@@ -100,7 +93,7 @@
         </h3>
       </div>
       <div class="widget-body">
-        <form action="/admin" method="POST">
+        <form action="/admin/add_transaction" method="POST">
           <div class="mb-3">
             <label class="admin-form-label">Type</label>
             <select name="type" class="admin-form-input" required>

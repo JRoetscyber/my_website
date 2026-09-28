@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}{{ seo_title }}{% endblock %}
 
@@ -12,16 +12,11 @@
   {% endif %}
 {% endblock %}
 
-{% block content %}
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/blog.css">
+{% endblock %}
 
-  gtag('config', 'G-SGCPB3FTF8');
-</script>
+{% block content %}
 
 <article class="blog-post-article">
   <header class="blog-post-header">
@@ -36,7 +31,7 @@
 
   {% if post.media_path %}
   <div class="blog-post-hero-image">
-    <img src="{{ post.media_path }}" alt="{{ post.title }}">
+    <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy" width="1200" height="630">
   </div>
   {% endif %}
 

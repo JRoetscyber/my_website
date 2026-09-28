@@ -3,15 +3,32 @@
    JO4 Dev | Runs after Bootstrap + AOS CDN scripts load
 ================================================================ */
 
-/* ── 1. AOS — Animate On Scroll ── */
-if (typeof AOS !== 'undefined') {
-  AOS.init({
-    duration: 640,
-    easing:   'ease-out-cubic',
-    once:     true,
-    offset:   60,
+/* ── 1. Native Animate On Scroll (Zero-dependency IntersectionObserver) ── */
+(function () {
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('[data-aos]').forEach(function (el) {
+      el.classList.add('aos-animate');
+    });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var delay = entry.target.getAttribute('data-aos-delay');
+        if (delay) {
+          entry.target.style.transitionDelay = delay + 'ms';
+        }
+        entry.target.classList.add('aos-animate');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('[data-aos]').forEach(function (el) {
+    observer.observe(el);
   });
-}
+}());
 
 /* ── 2. Sticky nav — add .scrolled class on scroll ── */
 (function () {

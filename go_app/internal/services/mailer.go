@@ -1,4 +1,4 @@
-﻿package services
+package services
 
 import (
 	"crypto/tls"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
+	"github.com/JRoetscyber/my_website/go_app/internal/models"
 )
 
 func GenerateICSAttachment(startTime time.Time) string {
@@ -141,4 +142,35 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-c
 	}
 
 	return smtp.SendMail(addr, auth, cfg.MailSender, []string{clientEmail}, []byte(body))
+}
+
+func SendLeadNotification(cfg *config.Config, lead models.Lead) error {
+	if cfg.MailUsername == "" || cfg.MailPassword == "" {
+		log.Printf("[Mailer] Simulating lead notification email for client: %s (%s)", lead.ClientName, lead.ClientCompany)
+		return nil
+	}
+
+	subject := fmt.Sprintf("🔥 New Lead Received: %s (Score: %d)", lead.ClientName, lead.Score)
+	body := fmt.Sprintf("From: JO4 Dev System <%s>\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=UTF-8\r\n\r\n"+
+		`<!DOCTYPE html><html><body>`+
+		`<h2>New Inbound Lead Received</h2>`+
+		`<p><strong>Name:</strong> %s</p>`+
+		`<p><strong>Company:</strong> %s</p>`+
+		`<p><strong>Phone:</strong> %s</p>`+
+		`<p><strong>Project Type:</strong> %s</p>`+
+		`<p><strong>Budget:</strong> R%.2f</p>`+
+		`<p><strong>Lead Score:</strong> %d</p>`+
+		`<p><a href="https://jo4.co.za/admin/leads">View in Admin Dashboard</a></p>`+
+		`</body></html>`,
+		cfg.MailSender, cfg.MailSender, subject,
+		lead.ClientName, lead.ClientCompany, lead.PhoneNumber, lead.ProjectType, lead.Budget, lead.Score)
+
+	auth := smtp.PlainAuth("", cfg.MailUsername, cfg.MailPassword, cfg.MailServer)
+	addr := fmt.Sprintf("%s:%s", cfg.MailServer, cfg.MailPort)
+
+	return smtp.SendMail(addr, auth, cfg.MailSender, []string{cfg.MailSender}, []byte(body))
 }

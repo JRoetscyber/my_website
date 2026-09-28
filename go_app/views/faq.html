@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}FAQ - JO4 Dev{% endblock %}
 
@@ -10,6 +10,10 @@
 {{ json_ld_schema|safe }}
 </script>
 {% endif %}
+{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/faq.css">
 {% endblock %}
 
 {% block content %}

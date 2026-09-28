@@ -1,0 +1,86 @@
+﻿/* ============================================================
+   JO4 Dev — Lightweight Pure CSS Grid (~1.5 KB)
+   Replaces bloated 233 KB Bootstrap 5 grid
+   ============================================================ */
+
+.row {
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: calc(-1 * var(--bs-gutter-y));
+  margin-right: calc(-0.5 * var(--bs-gutter-x));
+  margin-left: calc(-0.5 * var(--bs-gutter-x));
+}
+
+.row > * {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-right: calc(var(--bs-gutter-x) * 0.5);
+  padding-left: calc(var(--bs-gutter-x) * 0.5);
+  margin-top: var(--bs-gutter-y);
+}
+
+.col {
+  flex: 1 0 0%;
+}
+
+/* Row-cols */
+.row-cols-1 > * {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .row-cols-md-2 > * {
+    flex: 0 0 auto;
+    width: 50%;
+  }
+  .row-cols-md-3 > * {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+  }
+}
+
+@media (min-width: 992px) {
+  .col-lg-5 {
+    flex: 0 0 auto;
+    width: 41.66666667%;
+  }
+  .col-lg-6 {
+    flex: 0 0 auto;
+    width: 50%;
+  }
+  .offset-lg-1 {
+    margin-left: 8.33333333%;
+  }
+  .row-cols-lg-3 > * {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .row-cols-xl-3 > * {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+  }
+}
+
+/* Gutters */
+.g-3, .gx-3 { --bs-gutter-x: 1rem; }
+.g-3, .gy-3 { --bs-gutter-y: 1rem; }
+
+.g-4, .gx-4 { --bs-gutter-x: 1.5rem; }
+.g-4, .gy-4 { --bs-gutter-y: 1.5rem; }
+
+.g-5, .gx-5 { --bs-gutter-x: 3rem; }
+.g-5, .gy-5 { --bs-gutter-y: 3rem; }
+
+/* Alignment utilities */
+.align-items-start { align-items: flex-start !important; }
+.align-items-center { align-items: center !important; }
+.justify-content-center { justify-content: center !important; }
+.justify-content-between { justify-content: space-between !important; }

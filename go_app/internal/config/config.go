@@ -1,4 +1,4 @@
-﻿package config
+package config
 
 import (
 	"os"
@@ -45,7 +45,7 @@ func LoadConfig() *Config {
 		GoogleCalendarFile: getEnv("GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE", ""),
 		GoogleCalendarID:   getEnv("GOOGLE_CALENDAR_ID", "primary"),
 		DefaultAdminUser:   getEnv("ADMIN_USERNAME", "admin"),
-		DefaultAdminPass:   getEnv("ADMIN_PASSWORD", "admin123!"),
+		DefaultAdminPass:   getEnv("ADMIN_PASSWORD", "password"),
 	}
 }
 

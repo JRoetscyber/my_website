@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
@@ -28,17 +30,32 @@ func NewPublicHandler(db *gorm.DB, cfg *config.Config) *PublicHandler {
 
 // Home page
 func (h *PublicHandler) Home(c *fiber.Ctx) error {
-	var projects []models.Project
-	h.DB.Order("id desc").Limit(6).Find(&projects)
+	var (
+		projects     []models.Project
+		blogPosts    []models.BlogPost
+		faqs         []models.FAQ
+		servicesList []models.Service
+		wg           sync.WaitGroup
+	)
 
-	var blogPosts []models.BlogPost
-	h.DB.Order("created_at desc").Limit(3).Find(&blogPosts)
-
-	var faqs []models.FAQ
-	h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Limit(6).Find(&faqs)
-
-	var servicesList []models.Service
-	h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Find(&servicesList)
+	wg.Add(4)
+	go func() {
+		defer wg.Done()
+		h.DB.Order("id desc").Limit(6).Find(&projects)
+	}()
+	go func() {
+		defer wg.Done()
+		h.DB.Order("created_at desc").Limit(3).Find(&blogPosts)
+	}()
+	go func() {
+		defer wg.Done()
+		h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Limit(6).Find(&faqs)
+	}()
+	go func() {
+		defer wg.Done()
+		h.DB.Where("is_published = ?", true).Order("display_order asc, id asc").Find(&servicesList)
+	}()
+	wg.Wait()
 
 	return c.Render("index", fiber.Map{
 		"projects": projects,
@@ -71,6 +88,10 @@ func (h *PublicHandler) SEO(c *fiber.Ctx) error {
 
 func (h *PublicHandler) AppSec(c *fiber.Ctx) error {
 	return c.Render("appsec", fiber.Map{"request": c})
+}
+
+func (h *PublicHandler) AppDev(c *fiber.Ctx) error {
+	return c.Render("app_development", fiber.Map{"request": c})
 }
 
 func (h *PublicHandler) Automation(c *fiber.Ctx) error {
@@ -267,8 +288,13 @@ func (h *PublicHandler) BookCall(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": fmt.Sprintf("Failed to save booking: %v", err)})
 	}
 
-	// Send email confirmation asynchronously with .ics calendar attachment
+	// Send email confirmation asynchronously with .ics calendar attachment in protected goroutine
 	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("[Worker] Panic recovered in SendBookingInvite: %v", r)
+			}
+		}()
 		_ = services.SendBookingInvite(h.Cfg, req.Email, req.Name, scheduledTime)
 	}()
 
@@ -346,7 +372,23 @@ func (h *PublicHandler) CreateLead(c *fiber.Ctx) error {
 		LastActivityDate:   time.Now(),
 	}
 
-	h.DB.Create(&lead)
+	if err := h.DB.Create(&lead).Error; err != nil {
+		log.Printf("[DB] Error creating lead: %v", err)
+	}
+
+	// Asynchronously handle lead notification in a worker goroutine
+	go func(leadData models.Lead) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("[Worker] Panic recovered in lead notification: %v", r)
+			}
+		}()
+		// If mail notifications are enabled, notify admin
+		if h.Cfg.MailUsername != "" && h.Cfg.MailPassword != "" {
+			_ = services.SendLeadNotification(h.Cfg, leadData)
+		}
+	}(lead)
+
 	return c.JSON(fiber.Map{"status": "success", "lead_id": lead.ID, "score": scoreRes.Score})
 }
 
@@ -358,14 +400,27 @@ func (h *PublicHandler) Robots(c *fiber.Ctx) error {
 
 // Sitemap.xml
 func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
-	var projects []models.Project
-	h.DB.Find(&projects)
+	var (
+		projects []models.Project
+		posts    []models.BlogPost
+		faqs     []models.FAQ
+		wg       sync.WaitGroup
+	)
 
-	var posts []models.BlogPost
-	h.DB.Find(&posts)
-
-	var faqs []models.FAQ
-	h.DB.Where("is_published = ?", true).Find(&faqs)
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		h.DB.Find(&projects)
+	}()
+	go func() {
+		defer wg.Done()
+		h.DB.Find(&posts)
+	}()
+	go func() {
+		defer wg.Done()
+		h.DB.Where("is_published = ?", true).Find(&faqs)
+	}()
+	wg.Wait()
 
 	nowStr := time.Now().Format("2006-01-02")
 

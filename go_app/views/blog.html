@@ -1,20 +1,14 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Blog — JO4 Dev Insights{% endblock %}
 
 {% block meta_description %}Practical notes on web development, SEO, automation and business software from JO4 Dev.{% endblock %}
 
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/blog.css">
+{% endblock %}
+
 {% block content %}
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-SGCPB3FTF8');
-</script>
 
 <header class="page-hero">
   <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Insights & Strategy</span>
@@ -38,7 +32,7 @@
           <a href="/blog/{{ post.slug }}" class="blog-card-link">
             <div class="blog-card-image">
               {% if post.media_path %}
-              <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy">
+              <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy" width="600" height="338">
               {% else %}
               <div class="blog-placeholder">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
