@@ -450,11 +450,12 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
 }
 
 .stat-card-value {
-  font-family: var(--font-display);
-  font-size: 3rem;
+  font-family: var(--font-body);
+  font-size: 2.6rem;
   font-weight: 800;
-  letter-spacing: -0.05em;
-  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
   color: var(--color-text-primary);
   margin-bottom: 8px;
 }

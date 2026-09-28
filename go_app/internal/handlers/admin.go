@@ -574,7 +574,7 @@ func (h *AdminHandler) BlogsPage(c *fiber.Ctx) error {
 	h.DB.Order("created_at desc").Find(&blogs)
 
 	var totalViews int64
-	h.DB.Model(&models.Analytics{}).Count(&totalViews)
+	h.DB.Model(&models.BlogPost{}).Select("COALESCE(SUM(views), 0)").Scan(&totalViews)
 
 	return c.Render("admin/blogs", h.buildAdminContext(c, "blogs", fiber.Map{
 		"blogs":       blogs,
