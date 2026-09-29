@@ -88,11 +88,12 @@
 </head>
 <body>
 
-  <!-- NAV -->
+  <!-- NAV (Floating Neumorphic Pill) -->
   <nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
-      <a href="/" class="nav-logo">
-        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
+      <a href="/" class="nav-logo" aria-label="JO4 Dev Home">
+        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="nav-logo-img" width="84" height="78">
+        <span class="nav-brand-text">JO4<span class="nav-brand-accent">.DEV</span></span>
       </a>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -100,14 +101,14 @@
       </button>
 
       <ul class="nav-links" id="navLinks" role="list">
-        <li><a href="/">Home</a></li>
-        <li><a href="/services">Services</a></li>
-        <li><a href="/mobile-apps">Mobile Apps</a></li>
-        <li><a href="/projects">Work</a></li>
-        <li><a href="/blog">Blog</a></li>
-        <li><a href="/faq">FAQ</a></li>
+        <li><a href="/" class="nav-link-pill {% if current_path == '/' %}active{% endif %}">Home</a></li>
+        <li><a href="/services" class="nav-link-pill {% if current_path == '/services' %}active{% endif %}">Services</a></li>
+        <li><a href="/mobile-apps" class="nav-link-pill {% if current_path == '/mobile-apps' %}active{% endif %}">Mobile Apps</a></li>
+        <li><a href="/projects" class="nav-link-pill {% if current_path == '/projects' %}active{% endif %}">Work</a></li>
+        <li><a href="/blog" class="nav-link-pill {% if current_path == '/blog' %}active{% endif %}">Blog</a></li>
+        <li><a href="/faq" class="nav-link-pill {% if current_path == '/faq' %}active{% endif %}">FAQ</a></li>
         <li>
-          <a href="/book" class="nav-cta">Book a Call</a>
+          <a href="/book" class="nav-cta">Register Now</a>
         </li>
       </ul>
     </div>
@@ -118,20 +119,21 @@
     {% block content %}{% endblock %}
   </main>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (Neumorphic Style) -->
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-top">
 
         <div class="footer-brand">
-          <a href="/" class="nav-logo">
-            <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="84" height="78" loading="lazy">
+          <a href="/" class="nav-logo" aria-label="JO4 Dev Home">
+            <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="nav-logo-img nav-logo-img--footer" width="84" height="78" loading="lazy">
+            <span class="nav-brand-text">JO4<span class="nav-brand-accent">.DEV</span></span>
           </a>
-          <p style="margin-top: 12px; max-width: 320px;">
-            Ultra-fast websites, automation systems & native apps engineered in Go Fiber & Dragon. No cookie-cutter templates. Hosted battle-ready on Hostinger.
+          <p style="margin-top: 14px; max-width: 320px;">
+            Ultra-fast websites, automation systems &amp; native apps engineered in Go Fiber &amp; Dragon. No cookie-cutter templates. Hosted battle-ready on Hostinger.
           </p>
-          <div style="margin-top: 16px; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.82rem; color: #a8a8a0;">
-            <strong style="color: var(--dark-text); display: block; margin-bottom: 2px;">Colossians 3:23</strong>
+          <div class="footer-scripture">
+            <strong>Colossians 3:23</strong>
             "Work with purpose, build for His Glory."
           </div>
         </div>
@@ -152,18 +154,18 @@
             <h5>Pillars</h5>
             <ul>
               <li><a href="/web-design">Web Development (Go Fiber)</a></li>
-              <li><a href="/seo">SEO & Crawl Optimization</a></li>
+              <li><a href="/seo">SEO &amp; Crawl Optimization</a></li>
               <li><a href="/mobile-apps">Mobile Apps (C++, Kotlin, Swift)</a></li>
-              <li><a href="/appsec">DevSecOps & Hosting</a></li>
+              <li><a href="/appsec">DevSecOps &amp; Hosting</a></li>
             </ul>
           </div>
         </nav>
 
       </div>
 
-      <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div class="footer-bottom">
         <p>&copy; <span id="footerYear">{{ year }}</span> JO4 Dev. All rights reserved.</p>
-        <p style="font-size: 0.8rem; color: var(--dark-text-muted);">Faith-driven development &bull; Battle-ready performance &bull; Zero templates</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Faith-driven development &bull; Battle-ready performance &bull; Zero templates</p>
       </div>
     </div>
   </footer>
