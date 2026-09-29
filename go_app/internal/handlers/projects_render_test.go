@@ -99,3 +99,41 @@ func TestProjectsTemplate_Render(t *testing.T) {
 		t.Errorf("rendered output missing expected tech tags: %s", out)
 	}
 }
+
+func TestIndexTemplate_Render(t *testing.T) {
+	initTestFilters()
+
+	tpl, err := pongo2.FromFile("../../views/index.html")
+	if err != nil {
+		t.Fatalf("failed to load index.html: %v", err)
+	}
+
+	out, err := tpl.Execute(pongo2.Context{
+		"current_path": "/",
+		"projects": []map[string]interface{}{
+			{
+				"Title":       "Fastest Web Engine",
+				"Description": "Engineered with Go",
+				"TechStack":   "Go, Redis",
+				"Category":    "Systems",
+			},
+		},
+		"services": []map[string]interface{}{
+			{
+				"Name":        "Web Development",
+				"Description": "Custom high-performance web development",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to render index.html: %v", err)
+	}
+
+	if !strings.Contains(out, "Inlined Critical CSS") {
+		t.Errorf("rendered output missing inlined critical CSS comment: %s", out)
+	}
+	if !strings.Contains(out, "display-hero") {
+		t.Errorf("rendered output missing display-hero class: %s", out)
+	}
+}
+

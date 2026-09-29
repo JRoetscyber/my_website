@@ -213,7 +213,7 @@ h1, h2, h3, h4, h5, h6 {
 .nav-logo:hover { opacity: 0.75; }
 .nav-logo span { color: var(--accent); }
 .nav-logo-img { height: clamp(56px, 6vw, 84px); width: auto; display: block; object-fit: contain; padding: 4px 0; }
-.nav-logo-img--footer { height: 90px; filter: brightness(0) invert(1); }
+.nav-logo-img--footer { height: 78px; filter: brightness(0) invert(1); }
 
 .nav-links { display: flex; align-items: center; justify-content: center; gap: 32px; list-style: none; }
 .nav-links a {

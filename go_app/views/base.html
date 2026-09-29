@@ -92,7 +92,7 @@
   <nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="/" class="nav-logo">
-        <img src="/static/assets/logo.webp" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
+        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev" class="nav-logo-img" width="84" height="78">
       </a>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -125,7 +125,7 @@
 
         <div class="footer-brand">
           <a href="/" class="nav-logo">
-            <img src="/static/assets/logo.webp" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="90" height="83" loading="lazy">
+            <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev" class="nav-logo-img nav-logo-img--footer" width="84" height="78" loading="lazy">
           </a>
           <p style="margin-top: 12px; max-width: 320px;">
             Ultra-fast websites, automation systems & native apps engineered in Go Fiber & Dragon. No cookie-cutter templates. Hosted battle-ready on Hostinger.
@@ -173,27 +173,49 @@
 
   {% block scripts %}{% endblock %}
 
-  <!-- Completely Deferred Analytics (Zero Network Contention During Critical Rendering) -->
+  <!-- Lazy Load Analytics on User Interaction (Prevents 3rd-party cache penalties & CPU contention) -->
   <script>
-    window.addEventListener('load', function() {
-      // Defer Google Tag Manager after window load
-      var gtagScript = document.createElement('script');
-      gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8';
-      gtagScript.async = true;
-      document.head.appendChild(gtagScript);
+    (function() {
+      var initialized = false;
+      function loadAnalytics() {
+        if (initialized) return;
+        initialized = true;
+        ['scroll', 'mousemove', 'touchstart', 'click'].forEach(function(evt) {
+          window.removeEventListener(evt, loadAnalytics, { passive: true });
+        });
 
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-SGCPB3FTF8');
+        // Google Tag Manager
+        var gtagScript = document.createElement('script');
+        gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-SGCPB3FTF8';
+        gtagScript.async = true;
+        document.head.appendChild(gtagScript);
 
-      // Defer Ahrefs
-      var ahrefs = document.createElement('script');
-      ahrefs.src = 'https://analytics.ahrefs.com/analytics.js';
-      ahrefs.dataset.key = 'Ux1JVBSMDqBkdjYsu1cxiA';
-      ahrefs.async = true;
-      document.body.appendChild(ahrefs);
-    });
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-SGCPB3FTF8');
+
+        // Ahrefs Analytics
+        var ahrefs = document.createElement('script');
+        ahrefs.src = 'https://analytics.ahrefs.com/analytics.js';
+        ahrefs.dataset.key = 'Ux1JVBSMDqBkdjYsu1cxiA';
+        ahrefs.async = true;
+        document.body.appendChild(ahrefs);
+      }
+
+      ['scroll', 'mousemove', 'touchstart', 'click'].forEach(function(evt) {
+        window.addEventListener(evt, loadAnalytics, { once: true, passive: true });
+      });
+
+      // Fallback: load after 10 seconds of idle time if no user interaction occurred
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(function() {
+          setTimeout(loadAnalytics, 10000);
+        });
+      } else {
+        setTimeout(loadAnalytics, 10000);
+      }
+    })();
   </script>
 </body>
 </html>
