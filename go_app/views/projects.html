@@ -53,8 +53,8 @@
         <p>{{ project.Description or 'No description added yet.' }}</p>
         {% if project.TechStack %}
         <div class="tag-list">
-            {% for tech in project.TechStack.split(',') %}
-            <span class="tag">{{ tech.strip() }}</span>
+            {% for tech in project.TechStack|split:"," %}
+            <span class="tag">{{ tech }}</span>
             {% endfor %}
         </div>
         {% endif %}
@@ -182,8 +182,8 @@
 
                 {% if project.TechStack %}
                 <div class="tag-list">
-                  {% for tech in project.TechStack.split(',') %}
-                  <span class="tag">{{ tech.strip() }}</span>
+                  {% for tech in project.TechStack|split:"," %}
+                  <span class="tag">{{ tech }}</span>
                   {% endfor %}
                 </div>
                 {% endif %}

@@ -141,10 +141,28 @@ func initPongo2Filters() {
 		return pongo2.AsSafeValue(string(b)), nil
 	})
 
-	// Register split filter
+	// Register split filter (auto-trims whitespace and ignores empty items)
 	pongo2.RegisterFilter("split", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		sep := param.String()
-		return pongo2.AsValue(strings.Split(in.String(), sep)), nil
+		if sep == "" {
+			sep = ","
+		}
+		rawParts := strings.Split(in.String(), sep)
+		var res []string
+		for _, p := range rawParts {
+			if trimmed := strings.TrimSpace(p); trimmed != "" {
+				res = append(res, trimmed)
+			}
+		}
+		return pongo2.AsValue(res), nil
+	})
+
+	// Register strip and trim filters
+	pongo2.RegisterFilter("strip", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+		return pongo2.AsValue(strings.TrimSpace(in.String())), nil
+	})
+	pongo2.RegisterFilter("trim", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+		return pongo2.AsValue(strings.TrimSpace(in.String())), nil
 	})
 
 	// Register format filter
