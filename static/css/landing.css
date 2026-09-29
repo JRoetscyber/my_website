@@ -84,7 +84,7 @@
 .wd-pillar-card--accent {
   background: var(--surface-0);
   border: 2px solid var(--accent);
-  box-shadow: var(--neu-flat), 0 0 24px rgba(241, 125, 32, 0.2);
+  box-shadow: var(--neu-flat), 0 0 24px rgba(13, 148, 136, 0.2);
   color: var(--text-primary);
 }
 .wd-pillar-card--accent h3 { color: var(--text-primary); }
@@ -260,7 +260,7 @@
 .wd-pricing-card--featured {
   background: var(--surface-0);
   border: 2px solid var(--accent);
-  box-shadow: var(--neu-flat), 0 0 24px rgba(241, 125, 32, 0.25);
+  box-shadow: var(--neu-flat), 0 0 24px rgba(13, 148, 136, 0.25);
   color: var(--text-primary);
 }
 .wd-pricing-badge {
@@ -277,7 +277,7 @@
   padding: 5px 16px;
   border-radius: 99px;
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(241, 125, 32, 0.35);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
 }
 .wd-pricing-tier {
   font-size: 0.72rem;
@@ -454,7 +454,7 @@
 }
 .appsec-eyebrow {
   color: var(--accent) !important;
-  border-color: rgba(241, 125, 32, 0.3) !important;
+  border-color: rgba(13, 148, 136, 0.3) !important;
   background: var(--accent-faint) !important;
 }
 
@@ -599,7 +599,7 @@
 .appsec-step--accent {
   background: var(--surface-0);
   border: 2px solid var(--accent);
-  box-shadow: var(--neu-flat), 0 0 24px rgba(241, 125, 32, 0.2);
+  box-shadow: var(--neu-flat), 0 0 24px rgba(13, 148, 136, 0.2);
 }
 .appsec-step--accent .appsec-step-title { color: var(--text-primary); }
 .appsec-step--accent .appsec-step-body { color: var(--text-secondary); }

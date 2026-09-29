@@ -109,7 +109,7 @@
   color: var(--accent);
 }
 .booking-day.active {
-  border-color: rgba(241, 125, 32, 0.4);
+  border-color: rgba(13, 148, 136, 0.4);
   background: var(--surface-0);
   box-shadow: var(--neu-pressed);
   color: var(--accent);
@@ -146,7 +146,7 @@
   color: var(--accent);
 }
 .booking-slot.active {
-  border-color: rgba(241, 125, 32, 0.4);
+  border-color: rgba(13, 148, 136, 0.4);
   box-shadow: var(--neu-pressed);
   color: var(--accent);
   font-weight: 700;
@@ -222,7 +222,7 @@
 }
 .booking-result.success {
   background: var(--surface-0);
-  border: 1px solid rgba(241, 125, 32, 0.3);
+  border: 1px solid rgba(13, 148, 136, 0.3);
   color: var(--text-primary);
 }
 .booking-result.error {

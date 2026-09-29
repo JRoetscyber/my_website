@@ -1,6 +1,6 @@
 /* ============================================================
    JO4 DEV — Neumorphic Design System (Figma Community Style)
-   Canvas: #ebecf0 | Accent: Vibrant Orange #f17d20 | Dual Dual Soft Shadows
+   Canvas: #ebecf0 | Accent: Vibrant Teal #0d9488 | Dual Dual Soft Shadows
    ============================================================ */
 
 /* Self-Hosted Fonts */
@@ -56,12 +56,12 @@
   --dark-text:        #2d303a;
   --dark-text-muted:  #636b7d;
 
-  --accent:           #f17d20;
-  --accent-light:     #ff9326;
-  --accent-gradient:  linear-gradient(135deg, #ff8c2b 0%, #f17d20 100%);
-  --accent-faint:     rgba(241, 125, 32, 0.08);
-  --accent-mid:       rgba(241, 125, 32, 0.22);
-  --accent-glow:      0 8px 24px rgba(241, 125, 32, 0.40);
+  --accent:           #0d9488;
+  --accent-light:     #14b8a6;
+  --accent-gradient:  linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  --accent-faint:     rgba(13, 148, 136, 0.08);
+  --accent-mid:       rgba(13, 148, 136, 0.22);
+  --accent-glow:      0 8px 24px rgba(13, 148, 136, 0.40);
 
   /* Neumorphic Dual Shadows */
   --neu-flat:         8px 8px 18px #cbced8, -8px -8px 18px #ffffff;
@@ -70,8 +70,10 @@
   --neu-pressed:      inset 4px 4px 8px #cbced8, inset -4px -4px 8px #ffffff;
   --neu-pressed-sm:   inset 2px 2px 5px #cbced8, inset -2px -2px 5px #ffffff;
   --neu-pill:         6px 6px 14px #cbced8, -6px -6px 14px #ffffff;
-  --neu-orange:       0 6px 18px rgba(241, 125, 32, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.45);
-  --neu-orange-hover: 0 8px 24px rgba(241, 125, 32, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.55);
+  --neu-orange:       0 6px 18px rgba(13, 148, 136, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+  --neu-orange-hover: 0 8px 24px rgba(13, 148, 136, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.55);
+  --neu-accent:       0 6px 18px rgba(13, 148, 136, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+  --neu-accent-hover: 0 8px 24px rgba(13, 148, 136, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.55);
 
   /* Legacy aliases */
   --color-bg:             #ebecf0;
@@ -83,7 +85,7 @@
   --color-text-primary:   #2d303a;
   --color-text-secondary: #636b7d;
   --color-text-muted:     #8d95a5;
-  --accent-dim:           rgba(241, 125, 32, 0.08);
+  --accent-dim:           rgba(13, 148, 136, 0.08);
 
   --shadow-card:          var(--neu-flat);
   --shadow-card-hover:    12px 12px 26px #c2c6d2, -12px -12px 26px #ffffff;
@@ -261,14 +263,14 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.78rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
-  box-shadow: 0 6px 16px rgba(241, 125, 32, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.42), inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
   transition: transform var(--ease), box-shadow var(--ease) !important;
   border: none !important;
   display: inline-block;
 }
 .nav-cta:hover {
   transform: translateY(-1px) !important;
-  box-shadow: 0 8px 22px rgba(241, 125, 32, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 22px rgba(13, 148, 136, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.5) !important;
 }
 .nav-toggle {
   display: none;
@@ -467,7 +469,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 7px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(241, 125, 32, 0.8);
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.8);
 }
 .hero-headline {
   margin-bottom: 20px;

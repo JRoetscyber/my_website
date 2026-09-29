@@ -12,7 +12,7 @@
 .blog-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--neu-flat-lg);
-  border-color: rgba(241, 125, 32, 0.4);
+  border-color: rgba(13, 148, 136, 0.4);
 }
 
 .blog-card-link {
