@@ -49,7 +49,7 @@
   --text-secondary:   #636b7d;
   --text-muted:       #8d95a5;
 
-  --dark:             #2d303a;
+  --dark:             #ebecf0;
   --dark-surface:     #ebecf0;
   --dark-border:      rgba(203, 206, 216, 0.6);
   --dark-text:        #2d303a;
@@ -333,19 +333,24 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: #fff;
-  color: var(--dark);
+  background: var(--surface-0);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 0.9rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   padding: 16px 36px;
-  border-radius: 8px;
-  border: none;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat);
   cursor: pointer;
   transition: box-shadow var(--ease), transform var(--ease);
 }
-.btn-light-custom:hover { box-shadow: 0 8px 32px rgba(255,255,255,0.2); transform: translateY(-1px); color: var(--dark); }
+.btn-light-custom:hover {
+  box-shadow: var(--neu-flat-lg);
+  transform: translateY(-2px);
+  color: var(--accent);
+}
 
 /* 6. LAYOUT */
 .section {

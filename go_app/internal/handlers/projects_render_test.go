@@ -4,11 +4,32 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/flosch/pongo2/v6"
 )
 
 func initTestFilters() {
+	if !pongo2.FilterExists("markdown") {
+		pongo2.RegisterFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+			return pongo2.AsSafeValue("<p>" + in.String() + "</p>"), nil
+		})
+	}
+	if !pongo2.FilterExists("from_json") {
+		pongo2.RegisterFilter("from_json", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+			return pongo2.AsValue([]interface{}{}), nil
+		})
+	}
+	if !pongo2.FilterExists("tojson") {
+		pongo2.RegisterFilter("tojson", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+			return pongo2.AsSafeValue("{}"), nil
+		})
+	}
+	if !pongo2.FilterExists("selectattr") {
+		pongo2.RegisterFilter("selectattr", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+			return in, nil
+		})
+	}
 	if !pongo2.FilterExists("truncate") {
 		pongo2.RegisterFilter("truncate", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 			length := param.Integer()
@@ -136,4 +157,85 @@ func TestIndexTemplate_Render(t *testing.T) {
 		t.Errorf("rendered output missing display-hero class: %s", out)
 	}
 }
+
+func TestAdminAndPublicTemplates_Render(t *testing.T) {
+	initTestFilters()
+
+	// 1. login.html
+	if tpl, err := pongo2.FromFile("../../views/login.html"); err != nil {
+		t.Fatalf("failed to load login.html: %v", err)
+	} else if _, err := tpl.Execute(pongo2.Context{"current_path": "/login"}); err != nil {
+		t.Fatalf("failed to render login.html: %v", err)
+	}
+
+	// 2. order_display.html
+	if tpl, err := pongo2.FromFile("../../views/order_display.html"); err != nil {
+		t.Fatalf("failed to load order_display.html: %v", err)
+	} else if _, err := tpl.Execute(pongo2.Context{"preparing_orders": []map[string]interface{}{{"SequenceNumber": 101}}, "ready_orders": []map[string]interface{}{{"SequenceNumber": 100}}}); err != nil {
+		t.Fatalf("failed to render order_display.html: %v", err)
+	}
+
+	// 3. order_tracker.html
+	if tpl, err := pongo2.FromFile("../../views/order_tracker.html"); err != nil {
+		t.Fatalf("failed to load order_tracker.html: %v", err)
+	} else if _, err := tpl.Execute(pongo2.Context{
+		"order": map[string]interface{}{
+			"SequenceNumber": 105,
+			"CustomerName":   "Alice",
+			"Status":         "in_progress",
+			"TrackingCode":   "trk-12345",
+			"NotifyCount":    0,
+			"Items":          "1x Custom Web App",
+			"TotalAmount":    5000.0,
+			"CreatedAt":      time.Now(),
+		},
+	}); err != nil {
+		t.Fatalf("failed to render order_tracker.html: %v", err)
+	}
+
+	// 4. app_development.html
+	if tpl, err := pongo2.FromFile("../../views/app_development.html"); err != nil {
+		t.Fatalf("failed to load app_development.html: %v", err)
+	} else if _, err := tpl.Execute(pongo2.Context{"current_path": "/app-development"}); err != nil {
+		t.Fatalf("failed to render app_development.html: %v", err)
+	}
+
+	// 5. admin views
+	loader := pongo2.MustNewLocalFileSystemLoader("../../views")
+	set := pongo2.NewSet("adminViewsSet", loader)
+
+	adminViews := []string{
+		"admin/orders.html",
+		"admin/automation.html",
+		"admin/blogs.html",
+		"admin/booking.html",
+		"admin/faqs.html",
+		"admin/services.html",
+	}
+
+	for _, v := range adminViews {
+		tpl, err := set.FromFile(v)
+		if err != nil {
+			t.Fatalf("failed to load %s: %v", v, err)
+		}
+		_, err = tpl.Execute(pongo2.Context{
+			"orders": []map[string]interface{}{
+				{"ID": 1, "SequenceNumber": 101, "CustomerName": "Bob", "Status": "received", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
+			},
+			"blogs": []map[string]interface{}{
+				{"ID": 1, "Title": "Test Blog", "Slug": "test-blog", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
+			},
+			"faqs": []map[string]interface{}{
+				{"ID": 1, "Question": "What is Go?", "Answer": "A fast language", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
+			},
+			"services": []map[string]interface{}{
+				{"ID": 1, "Name": "Cloud Architecture", "Slug": "cloud", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
+			},
+		})
+		if err != nil {
+			t.Fatalf("failed to render %s: %v", v, err)
+		}
+	}
+}
+
 

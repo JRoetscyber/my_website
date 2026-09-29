@@ -6,9 +6,9 @@
 
 .faq-list {
   background: var(--surface-0);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
   overflow: hidden;
 }
 
@@ -42,32 +42,35 @@
 
 .faq-item summary::after {
   content: '+';
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: var(--accent-faint);
-  border: 1px solid var(--accent-mid);
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat-sm);
   color: var(--accent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   line-height: 1;
-  transition: transform var(--ease), background var(--ease);
+  transition: transform var(--ease), box-shadow var(--ease), background var(--ease), color var(--ease);
 }
 
 .faq-item[open] summary {
   color: var(--accent);
-  background: var(--bg);
+  background: var(--surface-1);
 }
 
 .faq-item[open] summary::after {
-  content: '-';
+  content: '−';
   transform: rotate(180deg);
   background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--neu-orange);
   color: #fff;
 }
 

@@ -2,16 +2,17 @@
 .blog-card {
   height: 100%;
   background: var(--surface-0);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
   overflow: hidden;
   transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
 }
 
 .blog-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
+  box-shadow: var(--neu-flat-lg);
+  border-color: rgba(241, 125, 32, 0.4);
 }
 
 .blog-card-link {
@@ -120,14 +121,15 @@
   max-width: 1200px;
   margin: -40px auto 60px;
   padding: 0 var(--pad-x);
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
 }
 
 .blog-post-hero-image img {
   width: 100%;
-  border-radius: 12px;
-  box-shadow: var(--shadow-xl);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat-lg);
 }
 
 .blog-post-content {
@@ -162,10 +164,14 @@
 
 .blog-post-content blockquote {
   border-left: 4px solid var(--accent);
-  padding: 20px 0 20px 30px;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--neu-pressed-sm);
+  border-radius: 0 16px 16px 0;
+  padding: 24px 28px;
   margin: 2.5rem 0;
   font-style: italic;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   color: var(--text-secondary);
 }
 

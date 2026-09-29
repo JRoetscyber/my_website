@@ -7,7 +7,7 @@
 <!-- Header & Actions -->
 <div class="studio-board-head mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
   <div>
-    <h2 class="studio-board-title" style="color: white; margin-bottom: 4px;">Orders & Call-Out Center</h2>
+    <h2 class="studio-board-title" style="margin-bottom: 4px;">Orders & Call-Out Center</h2>
     <p class="studio-board-sub" style="margin: 0;">Sequence tickets, web notifications, and live counter callouts.</p>
   </div>
   <div class="d-flex gap-2 flex-wrap">
@@ -67,7 +67,7 @@
 </div>
 
 <!-- Filters Bar -->
-<div class="widget-card mb-4" style="background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 8px; padding: 14px 20px;">
+<div class="widget-card mb-4" style="padding: 14px 20px;">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div class="btn-group" role="group" aria-label="Order Status Filters">
       <button type="button" class="btn btn-sm btn-outline-secondary active filter-btn" data-filter="all">All Orders ({{ orders|length }})</button>
@@ -82,11 +82,11 @@
 </div>
 
 <!-- Orders Table -->
-<div class="widget-card" style="background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
+<div class="widget-card">
   <div class="table-responsive">
-    <table class="table table-dark table-hover mb-0" style="vertical-align: middle;">
+    <table class="pipeline-table mb-0" style="vertical-align: middle;">
       <thead>
-        <tr style="border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);">
+        <tr style="border-bottom: 1px solid var(--color-border); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-muted);">
           <th style="padding: 16px 20px;">Ticket #</th>
           <th>Customer</th>
           <th>Items &amp; Notes</th>
@@ -98,7 +98,7 @@
       </thead>
       <tbody>
         {% for order in orders %}
-        <tr class="order-row" data-status="{{ order.Status }}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <tr class="order-row" data-status="{{ order.Status }}" style="border-bottom: 1px solid var(--color-border);">
           
           <!-- Ticket Call-Out Number -->
           <td style="padding: 16px 20px;">

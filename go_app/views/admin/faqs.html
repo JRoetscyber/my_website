@@ -6,7 +6,7 @@
 {% block admin_content %}
 <div class="studio-board-head mb-4">
   <div>
-    <h2 class="studio-board-title" style="color: white;">FAQ Management</h2>
+    <h2 class="studio-board-title">FAQ Management</h2>
     <p class="studio-board-sub">Create, edit, publish, and remove slugged FAQ answers.</p>
   </div>
   <button class="btn-admin-primary add-faq-btn" data-bs-toggle="modal" data-bs-target="#faqModal" style="width: auto;">Add FAQ</button>
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
 {% block admin_content_after %}
 <div class="studio-board-head mt-5 mb-4">
   <div>
-    <h2 class="studio-board-title" style="color: white;">User Inquiries</h2>
+    <h2 class="studio-board-title">User Inquiries</h2>
     <p class="studio-board-sub">Questions submitted by users via the FAQ page.</p>
   </div>
 </div>
@@ -228,11 +228,11 @@ document.addEventListener('DOMContentLoaded', function() {
             <td>{{ sub.created_at.strftime('%Y-%m-%d') }}</td>
             <td><strong>{{ sub.name }}</strong></td>
             <td>
-              <div style="font-size: 0.85rem; color: #fff;">{{ sub.email }}</div>
-              {% if sub.phone %}<div style="font-size: 0.85rem; color: #888;">{{ sub.phone }}</div>{% endif %}
+              <div style="font-size: 0.85rem; color: var(--color-text-primary);">{{ sub.email }}</div>
+              {% if sub.phone %}<div style="font-size: 0.85rem; color: var(--color-text-muted);">{{ sub.phone }}</div>{% endif %}
             </td>
             <td>
-              <div style="max-width: 400px; font-size: 0.9rem; color: #ccc;">{{ sub.question }}</div>
+              <div style="max-width: 400px; font-size: 0.9rem; color: var(--color-text-secondary);">{{ sub.question }}</div>
             </td>
             <td>
               <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-submission" data-id="{{ sub.id }}">Delete</button>

@@ -11,8 +11,8 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #090d16;
-      color: #f3f4f6;
+      background: var(--bg);
+      color: var(--text-primary);
       font-family: var(--font-body);
       min-height: 100vh;
       display: flex;
@@ -22,37 +22,48 @@
 
     /* Top Display Bar */
     .display-header {
-      background: #0f172a;
-      border-bottom: 2px solid #1e293b;
-      padding: 18px 36px;
+      background: rgba(235, 236, 240, 0.94);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 16px rgba(203, 206, 216, 0.35);
+      padding: 16px 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .display-brand {
       display: flex;
       align-items: center;
       gap: 14px;
     }
+    .display-mascot-img {
+      width: 44px;
+      height: 40px;
+      object-fit: contain;
+    }
     .display-title {
       font-family: var(--font-display);
       font-size: 1.6rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #fff;
+      color: var(--text-primary);
     }
     .display-title span { color: var(--accent); }
     .display-badge {
-      background: rgba(13, 148, 136, 0.2);
-      border: 1px solid var(--accent);
-      color: var(--accent-light);
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: var(--neu-flat-sm);
+      color: var(--accent);
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
@@ -64,28 +75,34 @@
     .clock-display {
       font-family: var(--font-mono);
       font-size: 1.25rem;
-      font-weight: 700;
-      color: #94a3b8;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: 0.05em;
     }
     .sound-toggle-btn {
-      background: #1e293b;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      padding: 8px 16px;
-      border-radius: 8px;
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: var(--neu-flat-sm);
+      color: var(--text-secondary);
+      padding: 8px 18px;
+      border-radius: 999px;
       cursor: pointer;
       font-family: var(--font-mono);
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
       display: flex;
       align-items: center;
       gap: 8px;
       transition: all 0.2s ease;
     }
+    .sound-toggle-btn:hover {
+      box-shadow: var(--neu-flat);
+      color: var(--text-primary);
+    }
     .sound-toggle-btn.active {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: #10b981;
-      color: #10b981;
+      box-shadow: var(--neu-pressed-sm);
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     /* Main Board Screen */
@@ -93,8 +110,9 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       flex-grow: 1;
-      gap: 2px;
-      background: #1e293b;
+      gap: 28px;
+      padding: clamp(20px, 3vw, 36px);
+      background: var(--bg);
     }
     @media (max-width: 800px) {
       .board-grid {
@@ -104,37 +122,49 @@
 
     /* Columns */
     .board-col {
-      background: #090d16;
-      padding: clamp(24px, 4vw, 48px);
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--neu-flat);
+      padding: clamp(24px, 4vw, 40px);
       display: flex;
       flex-direction: column;
     }
     .board-col-header {
       padding-bottom: 20px;
-      border-bottom: 2px solid #1e293b;
-      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .col-title {
       font-family: var(--font-display);
-      font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+      font-size: clamp(1.5rem, 2.2vw, 2.2rem);
       font-weight: 900;
       letter-spacing: -0.02em;
     }
-    .col-preparing .col-title { color: #f59e0b; }
-    .col-ready .col-title { color: #10b981; }
+    .col-preparing .col-title { color: #d97706; }
+    .col-ready .col-title { color: var(--accent); }
 
     .col-counter {
       font-family: var(--font-mono);
       font-size: 1.1rem;
-      font-weight: 700;
-      padding: 4px 14px;
+      font-weight: 800;
+      padding: 6px 16px;
       border-radius: 999px;
+      box-shadow: var(--neu-flat-sm);
     }
-    .col-preparing .col-counter { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-    .col-ready .col-counter { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .col-preparing .col-counter {
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      color: #d97706;
+    }
+    .col-ready .col-counter {
+      background: var(--accent-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(241, 125, 32, 0.35);
+    }
 
     /* Number Grids */
     .tickets-container {
@@ -145,9 +175,10 @@
     }
 
     .ticket-tile {
-      background: #0f172a;
-      border: 2px solid #1e293b;
-      border-radius: 16px;
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      box-shadow: var(--neu-flat-sm);
       padding: 24px 16px;
       text-align: center;
       transition: all 0.3s ease;
@@ -161,7 +192,7 @@
     }
     .ticket-tile .ticket-name {
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: var(--text-secondary);
       margin-top: 8px;
       font-weight: 600;
       white-space: nowrap;
@@ -170,18 +201,18 @@
     }
 
     .col-preparing .ticket-tile .ticket-num {
-      color: #e2e8f0;
+      color: var(--text-primary);
     }
 
     .col-ready .ticket-tile {
-      background: rgba(16, 185, 129, 0.08);
-      border-color: #10b981;
-      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+      background: var(--surface-0);
+      border: 2px solid var(--accent);
+      box-shadow: var(--neu-flat), 0 0 24px rgba(241, 125, 32, 0.25);
       animation: readyCardPop 0.8s ease;
     }
     .col-ready .ticket-tile .ticket-num {
-      color: #10b981;
-      text-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+      color: var(--accent);
+      text-shadow: 0 2px 12px rgba(241, 125, 32, 0.25);
     }
     @keyframes readyCardPop {
       0% { transform: scale(0.9); opacity: 0; }
@@ -191,7 +222,7 @@
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: #475569;
+      color: var(--text-muted);
       font-family: var(--font-mono);
       font-size: 0.9rem;
       grid-column: 1 / -1;
@@ -199,15 +230,15 @@
 
     /* Footer Callout Bar */
     .display-footer {
-      background: #0f172a;
-      border-top: 1px solid #1e293b;
+      background: var(--surface-0);
+      border-top: 1px solid var(--border);
       padding: 14px 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-family: var(--font-mono);
       font-size: 0.8rem;
-      color: #64748b;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -215,6 +246,7 @@
 
   <header class="display-header">
     <div class="display-brand">
+      <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="display-mascot-img" width="44" height="40">
       <div class="display-title">JO4<span>.</span>DEV</div>
       <div class="display-badge">Counter Call-Out Screen</div>
     </div>

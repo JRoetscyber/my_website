@@ -248,9 +248,10 @@
 }
 
 .mobile-lang-card {
-  background: var(--dark);
-  border: 1px solid var(--dark-border);
-  border-radius: 16px;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
   padding: clamp(32px, 4vw, 44px) clamp(24px, 3vw, 36px);
   display: flex;
   flex-direction: column;
@@ -260,8 +261,8 @@
 }
 .mobile-lang-card:hover {
   transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: var(--neu-flat-lg);
 }
 .mobile-lang-badge {
   display: inline-flex;
@@ -271,8 +272,9 @@
   font-size: 0.65rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent-light);
+  color: var(--accent);
   margin-bottom: 20px;
+  font-weight: 700;
 }
 .mobile-lang-icon {
   width: 56px;
@@ -280,8 +282,9 @@
   min-width: 56px;
   min-height: 56px;
   border-radius: 14px;
-  background: rgba(13, 148, 136, 0.12);
-  border: 1.5px solid var(--accent);
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,18 +296,18 @@
   height: 28px !important;
   max-width: 28px !important;
   max-height: 28px !important;
-  stroke: var(--accent-light);
+  stroke: var(--accent);
   display: block;
 }
 .mobile-lang-card h3 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--dark-text);
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 .mobile-lang-card p {
   font-size: 0.9rem;
-  color: var(--dark-text-muted);
+  color: var(--text-secondary);
   line-height: 1.7;
   margin-bottom: 24px;
   flex-grow: 1;
@@ -318,11 +321,13 @@
 .mobile-lang-tag {
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #d1d5db;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat-sm);
+  color: var(--text-secondary);
   padding: 4px 10px;
   border-radius: 6px;
+  font-weight: 600;
 }
 
 /* Comparison Matrix */

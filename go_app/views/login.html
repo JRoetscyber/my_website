@@ -4,22 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - JO4 Dev</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/syne-800.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/core.css">
   <style>
     :root {
-      --login-card-w: 400px;
+      --login-card-w: 440px;
     }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--color-bg);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
       margin: 0;
-      overflow: hidden;
+      padding: 20px;
+      overflow-x: hidden;
     }
     body::before {
       display: none;
@@ -29,52 +33,63 @@
       z-index: 1;
       width: 100%;
       max-width: var(--login-card-w);
-      padding: 20px;
-      animation: fadeInUp 0.6s ease both;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
     .login-card {
-      background: var(--color-surface-2);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 40px;
-      box-shadow: var(--shadow-card);
+      background: var(--surface-0);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      border-radius: 28px;
+      padding: clamp(32px, 5vw, 48px);
+      box-shadow: var(--neu-flat-lg);
     }
     .login-header {
       text-align: center;
       margin-bottom: 32px;
     }
+    .login-mascot {
+      width: 84px;
+      height: 78px;
+      display: block;
+      margin: 0 auto 16px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(203, 206, 216, 0.6));
+    }
     .login-logo {
       font-family: var(--font-display);
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 800;
-      color: var(--color-text-primary);
-      margin-bottom: 8px;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.03em;
     }
     .login-logo span { color: var(--accent); }
     .login-tag {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--color-text-muted);
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      font-weight: 600;
     }
-    .form-group { margin-bottom: 20px; }
+    .form-group { margin-bottom: 22px; }
     .form-label {
       display: block;
       font-family: var(--font-mono);
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
       margin-bottom: 8px;
+      font-weight: 600;
     }
     .form-input {
       width: 100%;
-      background: var(--color-surface-3);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      padding: 12px 16px;
-      color: var(--color-text-primary);
+      background: var(--surface-0);
+      border: 1px solid rgba(203, 206, 216, 0.6);
+      border-radius: 14px;
+      box-shadow: var(--neu-pressed);
+      padding: 13px 18px;
+      color: var(--text-primary);
       font-family: var(--font-body);
       font-size: 0.95rem;
       outline: none;
@@ -82,43 +97,65 @@
     }
     .form-input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 229, 204, 0.1);
+      box-shadow: var(--neu-pressed), 0 0 0 3px rgba(241, 125, 32, 0.15);
     }
     .login-btn {
       width: 100%;
-      background: var(--accent);
-      color: #000;
+      background: var(--accent-gradient);
+      color: #fff;
       border: none;
-      border-radius: 4px;
-      padding: 14px;
-      font-family: var(--font-body);
+      border-radius: 9999px;
+      padding: 14px 24px;
+      font-family: var(--font-mono);
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       cursor: pointer;
+      box-shadow: var(--accent-glow);
       transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
       margin-top: 10px;
     }
     .login-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-      box-shadow: var(--accent-glow);
+      opacity: 0.95;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(241, 125, 32, 0.45);
+    }
+    .login-btn:active {
+      transform: translateY(0);
     }
     .alert {
       padding: 12px 16px;
-      border-radius: 4px;
+      border-radius: 12px;
       font-size: 0.85rem;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
       text-align: center;
+      box-shadow: var(--neu-flat-sm);
     }
     .alert-danger {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
       color: #ef4444;
+      font-weight: 600;
+    }
+    .login-footer-nav {
+      text-align: center;
+      margin-top: 24px;
+    }
+    .login-back-link {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .login-back-link:hover {
+      color: var(--accent);
     }
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(24px); }
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
@@ -127,27 +164,31 @@
   <div class="login-shell">
     <div class="login-card">
       <div class="login-header">
+        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="login-mascot" width="84" height="78">
         <div class="login-logo">JO4<span>.</span>DEV</div>
-        <div class="login-tag">Admin Access</div>
+        <div class="login-tag">Control Center &bull; Access</div>
       </div>
 
-      {% if error %}<div class="alert alert-danger" style="background:#3b1818; color:#f87171; padding:10px 14px; border-radius:6px; margin-bottom:16px; font-size:0.9rem;">{{ error }}</div>{% endif %}
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
 
       <form method="POST">
         <div class="form-group">
           <label class="form-label" for="username">Username</label>
-          <input class="form-input" type="text" id="username" name="username" required autofocus>
+          <input class="form-input" type="text" id="username" name="username" required autofocus autocomplete="username">
         </div>
         <div class="form-group">
           <label class="form-label" for="password">Password</label>
-          <input class="form-input" type="password" id="password" name="password" required>
+          <input class="form-input" type="password" id="password" name="password" required autocomplete="current-password">
         </div>
-        <button type="submit" class="login-btn">Secure Login</button>
+        <button type="submit" class="login-btn">Secure Sign In</button>
       </form>
+
+      <div class="login-footer-nav">
+        <a href="/" class="login-back-link">&larr; Return to JO4.DEV</a>
+      </div>
     </div>
   </div>
 </body>
 </html>
-
-
-
