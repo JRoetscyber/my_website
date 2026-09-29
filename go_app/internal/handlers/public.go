@@ -85,8 +85,15 @@ func (h *PublicHandler) Services(c *fiber.Ctx) error {
 		return list, err
 	})
 
+	faqs, _ := cache.GetOrSet(h.Cache, context.Background(), cache.FAQsKey(), 30*time.Minute, func(ctx context.Context) ([]models.FAQ, error) {
+		var list []models.FAQ
+		err := h.DB.WithContext(ctx).Where("is_published = ?", true).Order("display_order asc, id asc").Limit(6).Find(&list).Error
+		return list, err
+	})
+
 	return c.Render("services", fiber.Map{
 		"services": servicesList,
+		"faqs":     faqs,
 		"request":  c,
 	})
 }

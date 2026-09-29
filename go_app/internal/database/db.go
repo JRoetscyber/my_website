@@ -217,6 +217,64 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 		}
 		log.Println("[DB] Seeded 4 core services (Web Dev, SEO, Mobile Apps, DevSecOps)")
 	}
+
+	// Seed Core FAQs if empty or minimal
+	var faqCount int64
+	db.Model(&models.FAQ{}).Count(&faqCount)
+	if faqCount <= 1 {
+		coreFAQs := []models.FAQ{
+			{
+				Question:     "Do I own my website and source code completely?",
+				Slug:         "ownership-and-source-code",
+				Answer:       "Yes, 100%. Unlike restrictive agency contracts or proprietary site builders, you receive full intellectual property ownership, source code, and deployment configurations. Zero lock-in, zero hostage code.",
+				DisplayOrder: 10,
+				IsPublished:  true,
+			},
+			{
+				Question:     "Why Go Fiber instead of WordPress or PHP?",
+				Slug:         "why-go-fiber",
+				Answer:       "Speed, security, and zero bloat. Go Fiber delivers sub-millisecond page response times, handles thousands of concurrent requests via lightweight goroutines, and eliminates vulnerable WordPress plugin architectures and SQL injection vectors.",
+				DisplayOrder: 20,
+				IsPublished:  true,
+			},
+			{
+				Question:     "How long does a custom web system or app project take?",
+				Slug:         "project-timelines",
+				Answer:       "Most production-ready custom web systems and MVPs are scoped, developed, and deployed within 2 to 4 weeks. Complex enterprise workflows or multi-platform native mobile apps (C++/Kotlin/Swift) typically take 4 to 8 weeks.",
+				DisplayOrder: 30,
+				IsPublished:  true,
+			},
+			{
+				Question:     "How does hosting, uptime, and maintenance work?",
+				Slug:         "hosting-and-maintenance",
+				Answer:       "We deploy containerized Docker applications on enterprise Linux servers with automated SSL certificates, Cloudflare CDN integration, and daily automated backups. You can host on our managed infrastructure or deploy to your own AWS/DigitalOcean server.",
+				DisplayOrder: 40,
+				IsPublished:  true,
+			},
+			{
+				Question:     "Can you automate our existing quotation and invoicing workflows?",
+				Slug:         "business-automation-workflow",
+				Answer:       "Yes. We engineer custom API pipelines that bridge your incoming leads directly into automated quotation engines, PDF generators, payment gateways (PayFast, Stripe), and CRM notification systems.",
+				DisplayOrder: 50,
+				IsPublished:  true,
+			},
+			{
+				Question:     "How does JO4 Dev optimize local and technical SEO?",
+				Slug:         "technical-seo-optimization",
+				Answer:       "We build zero-template semantic HTML with self-hosted fonts, sub-second TTFB, automatic XML sitemaps, JSON-LD Schema (Organization, Service, FAQ), and 100/100 Core Web Vitals to maximize Google search ranking dominance.",
+				DisplayOrder: 60,
+				IsPublished:  true,
+			},
+		}
+
+		for _, f := range coreFAQs {
+			var existing models.FAQ
+			if err := db.Where("slug = ?", f.Slug).First(&existing).Error; err != nil {
+				db.Create(&f)
+			}
+		}
+		log.Println("[DB] Seeded core FAQs (Ownership, Go Fiber, Timelines, Hosting, Automation, SEO)")
+	}
 }
 
 func GetBookingSettings(db *gorm.DB) *models.BookingSettings {

@@ -192,12 +192,39 @@
 
     <div class="svc-faq-grid" data-aos="fade-up" data-aos-delay="80">
 
-      {% for faq in faqs %}
-      <div class="svc-faq-item">
-        <h3>{{ faq.Question }}</h3>
-        <p>{{ faq.Answer }}</p>
-      </div>
-      {% endfor %}
+      {% if faqs %}
+        {% for faq in faqs %}
+        <div class="svc-faq-item">
+          <h3>{{ faq.Question }}</h3>
+          <p>{{ faq.Answer }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="svc-faq-item">
+          <h3>Do I own my website and source code completely?</h3>
+          <p>Yes, 100%. Unlike restrictive agency contracts or proprietary site builders, you receive full intellectual property ownership, source code, and deployment configurations. Zero lock-in, zero hostage code.</p>
+        </div>
+        <div class="svc-faq-item">
+          <h3>Why Go Fiber instead of WordPress or PHP?</h3>
+          <p>Speed, security, and zero bloat. Go Fiber delivers sub-millisecond page response times, handles thousands of concurrent requests via lightweight goroutines, and eliminates vulnerable WordPress plugin architectures and SQL injection vectors.</p>
+        </div>
+        <div class="svc-faq-item">
+          <h3>How long does a custom web system or app project take?</h3>
+          <p>Most production-ready custom web systems and MVPs are scoped, developed, and deployed within 2 to 4 weeks. Complex enterprise workflows or multi-platform native mobile apps (C++/Kotlin/Swift) typically take 4 to 8 weeks.</p>
+        </div>
+        <div class="svc-faq-item">
+          <h3>How does hosting, uptime, and maintenance work?</h3>
+          <p>We deploy containerized Docker applications on enterprise Linux servers with automated SSL certificates, Cloudflare CDN integration, and daily automated backups. You can host on our managed infrastructure or deploy to your own AWS/DigitalOcean server.</p>
+        </div>
+        <div class="svc-faq-item">
+          <h3>Can you automate our existing quotation and invoicing workflows?</h3>
+          <p>Yes. We engineer custom API pipelines that bridge your incoming leads directly into automated quotation engines, PDF generators, payment gateways (PayFast, Stripe), and CRM notification systems.</p>
+        </div>
+        <div class="svc-faq-item">
+          <h3>How does JO4 Dev optimize local and technical SEO?</h3>
+          <p>We build zero-template semantic HTML with self-hosted fonts, sub-second TTFB, automatic XML sitemaps, JSON-LD Schema (Organization, Service, FAQ), and 100/100 Core Web Vitals to maximize Google search ranking dominance.</p>
+        </div>
+      {% endif %}
 
     </div>
   </div>
