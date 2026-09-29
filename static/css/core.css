@@ -1147,3 +1147,103 @@ h1, h2, h3, h4, h5, h6 {
 @media (prefers-reduced-motion: reduce) {
   [data-aos] { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
+
+/* 15. SUBPAGE HEROES, WIDGETS & SHARED FORMS */
+.page-hero {
+  padding-top: calc(var(--nav-height, 72px) + clamp(48px, 6vw, 84px));
+  padding-bottom: clamp(36px, 5vw, 64px);
+  padding-left: 24px;
+  padding-right: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.page-hero .lead-text {
+  font-size: clamp(1rem, 1.3vw, 1.2rem);
+  color: var(--text-secondary);
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.widget-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
+  padding: clamp(24px, 4vw, 40px);
+}
+
+.form-control,
+.form-control-custom {
+  display: block;
+  width: 100%;
+  padding: 12px 18px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--surface-0);
+  background-clip: padding-box;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--neu-pressed-sm);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-control:focus,
+.form-control-custom:focus {
+  color: var(--text-primary);
+  background-color: var(--surface-0);
+  border-color: var(--accent);
+  outline: 0;
+  box-shadow: var(--neu-pressed), 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.form-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* FAQ Detail Card */
+.faq-detail-page {
+  padding-bottom: 80px;
+}
+.faq-detail-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 48px);
+}
+.faq-detail-card .blog-post-content {
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+.faq-detail-card .blog-post-content p {
+  margin-bottom: 20px;
+}
+.faq-detail-card .blog-post-footer {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}

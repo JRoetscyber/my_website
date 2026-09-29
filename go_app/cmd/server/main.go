@@ -74,6 +74,9 @@ var routeMap = map[string]string{
 	"logout":                       "/logout",
 }
 
+// AssetVersion is appended to static asset URLs for deterministic cache-busting
+const AssetVersion = "20260929v2"
+
 func initPongo2Filters() {
 	// Register markdown filter using sync.Pool
 	pongo2.RegisterFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
@@ -181,8 +184,13 @@ func initPongo2Filters() {
 	})
 
 	// Global helpers
+	pongo2.Globals["asset_version"] = AssetVersion
 	pongo2.Globals["static_url"] = func(filename string) string {
-		return "/static/" + strings.TrimPrefix(filename, "/")
+		clean := "/static/" + strings.TrimPrefix(filename, "/")
+		if strings.Contains(clean, "?") {
+			return clean + "&v=" + AssetVersion
+		}
+		return clean + "?v=" + AssetVersion
 	}
 
 	pongo2.Globals["asset_url"] = func(path string) string {
@@ -259,7 +267,14 @@ func main() {
 
 	// Register functions on the engine instance
 	engine.AddFunc("static_url", func(filename string) string {
-		return "/static/" + strings.TrimPrefix(filename, "/")
+		clean := "/static/" + strings.TrimPrefix(filename, "/")
+		if strings.Contains(clean, "?") {
+			return clean + "&v=" + AssetVersion
+		}
+		return clean + "?v=" + AssetVersion
+	})
+	engine.AddFunc("asset_version", func() string {
+		return AssetVersion
 	})
 	engine.AddFunc("asset_url", func(path string) string {
 		return path

@@ -19,10 +19,10 @@
     </div>
 
     <!-- Converter Card -->
-    <div class="widget-card" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 36px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div class="widget-card" style="background: var(--surface-0); border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 24px; padding: clamp(24px, 4vw, 40px); box-shadow: var(--neu-flat);">
       
       <!-- Drag and Drop Box -->
-      <div id="dropZone" style="border: 2px dashed rgba(13,148,136,0.4); border-radius: 12px; padding: 50px 20px; text-align: center; cursor: pointer; transition: all 0.25s ease; background: rgba(13,148,136,0.02);">
+      <div id="dropZone" style="border: 2px dashed rgba(13,148,136,0.35); border-radius: 16px; padding: 50px 20px; text-align: center; cursor: pointer; transition: all 0.25s ease; background: var(--surface-0); box-shadow: var(--neu-pressed-sm);">
         <input type="file" id="fileInput" accept="image/jpeg,image/png,image/bmp" style="display: none;">
         
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;">
@@ -45,7 +45,7 @@
           <label style="display: block; font-size: 0.85rem; font-family: var(--font-mono); color: var(--text-secondary); margin-bottom: 8px;">
             Compression Quality
           </label>
-          <select id="qualitySelect" class="form-control-custom" style="width: 100%; padding: 10px 14px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px;">
+          <select id="qualitySelect" class="form-control-custom" style="width: 100%; padding: 12px 16px; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--neu-pressed-sm);">
             <option value="auto">Auto (Smart Structural Optimization)</option>
             <option value="90">90% — Maximum Visual Fidelity</option>
             <option value="80" selected>80% — Recommended Web Balance</option>
@@ -58,7 +58,7 @@
           <label style="display: block; font-size: 0.85rem; font-family: var(--font-mono); color: var(--text-secondary); margin-bottom: 8px;">
             Compression Method
           </label>
-          <select id="methodSelect" class="form-control-custom" style="width: 100%; padding: 10px 14px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px;">
+          <select id="methodSelect" class="form-control-custom" style="width: 100%; padding: 12px 16px; background: var(--surface-0); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--neu-pressed-sm);">
             <option value="6" selected>Method 6 — Deepest Size Reduction</option>
             <option value="4">Method 4 — Balanced Effort</option>
             <option value="1">Method 1 — High-Speed Encode</option>
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Result Card -->
-      <div id="resultBox" style="display: none; margin-top: 32px; padding: 24px; background: rgba(13,148,136,0.06); border: 1px solid rgba(13,148,136,0.3); border-radius: 12px;">
+      <div id="resultBox" style="display: none; margin-top: 32px; padding: 24px; background: var(--surface-0); border: 1px solid rgba(13,148,136,0.3); border-radius: 16px; box-shadow: var(--neu-flat-sm);">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
           <div>
             <span style="font-size: 0.75rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent);">
@@ -89,7 +89,7 @@
             <div style="display: flex; gap: 16px; font-size: 0.88rem; color: var(--text-secondary);">
               <div>Original: <strong id="origSize" style="color: var(--text-primary);"></strong></div>
               <div>WebP: <strong id="webpSize" style="color: var(--accent);"></strong></div>
-              <div>Saved: <span id="savingsBadge" style="background: rgba(13,148,136,0.2); color: var(--accent); padding: 2px 8px; border-radius: 6px; font-weight: 600;"></span></div>
+              <div>Saved: <span id="savingsBadge" style="background: rgba(13,148,136,0.15); color: var(--accent); padding: 2px 8px; border-radius: 6px; font-weight: 600;"></span></div>
             </div>
           </div>
           <div>
@@ -104,19 +104,19 @@
 
     <!-- SEO Information Section -->
     <div style="margin-top: 60px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
-      <div class="feature-card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card);">
+      <div class="feature-card" style="padding: 24px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 16px; background: var(--surface-0); box-shadow: var(--neu-flat-sm);">
         <h4 style="font-family: var(--font-display); color: var(--text-primary); margin-bottom: 8px;">25% to 35% Smaller Than JPEG</h4>
         <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
           WebP utilizes advanced predictive predictive spatial coding to drastically reduce byte counts while maintaining identical visual clarity.
         </p>
       </div>
-      <div class="feature-card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card);">
+      <div class="feature-card" style="padding: 24px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 16px; background: var(--surface-0); box-shadow: var(--neu-flat-sm);">
         <h4 style="font-family: var(--font-display); color: var(--text-primary); margin-bottom: 8px;">Faster Core Web Vitals</h4>
         <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
           Slashing image byte weights directly enhances Largest Contentful Paint (LCP) and First Contentful Paint (FCP) for superior SEO ranking.
         </p>
       </div>
-      <div class="feature-card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card);">
+      <div class="feature-card" style="padding: 24px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 16px; background: var(--surface-0); box-shadow: var(--neu-flat-sm);">
         <h4 style="font-family: var(--font-display); color: var(--text-primary); margin-bottom: 8px;">Alpha Transparency Support</h4>
         <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin: 0;">
           WebP supports 8-bit alpha channel transparency at up to 3x smaller sizes compared to traditional 32-bit PNG graphics.
