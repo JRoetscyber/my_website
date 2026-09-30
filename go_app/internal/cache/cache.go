@@ -85,6 +85,10 @@ func BlogListKey() string {
 	return FormatKey("blog", "list:all", "v1")
 }
 
+func BlogRecentKey() string {
+	return FormatKey("blog", "recent:home", "v1")
+}
+
 func ProjectKey(slug string) string {
 	return FormatKey("project", "slug:"+slug, "v1")
 }

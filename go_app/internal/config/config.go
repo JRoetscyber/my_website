@@ -22,6 +22,8 @@ type Config struct {
 	DefaultAdminPass    string
 	RedisURL            string
 	RedisPassword       string
+	IndexNowKey         string
+	BaseURL             string
 }
 
 func LoadConfig() *Config {
@@ -50,6 +52,8 @@ func LoadConfig() *Config {
 		DefaultAdminPass:   getEnv("ADMIN_PASSWORD", "password"),
 		RedisURL:           getEnv("REDIS_URL", ""),
 		RedisPassword:      getEnv("REDIS_PASSWORD", ""),
+		IndexNowKey:        getEnv("INDEXNOW_KEY", "8fa732e604bf44f89d3d3a089cf1dfc8"),
+		BaseURL:            getEnv("BASE_URL", "https://jo4.co.za"),
 	}
 }
 

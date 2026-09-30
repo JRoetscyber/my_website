@@ -51,15 +51,17 @@ func (Project) TableName() string {
 }
 
 type BlogPost struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	Title     string    `gorm:"size:200;not null" json:"title"`
-	Slug      string    `gorm:"size:255;uniqueIndex;not null" json:"slug"`
-	Summary   string    `gorm:"type:text" json:"summary"`
-	Content   string    `gorm:"type:text;not null" json:"content"`
-	MediaPath string    `gorm:"size:255" json:"media_path"`
-	Views     int       `gorm:"default:0" json:"views"`
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	Title       string    `gorm:"size:200;not null" json:"title"`
+	Slug        string    `gorm:"size:255;uniqueIndex;not null" json:"slug"`
+	Summary     string    `gorm:"type:text" json:"summary"`
+	Content     string    `gorm:"type:text;not null" json:"content"`
+	MediaPath   string    `gorm:"size:255" json:"media_path"`
+	Views       int       `gorm:"default:0" json:"views"`
+	Status      string    `gorm:"size:50;default:'published'" json:"status"`
+	PublishedAt time.Time `json:"published_at"`
+	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 func (BlogPost) TableName() string {

@@ -275,6 +275,10 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 		}
 		log.Println("[DB] Seeded core FAQs (Ownership, Go Fiber, Timelines, Hosting, Automation, SEO)")
 	}
+
+	// Backfill blog post status and published_at for existing posts
+	db.Model(&models.BlogPost{}).Where("status IS NULL OR status = ''").Update("status", "published")
+	db.Model(&models.BlogPost{}).Where("published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00'").Update("published_at", gorm.Expr("created_at"))
 }
 
 func GetBookingSettings(db *gorm.DB) *models.BookingSettings {

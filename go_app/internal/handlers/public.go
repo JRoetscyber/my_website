@@ -17,6 +17,7 @@ import (
 	"github.com/JRoetscyber/my_website/go_app/internal/cache"
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
+	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/JRoetscyber/my_website/go_app/internal/services"
 	"github.com/JRoetscyber/my_website/go_app/internal/worker"
@@ -50,9 +51,14 @@ func (h *PublicHandler) Home(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	blogPosts, _ := cache.GetOrSet(h.Cache, ctx, cache.BlogListKey(), 10*time.Minute, func(ctx context.Context) ([]models.BlogPost, error) {
+	blogPosts, _ := cache.GetOrSet(h.Cache, ctx, cache.BlogRecentKey(), 10*time.Minute, func(ctx context.Context) ([]models.BlogPost, error) {
 		var list []models.BlogPost
-		err := h.DB.WithContext(ctx).Order("created_at desc").Limit(3).Find(&list).Error
+		now := time.Now()
+		err := h.DB.WithContext(ctx).
+			Where("status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", now).
+			Order("published_at desc, created_at desc").
+			Limit(3).
+			Find(&list).Error
 		return list, err
 	})
 
@@ -165,7 +171,11 @@ func (h *PublicHandler) ProjectDetail(c *fiber.Ctx) error {
 func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
 	posts, _ := cache.GetOrSet(h.Cache, context.Background(), cache.BlogListKey(), 15*time.Minute, func(ctx context.Context) ([]models.BlogPost, error) {
 		var list []models.BlogPost
-		err := h.DB.WithContext(ctx).Order("created_at desc").Find(&list).Error
+		now := time.Now()
+		err := h.DB.WithContext(ctx).
+			Where("status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", now).
+			Order("published_at desc, created_at desc").
+			Find(&list).Error
 		return list, err
 	})
 
@@ -178,17 +188,35 @@ func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
 // Blog detail
 func (h *PublicHandler) BlogDetail(c *fiber.Ctx) error {
 	slug := strings.Clone(c.Params("slug"))
-	post, err := cache.GetOrSet(h.Cache, context.Background(), cache.BlogKey(slug), 15*time.Minute, func(ctx context.Context) (models.BlogPost, error) {
-		var p models.BlogPost
-		err := h.DB.WithContext(ctx).Where("slug = ?", slug).First(&p).Error
-		return p, err
-	})
+
+	isAdmin := false
+	if cookie := c.Cookies("jo4_session"); cookie != "" {
+		if _, valid := middleware.VerifyAuthToken(cookie, h.Cfg.SecretKey); valid {
+			isAdmin = true
+		}
+	}
+
+	var post models.BlogPost
+	var err error
+	if isAdmin {
+		err = h.DB.Where("slug = ?", slug).First(&post).Error
+	} else {
+		now := time.Now()
+		post, err = cache.GetOrSet(h.Cache, context.Background(), cache.BlogKey(slug), 15*time.Minute, func(ctx context.Context) (models.BlogPost, error) {
+			var p models.BlogPost
+			queryErr := h.DB.WithContext(ctx).
+				Where("slug = ? AND status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", slug, now).
+				First(&p).Error
+			return p, queryErr
+		})
+	}
+
 	if err != nil || post.ID == 0 {
 		return c.Status(http.StatusNotFound).SendString("Post not found")
 	}
 
-	// Increment view count asynchronously via bounded worker pool (fasthttp safe)
-	if h.Worker != nil {
+	// Increment view count asynchronously via bounded worker pool (fasthttp safe, non-admin only)
+	if h.Worker != nil && !isAdmin {
 		postID := post.ID
 		h.Worker.Enqueue(func(ctx context.Context) {
 			h.DB.WithContext(ctx).Model(&models.BlogPost{}).Where("id = ?", postID).UpdateColumn("views", gorm.Expr("views + 1"))
@@ -196,11 +224,14 @@ func (h *PublicHandler) BlogDetail(c *fiber.Ctx) error {
 	}
 
 	var recentPosts []models.BlogPost
-	h.DB.Where("id != ?", post.ID).Order("created_at desc").Limit(3).Find(&recentPosts)
+	now := time.Now()
+	h.DB.Where("id != ? AND status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", post.ID, now).
+		Order("published_at desc, created_at desc").Limit(3).Find(&recentPosts)
 
 	return c.Render("blog_detail", fiber.Map{
 		"post":         post,
 		"recent_posts": recentPosts,
+		"is_admin":     isAdmin,
 		"request":      c,
 	})
 }
@@ -479,7 +510,8 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 	}()
 	go func() {
 		defer wg.Done()
-		h.DB.Find(&posts)
+		now := time.Now()
+		h.DB.Where("status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", now).Find(&posts)
 	}()
 	go func() {
 		defer wg.Done()
@@ -528,7 +560,9 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 	for _, b := range posts {
 		if b.Slug != "" {
 			uStr := nowStr
-			if !b.UpdatedAt.IsZero() {
+			if !b.PublishedAt.IsZero() {
+				uStr = b.PublishedAt.Format("2006-01-02")
+			} else if !b.UpdatedAt.IsZero() {
 				uStr = b.UpdatedAt.Format("2006-01-02")
 			}
 			sb.WriteString(fmt.Sprintf("  <url><loc>https://jo4.co.za/blog/%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n", b.Slug, uStr))

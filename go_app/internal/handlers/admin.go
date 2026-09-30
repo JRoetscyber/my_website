@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"fmt"
 	"math"
@@ -684,12 +685,58 @@ func (h *AdminHandler) BlogsPage(c *fiber.Ctx) error {
 	}))
 }
 
+func parsePublishInfo(statusInput, dateInput string) (string, time.Time) {
+	status := strings.ToLower(strings.TrimSpace(statusInput))
+	if status == "" {
+		status = "published"
+	}
+
+	dateInput = strings.TrimSpace(dateInput)
+	var pubTime time.Time
+	if dateInput != "" {
+		layouts := []string{
+			"2006-01-02T15:04",
+			"2006-01-02T15:04:05",
+			"2006-01-02 15:04",
+			"2006-01-02 15:04:05",
+			"2006-01-02",
+		}
+		for _, layout := range layouts {
+			if t, err := time.ParseInLocation(layout, dateInput, time.Local); err == nil {
+				pubTime = t
+				break
+			}
+		}
+	}
+
+	now := time.Now()
+	if pubTime.IsZero() {
+		if status == "scheduled" {
+			pubTime = now.Add(24 * time.Hour)
+		} else {
+			pubTime = now
+		}
+	}
+
+	// Automatic status alignment based on publication timestamp
+	if status != "draft" {
+		if pubTime.After(now) {
+			status = "scheduled"
+		} else {
+			status = "published"
+		}
+	}
+
+	return status, pubTime
+}
+
 // Save Blog Post
 func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 	title := strings.TrimSpace(c.FormValue("title"))
 	summary := strings.TrimSpace(c.FormValue("summary"))
 	content := strings.TrimSpace(c.FormValue("content"))
 	mediaPath := strings.TrimSpace(c.FormValue("media_path"))
+	status, publishedAt := parsePublishInfo(c.FormValue("status"), c.FormValue("published_at"))
 
 	slug := utils.MakeSlug(title)
 
@@ -707,17 +754,34 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 	}
 
 	post := models.BlogPost{
-		Title:     title,
-		Slug:      slug,
-		Summary:   summary,
-		Content:   content,
-		MediaPath: mediaPath,
+		Title:       title,
+		Slug:        slug,
+		Summary:     summary,
+		Content:     content,
+		MediaPath:   mediaPath,
+		Status:      status,
+		PublishedAt: publishedAt,
 	}
 
 	h.DB.Create(&post)
 
 	if h.Cache != nil {
 		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	}
+
+	// Trigger automated search engine indexing notification if immediately published
+	if status == "published" {
+		fullURL := fmt.Sprintf("%s/blog/%s", strings.TrimRight(h.Cfg.BaseURL, "/"), post.Slug)
+		sitemapURL := fmt.Sprintf("%s/sitemap.xml", strings.TrimRight(h.Cfg.BaseURL, "/"))
+		if h.Worker != nil {
+			h.Worker.Enqueue(func(ctx context.Context) {
+				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
+			})
+		} else {
+			go func() {
+				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
+			}()
+		}
 	}
 
 	return c.Redirect("/admin/blogs")
@@ -736,6 +800,10 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 	post.Content = strings.TrimSpace(c.FormValue("content"))
 	post.Slug = utils.MakeSlug(post.Title)
 
+	status, publishedAt := parsePublishInfo(c.FormValue("status"), c.FormValue("published_at"))
+	post.Status = status
+	post.PublishedAt = publishedAt
+
 	file, err := c.FormFile("media")
 	if err != nil {
 		file, err = c.FormFile("media_file")
@@ -753,6 +821,21 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 
 	if h.Cache != nil {
 		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	}
+
+	// Trigger automated search engine indexing notification if published
+	if status == "published" {
+		fullURL := fmt.Sprintf("%s/blog/%s", strings.TrimRight(h.Cfg.BaseURL, "/"), post.Slug)
+		sitemapURL := fmt.Sprintf("%s/sitemap.xml", strings.TrimRight(h.Cfg.BaseURL, "/"))
+		if h.Worker != nil {
+			h.Worker.Enqueue(func(ctx context.Context) {
+				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
+			})
+		} else {
+			go func() {
+				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
+			}()
+		}
 	}
 
 	return c.Redirect("/admin/blogs")

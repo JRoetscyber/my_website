@@ -223,7 +223,7 @@ func TestAdminAndPublicTemplates_Render(t *testing.T) {
 				{"ID": 1, "SequenceNumber": 101, "CustomerName": "Bob", "Status": "received", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
 			},
 			"blogs": []map[string]interface{}{
-				{"ID": 1, "Title": "Test Blog", "Slug": "test-blog", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
+				{"ID": 1, "Title": "Test Blog", "Slug": "test-blog", "Status": "published", "PublishedAt": time.Now(), "CreatedAt": time.Now(), "UpdatedAt": time.Now()},
 			},
 			"faqs": []map[string]interface{}{
 				{"ID": 1, "Question": "What is Go?", "Answer": "A fast language", "CreatedAt": time.Now(), "UpdatedAt": time.Now()},

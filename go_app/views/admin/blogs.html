@@ -75,8 +75,25 @@
       
       <div class="widget-body flex-grow-1">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="status-badge status-new">Published</span>
-          <span class="topbar-date" style="font-size: 0.65rem;">{{ post.CreatedAt|date:"2006-01-02" }}</span>
+          {% if post.Status == "scheduled" %}
+            <span class="status-badge status-negotiating" title="Scheduled to publish">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Scheduled
+            </span>
+          {% elif post.Status == "draft" %}
+            <span class="status-badge status-lost">Draft</span>
+          {% else %}
+            <span class="status-badge status-contacted">Published</span>
+          {% endif %}
+          <span class="topbar-date" style="font-size: 0.65rem;">
+            {% if post.Status == "scheduled" and post.PublishedAt %}
+              Goes live: {{ post.PublishedAt|date:"2006-01-02 15:04" }}
+            {% elif post.PublishedAt %}
+              {{ post.PublishedAt|date:"2006-01-02" }}
+            {% else %}
+              {{ post.CreatedAt|date:"2006-01-02" }}
+            {% endif %}
+          </span>
         </div>
         
         <h3 class="mb-3" style="font-size: 1.15rem; line-height: 1.3;">{{ post.Title }}</h3>
@@ -99,6 +116,8 @@
                     data-title="{{ post.Title|escape }}"
                     data-summary="{{ post.Summary|escape }}"
                     data-content="{{ post.Content|escape }}"
+                    data-status="{{ post.Status }}"
+                    data-published-at="{% if post.PublishedAt %}{{ post.PublishedAt|date:"2006-01-02T15:04" }}{% endif %}"
                     data-media-path="{{ post.MediaPath or '' }}">
               Edit
             </button>
@@ -153,6 +172,28 @@
             </div>
             <div class="col-lg-4">
               <div class="mb-4">
+                <label class="admin-form-label" for="blogStatus">Publication Status</label>
+                <select class="admin-form-input" id="blogStatus" name="status">
+                  <option value="published">Publish Immediately</option>
+                  <option value="scheduled">Schedule for Future</option>
+                  <option value="draft">Save as Draft</option>
+                </select>
+              </div>
+              <div class="mb-4" id="publishedAtGroup">
+                <label class="admin-form-label" for="blogPublishedAt">Publish Date & Time</label>
+                <input class="admin-form-input" id="blogPublishedAt" name="published_at" type="datetime-local">
+                <small class="text-secondary d-block mt-1" style="font-size: 0.72rem;">Set when this article goes live. Leave empty to publish now.</small>
+              </div>
+              <div class="neu-card-flat p-3 mb-4" style="border-radius: 12px; background: rgba(13, 148, 136, 0.05); border: 1px solid rgba(13, 148, 136, 0.15);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <strong style="font-size: 0.75rem; color: #0d9488;">Search Engine Auto-Index</strong>
+                </div>
+                <p class="mb-0 text-secondary" style="font-size: 0.7rem; line-height: 1.4;">
+                  Live articles are pushed immediately to <strong>IndexNow (Bing/Yandex)</strong> and auto-updated in <strong>sitemap.xml</strong> for Googlebot crawling.
+                </p>
+              </div>
+              <div class="mb-4">
                 <label class="admin-form-label" for="blogSummary">SEO Summary</label>
                 <textarea class="admin-form-input" id="blogSummary" name="summary" rows="4" placeholder="Briefly describe what this post is about for search engines and social cards."></textarea>
               </div>
@@ -189,6 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const filePreview = document.getElementById('filePreview');
   const fileDropzone = document.getElementById('blogMediaDropzone');
   const submitBtn = blogForm.querySelector('button[type="submit"]');
+  const blogStatus = document.getElementById('blogStatus');
+  const blogPublishedAt = document.getElementById('blogPublishedAt');
 
   fileDropzone.addEventListener('click', function() {
     fileInput.click();
@@ -207,6 +250,17 @@ document.addEventListener('DOMContentLoaded', function() {
       filePreview.style.display = 'block';
     }
   });
+
+  if (blogStatus && blogPublishedAt) {
+    blogStatus.addEventListener('change', function() {
+      if (this.value === 'scheduled' && !blogPublishedAt.value) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+        blogPublishedAt.value = tomorrow.toISOString().slice(0, 16);
+      }
+    });
+  }
   
   // Handle Edit
   document.querySelectorAll('.edit-blog-btn').forEach(btn => {
@@ -219,6 +273,12 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('blogTitle').value = this.dataset.title;
       document.getElementById('blogSummary').value = this.dataset.summary;
       document.getElementById('blogContent').value = this.dataset.content;
+      if (blogStatus) {
+        blogStatus.value = this.dataset.status || 'published';
+      }
+      if (blogPublishedAt) {
+        blogPublishedAt.value = this.dataset.publishedAt || '';
+      }
       fileInput.value = '';
       if (this.dataset.mediaPath) {
         filePreview.textContent = `Current image: ${this.dataset.mediaPath.split('/').pop()}`;
@@ -239,6 +299,12 @@ document.addEventListener('DOMContentLoaded', function() {
       blogForm.action = "/admin/blogs";
       submitBtn.textContent = 'Publish Article';
       blogForm.reset();
+      if (blogStatus) {
+        blogStatus.value = 'published';
+      }
+      if (blogPublishedAt) {
+        blogPublishedAt.value = '';
+      }
       fileInput.value = '';
       filePreview.textContent = '';
       filePreview.style.display = 'none';

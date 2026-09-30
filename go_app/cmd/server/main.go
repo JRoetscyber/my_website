@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -18,6 +19,8 @@ import (
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
 	"github.com/JRoetscyber/my_website/go_app/internal/handlers"
 	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
+	"github.com/JRoetscyber/my_website/go_app/internal/models"
+	"github.com/JRoetscyber/my_website/go_app/internal/services"
 	"github.com/JRoetscyber/my_website/go_app/internal/worker"
 	"github.com/flosch/pongo2/v6"
 	"github.com/goccy/go-json"
@@ -443,6 +446,12 @@ func main() {
 	app.Get("/orders/callout", orderHandler.OrderDisplay)
 	app.Get("/robots.txt", publicHandler.Robots)
 	app.Get("/sitemap.xml", publicHandler.Sitemap)
+	if cfg.IndexNowKey != "" {
+		app.Get(fmt.Sprintf("/%s.txt", cfg.IndexNowKey), func(c *fiber.Ctx) error {
+			c.Set("Content-Type", "text/plain")
+			return c.SendString(cfg.IndexNowKey)
+		})
+	}
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).SendString("OK")
 	})
@@ -567,7 +576,47 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	stopScheduler := make(chan struct{})
+
+	// Background scheduler for future-scheduled blog posts (checks every 1 minute)
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stopScheduler:
+				return
+			case <-ticker.C:
+				var duePosts []models.BlogPost
+				now := time.Now()
+				if err := db.Where("status = ? AND published_at <= ?", "scheduled", now).Find(&duePosts).Error; err == nil && len(duePosts) > 0 {
+					var urls []string
+					baseURL := strings.TrimRight(cfg.BaseURL, "/")
+					for _, p := range duePosts {
+						db.Model(&models.BlogPost{}).Where("id = ?", p.ID).Update("status", "published")
+						log.Printf("[Scheduler] Auto-published scheduled blog post: '%s' (ID %d)", p.Title, p.ID)
+						urls = append(urls, fmt.Sprintf("%s/blog/%s", baseURL, p.Slug))
+					}
+					urls = append(urls, fmt.Sprintf("%s/sitemap.xml", baseURL))
+
+					cacheManager.Invalidate(context.Background(), "blog:*", "page:home:*")
+
+					if workerPool != nil {
+						workerPool.Enqueue(func(ctx context.Context) {
+							_ = services.NotifySearchEngines(cfg, urls)
+						})
+					} else {
+						go func() {
+							_ = services.NotifySearchEngines(cfg, urls)
+						}()
+					}
+				}
+			}
+		}
+	}()
+
 	<-quit
+	close(stopScheduler)
 
 	log.Println("Shutting down server gracefully...")
 	if err := app.Shutdown(); err != nil {
