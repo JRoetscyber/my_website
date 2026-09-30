@@ -1,4 +1,4 @@
-﻿{% extends "admin/admin.html" %}
+{% extends "admin/admin.html" %}
 
 {% block admin_title %}Leads - Admin Panel{% endblock %}
 {% block admin_heading %}Leads{% endblock %}
@@ -76,19 +76,19 @@
   <div class="lead-summary-grid">
     <div class="lead-summary-card">
       <span class="lead-summary-label">New</span>
-      <span class="lead-summary-value">{{ leads|length }}</span>
+      <span class="lead-summary-value">{{ count_new }}</span>
     </div>
     <div class="lead-summary-card">
       <span class="lead-summary-label">Contacted</span>
-      <span class="lead-summary-value">{{ leads|length }}</span>
+      <span class="lead-summary-value">{{ count_contacted }}</span>
     </div>
     <div class="lead-summary-card">
       <span class="lead-summary-label">Negotiating</span>
-      <span class="lead-summary-value">{{ leads|length }}</span>
+      <span class="lead-summary-value">{{ count_negotiating }}</span>
     </div>
     <div class="lead-summary-card">
       <span class="lead-summary-label">Lost / Dead</span>
-      <span class="lead-summary-value">{{ leads|length }}</span>
+      <span class="lead-summary-value">{{ count_lost }}</span>
     </div>
   </div>
 
@@ -118,15 +118,16 @@
           {% else %}Autopsy queue{% endif %}
         </div>
       </div>
-      <span class="kanban-column-count" data-count>{{ leads|length }}</span>
+      <span class="kanban-column-count" data-count>0</span>
     </div>
 
     <div class="kanban-dropzone" data-dropzone="{{ stage }}">
       {% for lead in leads %}
-      {% set lead_status = lead.display_status or 'New' %}
+      {% set lead_status = lead.status or lead.display_status or 'New' %}
       {% if lead_status == stage %}
-      {% set score = lead.display_score %}
-      {% if lead.Score >= 80 %}{% set classification = "Hot" %}{% elif lead.Score >= 50 %}{% set classification = "Warm" %}{% else %}{% set classification = "Cold" %}{% endif %}
+      {% set score = lead.score %}
+      {% set classification = lead.classification or 'Cold' %}
+      {% set temp_class = lead.temp_class or 'lead-temp-cold' %}
       
       <article
         class="lead-kanban-card"
@@ -134,8 +135,8 @@
         data-id="{{ lead.id }}"
         data-status="{{ lead_status }}"
         data-classification="{{ classification }}"
-        data-project-type="{{ lead.ProjectType|lower }}"
-        data-last-activity="{{ lead.LastActivityDate|date:"2006-01-02" }}"
+        data-project-type="{{ lead.project_type|lower }}"
+        data-last-activity="{{ lead.last_activity_date }}"
         data-company="{{ lead.client_company or '' }}"
         data-name="{{ lead.client_name or lead.client_company or 'there' }}"
         data-phone="{{ lead.phone_number or '' }}"
@@ -146,13 +147,13 @@
       >
         <div class="lead-card-topline">
           <span class="lead-temp-badge {{ temp_class }}">{{ classification }}</span>
-          <span class="lead-score-pill">{% if score  %}{{ score }}{% else %}—{% endif %}</span>
+          <span class="lead-score-pill">{% if score %}{{ score }}{% else %}—{% endif %}</span>
         </div>
 
         <div class="lead-card-main">
           <p class="lead-card-company">{{ lead.client_company or 'Unnamed company' }}</p>
           <p class="lead-card-contact">{{ lead.client_name or 'No named contact' }}</p>
-          <p class="lead-card-project">{{ lead.display_project_type }}</p>
+          <p class="lead-card-project">{{ lead.project_type or lead.display_project_type or 'Web Development' }}</p>
         </div>
 
         <div class="lead-card-metrics">

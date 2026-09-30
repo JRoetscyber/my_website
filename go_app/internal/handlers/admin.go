@@ -83,33 +83,74 @@ func (h *AdminHandler) buildAdminContext(c *fiber.Ctx, activePage string, extra 
 func serializeLead(l *models.Lead) fiber.Map {
 	createdAtStr := ""
 	if !l.CreatedAt.IsZero() {
-		createdAtStr = l.CreatedAt.Format(time.RFC3339)
+		createdAtStr = l.CreatedAt.Format("2006-01-02 15:04")
 	}
 	lastActivityStr := ""
 	if !l.LastActivityDate.IsZero() {
-		lastActivityStr = l.LastActivityDate.Format(time.RFC3339)
+		lastActivityStr = l.LastActivityDate.Format("2006-01-02")
+	}
+
+	status := strings.TrimSpace(l.Status)
+	if status == "" {
+		status = "New"
+	}
+
+	pt := strings.TrimSpace(l.ProjectType)
+	if pt == "" {
+		pt = strings.TrimSpace(l.TargetProject)
+	}
+	if pt == "" {
+		pt = "Web Development"
+	}
+
+	classification := "Cold"
+	if l.Score >= 80 {
+		classification = "Hot"
+	} else if l.Score >= 50 {
+		classification = "Warm"
 	}
 
 	return fiber.Map{
-		"id":                  l.ID,
-		"client_name":         l.ClientName,
-		"client_company":      l.ClientCompany,
-		"project_type":        l.ProjectType,
-		"target_project":      l.TargetProject,
-		"budget":              l.Budget,
-		"contact_role":        l.ContactRole,
-		"phone_number":        l.PhoneNumber,
-		"whatsapp_engagement": l.WhatsappEngagement,
-		"score":               l.Score,
-		"status":              l.Status,
-		"loss_reason":         l.LossReason,
-		"created_at":          createdAtStr,
-		"last_activity_date":  lastActivityStr,
+		"id":                   l.ID,
+		"ID":                   l.ID,
+		"client_name":          l.ClientName,
+		"ClientName":           l.ClientName,
+		"client_company":       l.ClientCompany,
+		"ClientCompany":        l.ClientCompany,
+		"project_type":         pt,
+		"ProjectType":          pt,
+		"display_project_type": pt,
+		"target_project":       l.TargetProject,
+		"TargetProject":        l.TargetProject,
+		"budget":               l.Budget,
+		"Budget":               l.Budget,
+		"contact_role":         l.ContactRole,
+		"ContactRole":          l.ContactRole,
+		"phone_number":         l.PhoneNumber,
+		"PhoneNumber":          l.PhoneNumber,
+		"whatsapp_engagement":  l.WhatsappEngagement,
+		"WhatsappEngagement":   l.WhatsappEngagement,
+		"score":                l.Score,
+		"Score":                l.Score,
+		"display_score":        l.Score,
+		"status":               status,
+		"Status":               status,
+		"display_status":       status,
+		"classification":       classification,
+		"temp_class":           "lead-temp-" + strings.ToLower(classification),
+		"loss_reason":          l.LossReason,
+		"LossReason":           l.LossReason,
+		"created_at":           createdAtStr,
+		"last_activity_date":   lastActivityStr,
+		"LastActivityDate":     l.LastActivityDate,
 		"breakdown": fiber.Map{
 			"explicit": l.ExplicitScore,
 			"implicit": l.ImplicitScore,
 			"urgency":  l.UrgencyScore,
 		},
+		"explicit_score": l.ExplicitScore,
+		"implicit_score": l.ImplicitScore,
+		"urgency_score":  l.UrgencyScore,
 	}
 }
 
@@ -120,11 +161,39 @@ func (h *AdminHandler) Dashboard(c *fiber.Ctx) error {
 
 // Leads Page
 func (h *AdminHandler) LeadsPage(c *fiber.Ctx) error {
-	var leads []models.Lead
-	h.DB.Order("created_at desc, id desc").Find(&leads)
+	var rawLeads []models.Lead
+	h.DB.Order("created_at desc, id desc").Find(&rawLeads)
+
+	var countNew, countContacted, countNegotiating, countClosed, countLost int
+	serialized := make([]fiber.Map, 0, len(rawLeads))
+	for i := range rawLeads {
+		l := serializeLead(&rawLeads[i])
+		statusVal, _ := l["status"].(string)
+		switch statusVal {
+		case "Contacted":
+			countContacted++
+		case "Negotiating":
+			countNegotiating++
+		case "Closed":
+			countClosed++
+		case "Lost":
+			countLost++
+		default:
+			countNew++
+		}
+		serialized = append(serialized, l)
+	}
+
+	statuses := []string{"New", "Contacted", "Negotiating", "Closed", "Lost"}
 
 	return c.Render("admin/leads", h.buildAdminContext(c, "leads", fiber.Map{
-		"leads": leads,
+		"leads":             serialized,
+		"statuses":          statuses,
+		"count_new":         countNew,
+		"count_contacted":   countContacted,
+		"count_negotiating": countNegotiating,
+		"count_closed":      countClosed,
+		"count_lost":        countLost,
 	}))
 }
 
