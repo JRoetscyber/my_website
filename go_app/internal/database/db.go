@@ -16,6 +16,12 @@ import (
 
 var DB *gorm.DB
 
+func tableExists(db *gorm.DB, name string) bool {
+	var count int64
+	db.Raw("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?", name).Scan(&count)
+	return count > 0
+}
+
 func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	dbPath := cfg.DatabaseURL
 	if strings.HasPrefix(dbPath, "sqlite:///") {
@@ -48,29 +54,49 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		sqlDB.SetConnMaxIdleTime(5 * time.Minute)
 	}
 
-	// Auto Migrate all models individually so one model warning doesn't block the rest
-	modelsToMigrate := []interface{}{
-		&models.Lead{},
-		&models.Project{},
-		&models.BlogPost{},
-		&models.FAQ{},
-		&models.Service{},
-		&models.BookingSettings{},
-		&models.InvoiceSettings{},
-		&models.AutomationLog{},
-		&models.Analytics{},
-		&models.User{},
-		&models.Transaction{},
-		&models.FAQSubmission{},
-		&models.Order{},
+	// Migration strategy for SQLite compatibility:
+	//
+	// GORM's AutoMigrate on SQLite will rebuild a table (copy to temp, drop, rename) whenever
+	// it detects ANY schema difference (default values, NOT NULL, index changes, etc).
+	// On legacy production databases that have rows with NULLs in columns that were once NOT NULL,
+	// this copy step crashes with "NOT NULL constraint failed: <table>__temp.<column> (1299)".
+	//
+	// Safe rule: Only call AutoMigrate when the table does NOT yet exist (fresh CREATE TABLE).
+	//            For existing tables, use our explicit ensureSchemaColumns to ALTER TABLE safely.
+	type tableModel struct {
+		model interface{}
+		table string
 	}
-	for _, m := range modelsToMigrate {
-		if err := db.AutoMigrate(m); err != nil {
-			log.Printf("[DB] AutoMigrate warning for %T: %v", m, err)
-		}
+	newModels := []tableModel{
+		{&models.Lead{}, "leads"},
+		{&models.Project{}, "projects"},
+		{&models.BlogPost{}, "blog_posts"},
+		{&models.FAQ{}, "faqs"},
+		{&models.Service{}, "services"},
+		{&models.BookingSettings{}, "booking_settings"},
+		{&models.InvoiceSettings{}, "invoice_settings"},
+		{&models.AutomationLog{}, "automation_logs"},
+		{&models.Analytics{}, "analytics"},
+		{&models.User{}, "login"},
+		{&models.Transaction{}, "transactions"},
+		{&models.FAQSubmission{}, "faq_submissions"},
+		{&models.Order{}, "orders"},
 	}
 
-	// Explicit schema migration & column backfills for SQLite
+	for _, tm := range newModels {
+		if !tableExists(db, tm.table) {
+			// Table doesn't exist yet — safe to AutoMigrate (it will just CREATE TABLE)
+			if err := db.AutoMigrate(tm.model); err != nil {
+				log.Printf("[DB] AutoMigrate error creating new table '%s': %v", tm.table, err)
+			} else {
+				log.Printf("[DB] Created new table '%s'", tm.table)
+			}
+		}
+		// Existing tables are handled exclusively by ensureSchemaColumns below
+	}
+
+	// Explicit column additions and backfills for existing SQLite tables.
+	// ALTER TABLE ADD COLUMN is idempotent and never rebuilds; it is safe on legacy data.
 	ensureSchemaColumns(db)
 
 	DB = db
@@ -79,6 +105,7 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	log.Printf("[DB] Database connected and migrated successfully (%s)", dbPath)
 	return db, nil
 }
+
 
 func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 	// Seed Booking Settings
@@ -283,28 +310,96 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 	}
 }
 
-// ensureSchemaColumns guarantees critical columns and backfills exist on legacy SQLite databases
+// ensureSchemaColumns guarantees critical columns and backfills exist on legacy SQLite databases.
+// This is the ONLY mechanism that modifies existing table schemas.
+// We never call AutoMigrate on existing tables to avoid GORM's destructive rebuild on legacy data.
 func ensureSchemaColumns(db *gorm.DB) {
-	// 1. Ensure blog_posts has status and published_at
+	// ── blog_posts ────────────────────────────────────────────────────────────
 	_ = ensureColumn(db, "blog_posts", "status", "TEXT DEFAULT 'published'")
 	_ = ensureColumn(db, "blog_posts", "published_at", "DATETIME")
-
-	// Backfill existing rows via raw SQL to bypass ORM reflection dependencies
+	_ = ensureColumn(db, "blog_posts", "summary", "TEXT")
+	_ = ensureColumn(db, "blog_posts", "media_path", "TEXT")
+	_ = ensureColumn(db, "blog_posts", "views", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "blog_posts", "updated_at", "DATETIME")
+	// Backfill blog_posts rows
 	db.Exec("UPDATE blog_posts SET status = 'published' WHERE status IS NULL OR status = ''")
 	db.Exec("UPDATE blog_posts SET published_at = created_at WHERE published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00'")
+	db.Exec("UPDATE blog_posts SET updated_at = created_at WHERE updated_at IS NULL OR updated_at = '0001-01-01 00:00:00+00:00' OR updated_at = '0001-01-01 00:00:00'")
 
-	// 2. Ensure projects has slug and metrics
+	// ── leads ─────────────────────────────────────────────────────────────────
+	_ = ensureColumn(db, "leads", "status", "TEXT DEFAULT 'New'")
+	_ = ensureColumn(db, "leads", "loss_reason", "TEXT")
+	_ = ensureColumn(db, "leads", "whatsapp_engagement", "TEXT")
+	_ = ensureColumn(db, "leads", "target_project", "TEXT")
+	_ = ensureColumn(db, "leads", "explicit_score", "REAL DEFAULT 0")
+	_ = ensureColumn(db, "leads", "implicit_score", "REAL DEFAULT 0")
+	_ = ensureColumn(db, "leads", "urgency_score", "REAL DEFAULT 0")
+	_ = ensureColumn(db, "leads", "last_activity_date", "DATETIME")
+	// Backfill leads
+	db.Exec("UPDATE leads SET status = 'New' WHERE status IS NULL OR status = ''")
+
+	// ── projects ──────────────────────────────────────────────────────────────
 	_ = ensureColumn(db, "projects", "slug", "TEXT")
 	_ = ensureColumn(db, "projects", "views", "INTEGER DEFAULT 0")
 	_ = ensureColumn(db, "projects", "performance", "INTEGER DEFAULT 100")
 	_ = ensureColumn(db, "projects", "seo", "INTEGER DEFAULT 100")
 	_ = ensureColumn(db, "projects", "deployed_at", "DATETIME")
+	_ = ensureColumn(db, "projects", "media_path", "TEXT")
+	_ = ensureColumn(db, "projects", "youtube_url", "TEXT")
+	_ = ensureColumn(db, "projects", "project_url", "TEXT")
+	_ = ensureColumn(db, "projects", "code_snippet", "TEXT")
 
-	// 3. Ensure faqs has slug and display_order
+	// ── faqs ──────────────────────────────────────────────────────────────────
 	_ = ensureColumn(db, "faqs", "slug", "TEXT")
 	_ = ensureColumn(db, "faqs", "display_order", "INTEGER DEFAULT 0")
 	_ = ensureColumn(db, "faqs", "is_published", "BOOLEAN DEFAULT 1")
+	_ = ensureColumn(db, "faqs", "updated_at", "DATETIME")
+
+	// ── services ──────────────────────────────────────────────────────────────
+	_ = ensureColumn(db, "services", "eyebrow", "TEXT")
+	_ = ensureColumn(db, "services", "lead_text", "TEXT")
+	_ = ensureColumn(db, "services", "features", "TEXT")
+	_ = ensureColumn(db, "services", "price_range", "TEXT")
+	_ = ensureColumn(db, "services", "price_label", "TEXT")
+	_ = ensureColumn(db, "services", "price_note", "TEXT")
+	_ = ensureColumn(db, "services", "icon_svg", "TEXT")
+	_ = ensureColumn(db, "services", "panel_title", "TEXT")
+	_ = ensureColumn(db, "services", "panel_type", "TEXT")
+	_ = ensureColumn(db, "services", "panel_content", "TEXT")
+	_ = ensureColumn(db, "services", "is_published", "BOOLEAN DEFAULT 1")
+	_ = ensureColumn(db, "services", "has_dedicated_page", "BOOLEAN DEFAULT 0")
+	_ = ensureColumn(db, "services", "display_order", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "services", "updated_at", "DATETIME")
+
+	// ── orders ────────────────────────────────────────────────────────────────
+	_ = ensureColumn(db, "orders", "status", "TEXT DEFAULT 'received'")
+	_ = ensureColumn(db, "orders", "notes", "TEXT")
+	_ = ensureColumn(db, "orders", "notify_count", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "orders", "total_amount", "REAL DEFAULT 0")
+	_ = ensureColumn(db, "orders", "tracking_code", "TEXT")
+	_ = ensureColumn(db, "orders", "sequence_number", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "orders", "customer_phone", "TEXT")
+	_ = ensureColumn(db, "orders", "customer_email", "TEXT")
+	_ = ensureColumn(db, "orders", "ready_at", "DATETIME")
+	_ = ensureColumn(db, "orders", "completed_at", "DATETIME")
+	_ = ensureColumn(db, "orders", "updated_at", "DATETIME")
+	// Backfill orders
+	db.Exec("UPDATE orders SET status = 'received' WHERE status IS NULL OR status = ''")
+
+	// ── faq_submissions ───────────────────────────────────────────────────────
+	_ = ensureColumn(db, "faq_submissions", "phone", "TEXT")
+	_ = ensureColumn(db, "faq_submissions", "is_answered", "BOOLEAN DEFAULT 0")
+
+	// ── automation_logs ───────────────────────────────────────────────────────
+	_ = ensureColumn(db, "automation_logs", "status", "TEXT DEFAULT 'COMPLETE'")
+
+	// ── booking_settings ──────────────────────────────────────────────────────
+	_ = ensureColumn(db, "booking_settings", "reminder_minutes", "INTEGER DEFAULT 30")
+	_ = ensureColumn(db, "booking_settings", "create_google_meet", "BOOLEAN DEFAULT 1")
+	_ = ensureColumn(db, "booking_settings", "meeting_location", "TEXT DEFAULT 'Google Meet'")
+	_ = ensureColumn(db, "booking_settings", "slot_step_minutes", "INTEGER DEFAULT 30")
 }
+
 
 func ensureColumn(db *gorm.DB, table string, column string, columnDef string) error {
 	var tableCount int64

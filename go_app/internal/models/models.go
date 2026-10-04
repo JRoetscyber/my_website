@@ -9,7 +9,7 @@ import (
 
 type Lead struct {
 	ID                 uint      `gorm:"primaryKey" json:"id"`
-	ClientName         string    `gorm:"size:100;not null" json:"client_name"`
+	ClientName         string    `gorm:"size:100" json:"client_name"`
 	ClientCompany      string    `gorm:"size:100" json:"client_company"`
 	ProjectType        string    `gorm:"size:100" json:"project_type"`
 	Budget             float64   `json:"budget"`
@@ -40,8 +40,8 @@ func (l *Lead) BeforeCreate(tx *gorm.DB) error {
 
 type Project struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
-	Title       string    `gorm:"size:100;not null" json:"title"`
-	Slug        string    `gorm:"size:200;uniqueIndex;not null" json:"slug"`
+	Title       string    `gorm:"size:100" json:"title"`
+	Slug        string    `gorm:"size:200;uniqueIndex" json:"slug"`
 	Category    string    `gorm:"size:50" json:"category"`
 	TechStack   string    `gorm:"type:text" json:"tech_stack"`
 	Description string    `gorm:"type:text" json:"description"`
@@ -61,10 +61,10 @@ func (Project) TableName() string {
 
 type BlogPost struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
-	Title       string    `gorm:"size:200;not null" json:"title"`
-	Slug        string    `gorm:"size:255;uniqueIndex;not null" json:"slug"`
+	Title       string    `gorm:"size:200" json:"title"`
+	Slug        string    `gorm:"size:255;uniqueIndex" json:"slug"`
 	Summary     string    `gorm:"type:text" json:"summary"`
-	Content     string    `gorm:"type:text;not null" json:"content"`
+	Content     string    `gorm:"type:text" json:"content"`
 	MediaPath   string    `gorm:"size:255" json:"media_path"`
 	Views       int       `gorm:"default:0" json:"views"`
 	Status      string    `gorm:"size:50" json:"status"`
@@ -86,9 +86,9 @@ func (b *BlogPost) BeforeCreate(tx *gorm.DB) error {
 
 type FAQ struct {
 	ID           uint      `gorm:"primaryKey" json:"id"`
-	Question     string    `gorm:"size:255;not null" json:"question"`
-	Slug         string    `gorm:"size:255;uniqueIndex;not null" json:"slug"`
-	Answer       string    `gorm:"type:text;not null" json:"answer"`
+	Question     string    `gorm:"size:255" json:"question"`
+	Slug         string    `gorm:"size:255;uniqueIndex" json:"slug"`
+	Answer       string    `gorm:"type:text" json:"answer"`
 	DisplayOrder int       `gorm:"default:0" json:"display_order"`
 	IsPublished  bool      `gorm:"default:true" json:"is_published"`
 	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
@@ -101,8 +101,8 @@ func (FAQ) TableName() string {
 
 type Service struct {
 	ID               uint      `gorm:"primaryKey" json:"id"`
-	Title            string    `gorm:"size:100;not null" json:"title"`
-	Slug             string    `gorm:"size:100;uniqueIndex;not null" json:"slug"`
+	Title            string    `gorm:"size:100" json:"title"`
+	Slug             string    `gorm:"size:100;uniqueIndex" json:"slug"`
 	Eyebrow          string    `gorm:"size:50" json:"eyebrow"`
 	LeadText         string    `gorm:"type:text" json:"lead_text"`
 	Description      string    `gorm:"type:text" json:"description"`
@@ -178,7 +178,7 @@ func (InvoiceSettings) TableName() string {
 
 type AutomationLog struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
-	ScriptName string    `gorm:"size:100;not null" json:"script_name"`
+	ScriptName string    `gorm:"size:100" json:"script_name"`
 	Status     string    `gorm:"size:50;default:'COMPLETE'" json:"status"`
 	Timestamp  time.Time `gorm:"autoCreateTime" json:"timestamp"`
 }
@@ -200,8 +200,8 @@ func (Analytics) TableName() string {
 
 type User struct {
 	ID           uint   `gorm:"primaryKey" json:"id"`
-	Username     string `gorm:"size:50;uniqueIndex;not null" json:"username"`
-	PasswordHash string `gorm:"size:255;not null" json:"password_hash"`
+	Username     string `gorm:"size:50;uniqueIndex" json:"username"`
+	PasswordHash string `gorm:"size:255" json:"password_hash"`
 }
 
 func (User) TableName() string {
@@ -210,9 +210,9 @@ func (User) TableName() string {
 
 type Transaction struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
-	Type        string    `gorm:"size:20;not null" json:"type"` // 'Income' or 'Expense'
+	Type        string    `gorm:"size:20" json:"type"` // 'Income' or 'Expense'
 	Category    string    `gorm:"size:100" json:"category"`
-	Amount      float64   `gorm:"not null" json:"amount"`
+	Amount      float64   `gorm:"" json:"amount"`
 	Description string    `gorm:"type:text" json:"description"`
 	Date        time.Time `json:"date"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
@@ -224,10 +224,10 @@ func (Transaction) TableName() string {
 
 type FAQSubmission struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
-	Name       string    `gorm:"size:100;not null" json:"name"`
-	Email      string    `gorm:"size:100;not null" json:"email"`
+	Name       string    `gorm:"size:100" json:"name"`
+	Email      string    `gorm:"size:100" json:"email"`
 	Phone      string    `gorm:"size:50" json:"phone"`
-	Question   string    `gorm:"type:text;not null" json:"question"`
+	Question   string    `gorm:"type:text" json:"question"`
 	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`
 	IsAnswered bool      `gorm:"default:false" json:"is_answered"`
 }
@@ -238,12 +238,12 @@ func (FAQSubmission) TableName() string {
 
 type Order struct {
 	ID             uint       `gorm:"primaryKey" json:"id"`
-	SequenceNumber int        `gorm:"index;not null" json:"sequence_number"` // Daily or sequential callout number: 101, 102...
-	TrackingCode   string     `gorm:"size:64;uniqueIndex;not null" json:"tracking_code"` // Secure slug: e.g. "ord_a7f92b"
-	CustomerName   string     `gorm:"size:100;not null" json:"customer_name"`
+	SequenceNumber int        `gorm:"index" json:"sequence_number"` // Daily or sequential callout number: 101, 102...
+	TrackingCode   string     `gorm:"size:64;uniqueIndex" json:"tracking_code"` // Secure slug: e.g. "ord_a7f92b"
+	CustomerName   string     `gorm:"size:100" json:"customer_name"`
 	CustomerPhone  string     `gorm:"size:50" json:"customer_phone"`
 	CustomerEmail  string     `gorm:"size:100" json:"customer_email"`
-	Items          string     `gorm:"type:text;not null" json:"items"`
+	Items          string     `gorm:"type:text" json:"items"`
 	TotalAmount    float64    `gorm:"default:0" json:"total_amount"`
 	Status         string     `gorm:"size:30;default:'received';index" json:"status"` // 'received', 'in_progress', 'ready', 'completed', 'cancelled'
 	Notes          string     `gorm:"type:text" json:"notes"`
