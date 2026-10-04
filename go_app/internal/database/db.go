@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -47,8 +48,8 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		sqlDB.SetConnMaxIdleTime(5 * time.Minute)
 	}
 
-	// Auto Migrate all models
-	err = db.AutoMigrate(
+	// Auto Migrate all models individually so one model warning doesn't block the rest
+	modelsToMigrate := []interface{}{
 		&models.Lead{},
 		&models.Project{},
 		&models.BlogPost{},
@@ -62,10 +63,15 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		&models.Transaction{},
 		&models.FAQSubmission{},
 		&models.Order{},
-	)
-	if err != nil {
-		log.Printf("[DB] Migration warning: %v", err)
 	}
+	for _, m := range modelsToMigrate {
+		if err := db.AutoMigrate(m); err != nil {
+			log.Printf("[DB] AutoMigrate warning for %T: %v", m, err)
+		}
+	}
+
+	// Explicit schema migration & column backfills for SQLite
+	ensureSchemaColumns(db)
 
 	DB = db
 	SeedDefaults(db, cfg)
@@ -275,10 +281,67 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 		}
 		log.Println("[DB] Seeded core FAQs (Ownership, Go Fiber, Timelines, Hosting, Automation, SEO)")
 	}
+}
 
-	// Backfill blog post status and published_at for existing posts
-	db.Model(&models.BlogPost{}).Where("status IS NULL OR status = ''").Update("status", "published")
-	db.Model(&models.BlogPost{}).Where("published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00'").Update("published_at", gorm.Expr("created_at"))
+// ensureSchemaColumns guarantees critical columns and backfills exist on legacy SQLite databases
+func ensureSchemaColumns(db *gorm.DB) {
+	// 1. Ensure blog_posts has status and published_at
+	_ = ensureColumn(db, "blog_posts", "status", "TEXT DEFAULT 'published'")
+	_ = ensureColumn(db, "blog_posts", "published_at", "DATETIME")
+
+	// Backfill existing rows via raw SQL to bypass ORM reflection dependencies
+	db.Exec("UPDATE blog_posts SET status = 'published' WHERE status IS NULL OR status = ''")
+	db.Exec("UPDATE blog_posts SET published_at = created_at WHERE published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00'")
+
+	// 2. Ensure projects has slug and metrics
+	_ = ensureColumn(db, "projects", "slug", "TEXT")
+	_ = ensureColumn(db, "projects", "views", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "projects", "performance", "INTEGER DEFAULT 100")
+	_ = ensureColumn(db, "projects", "seo", "INTEGER DEFAULT 100")
+	_ = ensureColumn(db, "projects", "deployed_at", "DATETIME")
+
+	// 3. Ensure faqs has slug and display_order
+	_ = ensureColumn(db, "faqs", "slug", "TEXT")
+	_ = ensureColumn(db, "faqs", "display_order", "INTEGER DEFAULT 0")
+	_ = ensureColumn(db, "faqs", "is_published", "BOOLEAN DEFAULT 1")
+}
+
+func ensureColumn(db *gorm.DB, table string, column string, columnDef string) error {
+	var tableCount int64
+	if err := db.Raw("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&tableCount).Error; err != nil || tableCount == 0 {
+		// Table doesn't exist yet; AutoMigrate will create it in full
+		return nil
+	}
+
+	rows, err := db.Raw(fmt.Sprintf("PRAGMA table_info(%s)", table)).Rows()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	found := false
+	for rows.Next() {
+		var cid int
+		var name, ctype string
+		var notnull, pk int
+		var dfltValue interface{}
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dfltValue, &pk); err == nil {
+			if strings.EqualFold(name, column) {
+				found = true
+				break
+			}
+		}
+	}
+
+	if !found {
+		alterSQL := fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, columnDef)
+		log.Printf("[DB-MIGRATE] Adding missing column %s.%s (%s)", table, column, columnDef)
+		if err := db.Exec(alterSQL).Error; err != nil {
+			log.Printf("[DB-MIGRATE] Error adding column %s.%s: %v", table, column, err)
+			return err
+		}
+	}
+	return nil
 }
 
 func GetBookingSettings(db *gorm.DB) *models.BookingSettings {
