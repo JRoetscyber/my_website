@@ -133,7 +133,6 @@ func TestCanonicalMatchesSitemap(t *testing.T) {
 		{"/faq", "https://jo4.co.za/faq"},
 		{"/faq/what-is-go", "https://jo4.co.za/faq/what-is-go"},
 		{"/book", "https://jo4.co.za/book"},
-		{"/webp-converter", "https://jo4.co.za/webp-converter"},
 	}
 
 	for _, tc := range testPaths {
@@ -162,6 +161,40 @@ func TestCanonicalMatchesSitemap(t *testing.T) {
 				t.Errorf("[%s] Canonical mismatch: expected %q, got %q", tc.RequestPath, tc.ExpectedURL, canonical)
 			}
 		})
+	}
+}
+
+func TestInternalWebPConverterExcluded(t *testing.T) {
+	app, _, _ := setupTestApp(t)
+
+	// 1. Verify /webp-converter is NOT in sitemap.xml
+	reqSitemap := httptest.NewRequest("GET", "/sitemap.xml", nil)
+	respSitemap, _ := app.Test(reqSitemap)
+	sitemapBytes, _ := io.ReadAll(respSitemap.Body)
+	if strings.Contains(string(sitemapBytes), "webp-converter") {
+		t.Errorf("sitemap.xml should NOT contain internal /webp-converter URL")
+	}
+
+	// 2. Verify /webp-converter has noindex, nofollow
+	reqPage := httptest.NewRequest("GET", "/webp-converter", nil)
+	respPage, err := app.Test(reqPage)
+	if err != nil {
+		t.Fatalf("failed to GET /webp-converter: %v", err)
+	}
+	if respPage.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 OK for /webp-converter, got %d", respPage.StatusCode)
+	}
+	body, _ := io.ReadAll(respPage.Body)
+	if !strings.Contains(string(body), `content="noindex, nofollow"`) {
+		t.Errorf("expected /webp-converter to have noindex, nofollow meta tag")
+	}
+
+	// 3. Verify robots.txt disallows /webp-converter
+	reqRobots := httptest.NewRequest("GET", "/robots.txt", nil)
+	respRobots, _ := app.Test(reqRobots)
+	robotsBytes, _ := io.ReadAll(respRobots.Body)
+	if !strings.Contains(string(robotsBytes), "Disallow: /webp-converter") {
+		t.Errorf("robots.txt should disallow /webp-converter")
 	}
 }
 

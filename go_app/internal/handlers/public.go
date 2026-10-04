@@ -555,7 +555,7 @@ func (h *PublicHandler) Robots(c *fiber.Ctx) error {
 	if baseURL == "" {
 		baseURL = "https://jo4.co.za"
 	}
-	return c.SendString(fmt.Sprintf("User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /order/\nDisallow: /track/\nDisallow: /orders/\nDisallow: /api/\nSitemap: %s/sitemap.xml\n", baseURL))
+	return c.SendString(fmt.Sprintf("User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /order/\nDisallow: /track/\nDisallow: /orders/\nDisallow: /api/\nDisallow: /webp-converter\nSitemap: %s/sitemap.xml\n", baseURL))
 }
 
 // Sitemap.xml
@@ -610,7 +610,6 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 		{"/blog", "0.8", "weekly"},
 		{"/faq", "0.7", "weekly"},
 		{"/book", "0.9", "weekly"},
-		{"/webp-converter", "0.8", "monthly"},
 	}
 
 	for _, sr := range staticRoutes {

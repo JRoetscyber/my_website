@@ -120,10 +120,12 @@ func TestBlogPublicFiltering(t *testing.T) {
 }
 
 func TestSitemapExcludesScheduledAndDrafts(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:blog_schedule_test?mode=memory&cache=shared"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("failed to open sqlite in-memory db: %v", err)
 	}
+	sqlDB, _ := db.DB()
+	sqlDB.SetMaxOpenConns(1)
 	_ = db.AutoMigrate(&models.BlogPost{}, &models.Project{}, &models.FAQ{})
 
 	now := time.Now()
