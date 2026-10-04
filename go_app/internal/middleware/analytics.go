@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -11,9 +12,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// analyticsSampleRate controls what fraction of requests are tracked.
+// 0.20 = 20% sampling: accurate enough for trend analysis, 5× less SQLite write pressure.
+// Raise to 1.0 for 100% tracking (fine for low-traffic sites, degrades under heavy load).
+const analyticsSampleRate = 0.20
+
 // TrackAnalytics logs visitor metrics asynchronously using a bounded worker pool.
 // CRITICAL FIBER SAFETY: Extracts and clones string values (strings.Clone) to eliminate
 // fasthttp buffer reuse race conditions.
+// PERFORMANCE: Probabilistic sampling caps SQLite write rate under high concurrency.
 func TrackAnalytics(db *gorm.DB, pool *worker.Pool) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		path := c.Path()
@@ -26,6 +33,12 @@ func TrackAnalytics(db *gorm.DB, pool *worker.Pool) fiber.Handler {
 			strings.HasPrefix(path, "/robots") ||
 			strings.HasPrefix(path, "/sitemap") ||
 			path == "/health" {
+			return c.Next()
+		}
+
+		// Probabilistic sampling: only track a fraction of requests to cap SQLite write rate.
+		// This keeps analytics meaningful without becoming a bottleneck under high concurrency.
+		if rand.Float64() > analyticsSampleRate {
 			return c.Next()
 		}
 
@@ -46,3 +59,4 @@ func TrackAnalytics(db *gorm.DB, pool *worker.Pool) fiber.Handler {
 		return c.Next()
 	}
 }
+

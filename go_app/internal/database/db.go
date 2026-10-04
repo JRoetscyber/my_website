@@ -43,8 +43,11 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	// SQLite Concurrency & Performance Pragmas
 	db.Exec("PRAGMA journal_mode = WAL;")
 	db.Exec("PRAGMA synchronous = NORMAL;")
-	db.Exec("PRAGMA cache_size = -64000;")
-	db.Exec("PRAGMA busy_timeout = 5000;")
+	db.Exec("PRAGMA cache_size = -64000;")      // 64MB page cache
+	db.Exec("PRAGMA mmap_size = 268435456;")    // 256MB memory-mapped I/O (read-heavy speedup)
+	db.Exec("PRAGMA busy_timeout = 10000;")     // 10s wait before giving up on write lock
+	db.Exec("PRAGMA wal_autocheckpoint = 1000;") // Checkpoint every 1000 pages
+
 
 	// Database Connection Pool Tuning
 	if sqlDB, err := db.DB(); err == nil {

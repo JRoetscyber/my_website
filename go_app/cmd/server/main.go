@@ -32,9 +32,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	fiberRedisStorage "github.com/gofiber/storage/redis/v2"
 	"github.com/gofiber/template/django/v3"
 	"github.com/yuin/goldmark"
 )
+
 
 var htmlTagRegex = regexp.MustCompile(`<[^>]*>`)
 
@@ -339,8 +341,10 @@ func main() {
 		return c.Next()
 	})
 
-	// In-memory page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers)
-	app.Use(fiberCache.New(fiberCache.Config{
+	// Page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers).
+	// Uses Redis as the storage backend when available — avoids Go-level sync.Map mutex contention
+	// that degrades performance under high concurrency (>100 concurrent requests).
+	pageCacheConfig := fiberCache.Config{
 		Next: func(c *fiber.Ctx) bool {
 			if c.Method() != fiber.MethodGet {
 				return true
@@ -359,7 +363,29 @@ func main() {
 		},
 		Expiration:   10 * time.Minute,
 		CacheControl: true,
-	}))
+	}
+	// Attach Redis storage if Redis is connected (eliminates in-process mutex contention)
+	if cacheManager.IsRedisAvailable() {
+		redisURL := cfg.RedisURL
+		if redisURL == "" {
+			redisURL = "redis:6379"
+		}
+		host, port := redisURL, "6379"
+		if idx := strings.LastIndex(redisURL, ":"); idx != -1 {
+			host = redisURL[:idx]
+			port = redisURL[idx+1:]
+		}
+		pageCacheConfig.Storage = fiberRedisStorage.New(fiberRedisStorage.Config{
+			Host:      host,
+			Port:      func() int { p := 6379; fmt.Sscanf(port, "%d", &p); return p }(),
+			Password:  cfg.RedisPassword,
+			Database:  1, // Use DB 1 to separate from Cache-Aside DB 0
+			PoolSize:  20,
+			Reset:     false,
+		})
+		log.Println("[CACHE] Page cache backed by Redis (DB 1) — mutex-free under load")
+	}
+	app.Use(fiberCache.New(pageCacheConfig))
 
 	// Rate limiter for API routes
 	apiLimiter := limiter.New(limiter.Config{
