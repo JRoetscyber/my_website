@@ -292,6 +292,7 @@ func main() {
 	})
 
 	app := fiber.New(fiber.Config{
+		Prefork:      cfg.Environment == "production", // Utilize all CPU cores in prod
 		Views:        engine,
 		AppName:      "JO4 Dev High-Performance Go Fiber Server",
 		BodyLimit:    32 * 1024 * 1024, // 32MB max upload
