@@ -4,6 +4,10 @@
 
 {% block meta_description %}Live order status and instant call-out notifications for Order #{{ order.SequenceNumber }}.{% endblock %}
 
+{% block head_extra %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
 {% block content %}
 <section class="page-hero" style="text-align: center; padding-bottom: 24px;">
   <span class="eyebrow" style="margin-bottom: 16px; display: inline-flex;">Live Order Tracker</span>

@@ -16,7 +16,7 @@
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:title" content="{% block og_title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
-  <meta property="og:url" content="{% block og_url %}https://jo4.co.za{{ current_path }}{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}{% if canonical_url %}{{ canonical_url }}{% elif current_path == '/' %}https://jo4.co.za/{% elif current_path %}https://jo4.co.za{{ current_path }}{% else %}https://jo4.co.za/{% endif %}{% endblock %}">
   <meta property="og:image" content="{% block og_image %}https://jo4.co.za/static/assets/logo.webp{% endblock %}">
 
   <!-- Twitter Card Metadata -->
@@ -39,7 +39,7 @@
   {% endblock %}
 
   <!-- Dynamic Canonical Link -->
-  <link rel="canonical" href="{% block canonical %}https://jo4.co.za{{ current_path }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical %}{% if canonical_url %}{{ canonical_url }}{% elif current_path == '/' %}https://jo4.co.za/{% elif current_path %}https://jo4.co.za{{ current_path }}{% else %}https://jo4.co.za/{% endif %}{% endblock %}">
   
   {% block head_extra %}{% endblock %}
   

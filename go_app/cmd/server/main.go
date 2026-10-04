@@ -325,6 +325,20 @@ func main() {
 	app.Use(cors.New())
 	app.Use(middleware.TrackAnalytics(db, workerPool))
 
+	// Strict URL Canonicalization: 301 Redirect trailing slashes on sub-paths to avoid duplicate non-canonical indexing
+	app.Use(func(c *fiber.Ctx) error {
+		path := c.Path()
+		if len(path) > 1 && strings.HasSuffix(path, "/") {
+			clean := strings.TrimRight(path, "/")
+			query := string(c.Request().URI().QueryString())
+			if query != "" {
+				clean += "?" + query
+			}
+			return c.Redirect(clean, fiber.StatusMovedPermanently)
+		}
+		return c.Next()
+	})
+
 	// In-memory page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers)
 	app.Use(fiberCache.New(fiberCache.Config{
 		Next: func(c *fiber.Ctx) bool {
@@ -429,7 +443,9 @@ func main() {
 	app.Get("/seo", publicHandler.SEO)
 	app.Get("/appsec", publicHandler.AppSec)
 	app.Get("/mobile-apps", publicHandler.AppDev)
-	app.Get("/app-development", publicHandler.AppDev)
+	app.Get("/app-development", func(c *fiber.Ctx) error {
+		return c.Redirect("/mobile-apps", fiber.StatusMovedPermanently)
+	})
 	app.Get("/automation", publicHandler.Automation)
 	app.Get("/projects", publicHandler.Projects)
 	app.Get("/projects/:slug", publicHandler.ProjectDetail)

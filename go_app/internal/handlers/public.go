@@ -41,6 +41,46 @@ func NewPublicHandler(db *gorm.DB, cfg *config.Config, cm *cache.Manager, pool *
 	}
 }
 
+// render provides unified context injection for canonical URLs, current path, and request object
+func (h *PublicHandler) render(c *fiber.Ctx, view string, bind fiber.Map) error {
+	if bind == nil {
+		bind = fiber.Map{}
+	}
+
+	rawPath := c.Path()
+	if rawPath == "" {
+		rawPath = "/"
+	}
+
+	cleanPath := "/" + strings.Trim(rawPath, "/")
+	if rawPath == "/" {
+		cleanPath = "/"
+	}
+
+	if _, exists := bind["current_path"]; !exists {
+		bind["current_path"] = cleanPath
+	}
+
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+
+	if _, exists := bind["canonical_url"]; !exists {
+		if cleanPath == "/" {
+			bind["canonical_url"] = baseURL + "/"
+		} else {
+			bind["canonical_url"] = baseURL + cleanPath
+		}
+	}
+
+	if _, exists := bind["request"]; !exists {
+		bind["request"] = c
+	}
+
+	return c.Render(view, bind)
+}
+
 // Home page with Redis / Memory Cache-Aside & Thundering Herd Singleflight Protection
 func (h *PublicHandler) Home(c *fiber.Ctx) error {
 	ctx := context.Background()
@@ -74,12 +114,11 @@ func (h *PublicHandler) Home(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	return c.Render("index", fiber.Map{
+	return h.render(c, "index", fiber.Map{
 		"projects": projects,
 		"blogs":    blogPosts,
 		"faqs":     faqs,
 		"services": servicesList,
-		"request":  c,
 	})
 }
 
@@ -97,32 +136,38 @@ func (h *PublicHandler) Services(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	return c.Render("services", fiber.Map{
+	return h.render(c, "services", fiber.Map{
 		"services": servicesList,
 		"faqs":     faqs,
-		"request":  c,
 	})
 }
 
 // Dedicated service pages
 func (h *PublicHandler) WebDesign(c *fiber.Ctx) error {
-	return c.Render("web_design", fiber.Map{"request": c})
+	return h.render(c, "web_design", fiber.Map{})
 }
 
 func (h *PublicHandler) SEO(c *fiber.Ctx) error {
-	return c.Render("seo", fiber.Map{"request": c})
+	return h.render(c, "seo", fiber.Map{})
 }
 
 func (h *PublicHandler) AppSec(c *fiber.Ctx) error {
-	return c.Render("appsec", fiber.Map{"request": c})
+	return h.render(c, "appsec", fiber.Map{})
 }
 
 func (h *PublicHandler) AppDev(c *fiber.Ctx) error {
-	return c.Render("app_development", fiber.Map{"request": c})
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+	return h.render(c, "app_development", fiber.Map{
+		"canonical_url": baseURL + "/mobile-apps",
+		"current_path":  "/mobile-apps",
+	})
 }
 
 func (h *PublicHandler) Automation(c *fiber.Ctx) error {
-	return c.Render("automation", fiber.Map{"request": c})
+	return h.render(c, "automation", fiber.Map{})
 }
 
 // Projects / Portfolio
@@ -133,9 +178,8 @@ func (h *PublicHandler) Projects(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	return c.Render("projects", fiber.Map{
+	return h.render(c, "projects", fiber.Map{
 		"projects": projects,
-		"request":  c,
 	})
 }
 
@@ -159,11 +203,17 @@ func (h *PublicHandler) ProjectDetail(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Render("projects", fiber.Map{
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+
+	return h.render(c, "projects", fiber.Map{
 		"project":         project,
 		"seo_title":       project.Title + " — JO4 Dev Case Study",
 		"seo_description": project.Description,
-		"request":         c,
+		"canonical_url":   fmt.Sprintf("%s/projects/%s", baseURL, project.Slug),
+		"current_path":    fmt.Sprintf("/projects/%s", project.Slug),
 	})
 }
 
@@ -179,9 +229,8 @@ func (h *PublicHandler) BlogList(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	return c.Render("blog", fiber.Map{
-		"posts":   posts,
-		"request": c,
+	return h.render(c, "blog", fiber.Map{
+		"posts": posts,
 	})
 }
 
@@ -228,11 +277,17 @@ func (h *PublicHandler) BlogDetail(c *fiber.Ctx) error {
 	h.DB.Where("id != ? AND status != 'draft' AND (published_at <= ? OR published_at IS NULL OR published_at = '0001-01-01 00:00:00+00:00' OR published_at = '0001-01-01 00:00:00')", post.ID, now).
 		Order("published_at desc, created_at desc").Limit(3).Find(&recentPosts)
 
-	return c.Render("blog_detail", fiber.Map{
-		"post":         post,
-		"recent_posts": recentPosts,
-		"is_admin":     isAdmin,
-		"request":      c,
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+
+	return h.render(c, "blog_detail", fiber.Map{
+		"post":          post,
+		"recent_posts":  recentPosts,
+		"is_admin":      isAdmin,
+		"canonical_url": fmt.Sprintf("%s/blog/%s", baseURL, post.Slug),
+		"current_path":  fmt.Sprintf("/blog/%s", post.Slug),
 	})
 }
 
@@ -244,9 +299,8 @@ func (h *PublicHandler) FAQList(c *fiber.Ctx) error {
 		return list, err
 	})
 
-	return c.Render("faq", fiber.Map{
-		"faqs":    faqs,
-		"request": c,
+	return h.render(c, "faq", fiber.Map{
+		"faqs": faqs,
 	})
 }
 
@@ -258,9 +312,15 @@ func (h *PublicHandler) FAQDetail(c *fiber.Ctx) error {
 		return c.Status(http.StatusNotFound).SendString("FAQ not found")
 	}
 
-	return c.Render("faq_detail", fiber.Map{
-		"faq":     faq,
-		"request": c,
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+
+	return h.render(c, "faq_detail", fiber.Map{
+		"faq":           faq,
+		"canonical_url": fmt.Sprintf("%s/faq/%s", baseURL, faq.Slug),
+		"current_path":  fmt.Sprintf("/faq/%s", faq.Slug),
 	})
 }
 
@@ -288,7 +348,7 @@ func (h *PublicHandler) SubmitFAQ(c *fiber.Ctx) error {
 
 // Book Call Page
 func (h *PublicHandler) BookPage(c *fiber.Ctx) error {
-	return c.Render("book", fiber.Map{"request": c})
+	return h.render(c, "book", fiber.Map{})
 }
 
 // Booking Availability API
@@ -491,7 +551,11 @@ func (h *PublicHandler) CreateLead(c *fiber.Ctx) error {
 // Robots.txt
 func (h *PublicHandler) Robots(c *fiber.Ctx) error {
 	c.Set("Content-Type", "text/plain")
-	return c.SendString("User-agent: *\nDisallow: /admin\nDisallow: /login\nSitemap: https://jo4.co.za/sitemap.xml\n")
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+	return c.SendString(fmt.Sprintf("User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /order/\nDisallow: /track/\nDisallow: /orders/\nDisallow: /api/\nSitemap: %s/sitemap.xml\n", baseURL))
 }
 
 // Sitemap.xml
@@ -519,6 +583,11 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 	}()
 	wg.Wait()
 
+	baseURL := strings.TrimRight(h.Cfg.BaseURL, "/")
+	if baseURL == "" {
+		baseURL = "https://jo4.co.za"
+	}
+
 	nowStr := time.Now().Format("2006-01-02")
 
 	var sb strings.Builder
@@ -534,6 +603,7 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 		{"/services", "0.8", "monthly"},
 		{"/web-design", "0.8", "monthly"},
 		{"/seo", "0.8", "monthly"},
+		{"/mobile-apps", "0.8", "monthly"},
 		{"/appsec", "0.8", "monthly"},
 		{"/automation", "0.8", "monthly"},
 		{"/projects", "0.9", "weekly"},
@@ -544,7 +614,11 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 	}
 
 	for _, sr := range staticRoutes {
-		sb.WriteString(fmt.Sprintf("  <url><loc>https://jo4.co.za%s</loc><lastmod>%s</lastmod><changefreq>%s</changefreq><priority>%s</priority></url>\n", sr.Path, nowStr, sr.Freq, sr.Priority))
+		loc := baseURL + sr.Path
+		if sr.Path == "/" {
+			loc = baseURL + "/"
+		}
+		sb.WriteString(fmt.Sprintf("  <url><loc>%s</loc><lastmod>%s</lastmod><changefreq>%s</changefreq><priority>%s</priority></url>\n", loc, nowStr, sr.Freq, sr.Priority))
 	}
 
 	for _, p := range projects {
@@ -553,7 +627,7 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 			if !p.DeployedAt.IsZero() {
 				dStr = p.DeployedAt.Format("2006-01-02")
 			}
-			sb.WriteString(fmt.Sprintf("  <url><loc>https://jo4.co.za/projects/%s</loc><lastmod>%s</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>\n", p.Slug, dStr))
+			sb.WriteString(fmt.Sprintf("  <url><loc>%s/projects/%s</loc><lastmod>%s</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>\n", baseURL, p.Slug, dStr))
 		}
 	}
 
@@ -565,13 +639,13 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 			} else if !b.UpdatedAt.IsZero() {
 				uStr = b.UpdatedAt.Format("2006-01-02")
 			}
-			sb.WriteString(fmt.Sprintf("  <url><loc>https://jo4.co.za/blog/%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n", b.Slug, uStr))
+			sb.WriteString(fmt.Sprintf("  <url><loc>%s/blog/%s</loc><lastmod>%s</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n", baseURL, b.Slug, uStr))
 		}
 	}
 
 	for _, f := range faqs {
 		if f.Slug != "" {
-			sb.WriteString(fmt.Sprintf("  <url><loc>https://jo4.co.za/faq/%s</loc><lastmod>%s</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n", f.Slug, nowStr))
+			sb.WriteString(fmt.Sprintf("  <url><loc>%s/faq/%s</loc><lastmod>%s</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n", baseURL, f.Slug, nowStr))
 		}
 	}
 
@@ -583,9 +657,8 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 
 // WebP Converter Page
 func (h *PublicHandler) WebPConverterPage(c *fiber.Ctx) error {
-	return c.Render("webp_converter", fiber.Map{
-		"current_path": "/webp-converter",
-		"title": "Free High-Speed WebP Converter — JO4 Dev",
+	return h.render(c, "webp_converter", fiber.Map{
+		"title":            "Free High-Speed WebP Converter — JO4 Dev",
 		"meta_description": "Convert JPG, PNG, and BMP images into high-compression, next-gen WebP format with sub-second execution. Engineered by JO4 Dev.",
 	})
 }
