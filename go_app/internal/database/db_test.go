@@ -61,3 +61,37 @@ func TestEnsureSchemaColumns(t *testing.T) {
 	// 5. Calling ensureSchemaColumns a second time must be completely idempotent
 	ensureSchemaColumns(db)
 }
+
+func TestLeadBeforeCreate(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file:test_lead_hook?mode=memory&cache=shared"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("failed to open sqlite: %v", err)
+	}
+
+	_ = db.AutoMigrate(&models.Lead{})
+
+	// 1. Create a lead without setting Status
+	lead := models.Lead{
+		ClientName: "Test Client",
+	}
+	if err := db.Create(&lead).Error; err != nil {
+		t.Fatalf("failed to create lead: %v", err)
+	}
+
+	if lead.Status != "New" {
+		t.Errorf("expected Lead.Status to default to 'New' via BeforeCreate, got %q", lead.Status)
+	}
+
+	// 2. Create a lead with explicit Status
+	lead2 := models.Lead{
+		ClientName: "Explicit Client",
+		Status:     "Contacted",
+	}
+	if err := db.Create(&lead2).Error; err != nil {
+		t.Fatalf("failed to create lead: %v", err)
+	}
+
+	if lead2.Status != "Contacted" {
+		t.Errorf("expected Lead.Status to preserve 'Contacted', got %q", lead2.Status)
+	}
+}

@@ -3,6 +3,8 @@ package models
 import (
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Lead struct {
@@ -19,7 +21,7 @@ type Lead struct {
 	ExplicitScore      float64   `json:"explicit_score"`
 	ImplicitScore      float64   `json:"implicit_score"`
 	UrgencyScore       float64   `json:"urgency_score"`
-	Status             string    `gorm:"size:50;default:'New'" json:"status"`
+	Status             string    `gorm:"size:50" json:"status"`
 	LossReason         string    `gorm:"size:255" json:"loss_reason"`
 	CreatedAt          time.Time `gorm:"autoCreateTime" json:"created_at"`
 	LastActivityDate   time.Time `json:"last_activity_date"`
@@ -27,6 +29,13 @@ type Lead struct {
 
 func (Lead) TableName() string {
 	return "leads"
+}
+
+func (l *Lead) BeforeCreate(tx *gorm.DB) error {
+	if l.Status == "" {
+		l.Status = "New"
+	}
+	return nil
 }
 
 type Project struct {
@@ -58,7 +67,7 @@ type BlogPost struct {
 	Content     string    `gorm:"type:text;not null" json:"content"`
 	MediaPath   string    `gorm:"size:255" json:"media_path"`
 	Views       int       `gorm:"default:0" json:"views"`
-	Status      string    `gorm:"size:50;default:'published'" json:"status"`
+	Status      string    `gorm:"size:50" json:"status"`
 	PublishedAt time.Time `json:"published_at"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
@@ -66,6 +75,13 @@ type BlogPost struct {
 
 func (BlogPost) TableName() string {
 	return "blog_posts"
+}
+
+func (b *BlogPost) BeforeCreate(tx *gorm.DB) error {
+	if b.Status == "" {
+		b.Status = "published"
+	}
+	return nil
 }
 
 type FAQ struct {
