@@ -1122,7 +1122,8 @@ func (h *AdminHandler) GenerateInvoicePDF(c *fiber.Ctx) error {
 
 	invoiceNum := c.FormValue("invoice_number")
 	if invoiceNum == "" {
-		invoiceNum = fmt.Sprintf("INV-%d", time.Now().Unix())
+		now := time.Now()
+		invoiceNum = fmt.Sprintf("INV-%s%04d", now.Format("060102"), now.Unix()%10000)
 	}
 	clientName := c.FormValue("client_name")
 	clientEmail := c.FormValue("client_email")

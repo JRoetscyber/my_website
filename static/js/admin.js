@@ -903,17 +903,44 @@
     var editingId   = null;
 
     /* helpers */
-    function peekNum(type) {
+    function getDocNumber(type, isPeek) {
       var key = type === 'Invoice' ? CNT_INV : CNT_QUO;
-      var n   = parseInt(localStorage.getItem(key) || '0', 10) + 1;
-      return (type === 'Invoice' ? 'INV-' : 'QUO-') + String(n).padStart(3, '0');
+      
+      var d = new Date();
+      var yy = String(d.getFullYear()).slice(-2);
+      var mm = pad(d.getMonth() + 1);
+      var dd = pad(d.getDate());
+      var datePrefix = yy + mm + dd; // yymmdd
+
+      var dateKey = key + '_date';
+      var lastDate = localStorage.getItem(dateKey);
+      
+      var n = parseInt(localStorage.getItem(key) || '0', 10);
+      
+      // Reset sequence if it's a new day
+      if (lastDate !== datePrefix) {
+        n = 0;
+      }
+      
+      n = n + 1;
+      
+      if (!isPeek) {
+        localStorage.setItem(key, n);
+        localStorage.setItem(dateKey, datePrefix);
+      }
+      
+      var seq = String(n).padStart(4, '0');
+      var prefix = type === 'Invoice' ? 'INV-' : 'QUO-';
+      
+      return prefix + datePrefix + seq;
+    }
+
+    function peekNum(type) {
+      return getDocNumber(type, true);
     }
 
     function nextNum(type) {
-      var key = type === 'Invoice' ? CNT_INV : CNT_QUO;
-      var n   = parseInt(localStorage.getItem(key) || '0', 10) + 1;
-      localStorage.setItem(key, n);
-      return (type === 'Invoice' ? 'INV-' : 'QUO-') + String(n).padStart(3, '0');
+      return getDocNumber(type, false);
     }
 
     function todayStr() {
