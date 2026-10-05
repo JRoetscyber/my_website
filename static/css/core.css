@@ -103,10 +103,10 @@
   --shadow-xl:      16px 16px 36px #cbced8, -16px -16px 36px #ffffff;
   --shadow-mockup:  var(--neu-flat-lg);
 
-  --section-py:   clamp(70px, 8vw, 110px);
+  --section-py: clamp(50px, 6vw, 90px);
   --max-w:        1240px;
   --nav-h:        80px;
-  --pad-x:        clamp(20px, 5vw, 60px);
+  --pad-x: clamp(16px, 4vw, 40px);
   --ease:         200ms ease;
   --ease-slow:    400ms ease;
 }
@@ -132,13 +132,13 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 .display-hero {
-  font-size: clamp(2rem, 3.8vw + 1rem, 3.8rem);
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -0.03em;
 }
 .display-section {
-  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.025em;
@@ -282,7 +282,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   box-shadow: 3px 3px 7px #cbced8, -3px -3px 7px #ffffff;
-}
+; min-width: 44px; min-height: 44px; justify-content: center; align-items: center;}
 .nav-toggle span {
   display: block;
   width: 20px;
@@ -302,7 +302,7 @@ h1, h2, h3, h4, h5, h6 {
     height: 64px;
     padding: 0 14px;
   }
-  .nav-toggle { display: flex; }
+  .nav-toggle { display: flex; ; min-width: 44px; min-height: 44px; justify-content: center; align-items: center;}
   .nav-links {
     display: none;
     position: absolute;
@@ -319,7 +319,7 @@ h1, h2, h3, h4, h5, h6 {
   }
   .nav-links.open { display: flex; }
   .nav-links li { width: 100%; text-align: center; }
-  .nav-links a { display: block; padding: 12px 20px; font-size: 0.92rem; }
+  .nav-links a { display: block; padding: 14px 20px; font-size: 0.92rem; }
   .nav-cta { margin: 8px 16px 0 !important; display: block !important; text-align: center !important; }
 }
 
@@ -336,7 +336,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 15px 34px;
+  padding: clamp(12px, 2vw, 15px) clamp(24px, 4vw, 34px);
   border-radius: 9999px;
   border: none;
   cursor: pointer;
@@ -364,7 +364,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 15px 32px;
+  padding: clamp(12px, 2vw, 15px) clamp(20px, 4vw, 32px);
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.9);
   cursor: pointer;
@@ -395,7 +395,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 15px 34px;
+  padding: clamp(12px, 2vw, 15px) clamp(24px, 4vw, 34px);
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.9);
   box-shadow: var(--neu-pill);
@@ -418,7 +418,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* 7. HERO NEUMORPHIC LAYOUT & ORBIT */
 .hero {
-  min-height: 90svh;
+  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   padding-top: 36px;
@@ -561,8 +562,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 .neu-orbit-stage {
   position: relative;
-  width: clamp(340px, 38vw, 460px);
-  height: clamp(340px, 38vw, 460px);
+  width: clamp(260px, 85vw, 460px);
+  height: clamp(260px, 85vw, 460px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -749,15 +750,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: 28px;
 }
-@media (max-width: 767px) {
-  .services-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-}
+
 .service-card-v2 {
   background: #ebecf0;
   border-radius: 24px;
@@ -1247,3 +1243,8 @@ h1, h2, h3, h4, h5, h6 {
   padding-top: 24px;
   border-top: 1px solid var(--border);
 }
+
+
+
+
+
