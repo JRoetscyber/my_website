@@ -542,11 +542,11 @@ func (h *AdminHandler) SaveProject(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "assets")
+		uploadDir := filepath.Join("static", "uploads")
 		_ = os.MkdirAll(uploadDir, os.ModePerm)
 		dest := filepath.Join(uploadDir, file.Filename)
 		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/assets/" + file.Filename
+			mediaPath = "/static/uploads/" + file.Filename
 		}
 	}
 
@@ -630,11 +630,11 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "assets")
+		uploadDir := filepath.Join("static", "uploads")
 		_ = os.MkdirAll(uploadDir, os.ModePerm)
 		dest := filepath.Join(uploadDir, file.Filename)
 		if err := c.SaveFile(file, dest); err == nil {
-			project.MediaPath = "/static/assets/" + file.Filename
+			project.MediaPath = "/static/uploads/" + file.Filename
 		}
 	}
 
@@ -745,11 +745,11 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "assets")
+		uploadDir := filepath.Join("static", "uploads")
 		_ = os.MkdirAll(uploadDir, os.ModePerm)
 		dest := filepath.Join(uploadDir, file.Filename)
 		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/assets/" + file.Filename
+			mediaPath = "/static/uploads/" + file.Filename
 		}
 	}
 
@@ -809,11 +809,11 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "assets")
+		uploadDir := filepath.Join("static", "uploads")
 		_ = os.MkdirAll(uploadDir, os.ModePerm)
 		dest := filepath.Join(uploadDir, file.Filename)
 		if err := c.SaveFile(file, dest); err == nil {
-			post.MediaPath = "/static/assets/" + file.Filename
+			post.MediaPath = "/static/uploads/" + file.Filename
 		}
 	}
 
