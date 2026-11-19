@@ -1,37 +1,182 @@
-/* 13. PROJECT FLIP CARDS (Evidence Room) */
+/* 13. PROJECT SHOWCASE CARDS (Evidence Room) */
 .projects-mini-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 32px;
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .projects-mini-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 992px) {
-  .projects-mini-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Modern Showcase Card */
+.project-showcase-card {
+  background: var(--surface-0);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  box-shadow: var(--neu-flat);
+  padding: clamp(26px, 3.5vw, 36px);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  transition: transform var(--ease), box-shadow var(--ease), border-color var(--ease);
+}
+.project-showcase-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-flat-lg);
+  border-color: var(--accent-mid);
 }
 
-.flip-hint-bar {
+.project-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.project-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--accent-faint);
+  border: 1px solid var(--accent-mid);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-category-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.project-showcase-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.project-showcase-desc {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 22px;
+  flex-grow: 1;
+}
+
+/* Metrics Row */
+.project-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.project-metric-tile {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.project-metric-val {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.project-metric-label {
   font-family: var(--font-mono);
   font-size: 0.62rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 32px;
-  padding: 8px 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* Tech Tags */
+.project-tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.project-tech-pill {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--surface-0);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--neu-flat-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Collapsible Code Drawer */
+.project-code-details {
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
   background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 40px;
+}
+.project-code-summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  user-select: none;
+}
+.project-code-summary::-webkit-details-marker { display: none; }
+.project-code-summary:hover {
+  color: var(--accent);
+}
+.project-code-body {
+  padding: 14px;
+  background: #0f1115;
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.project-code-body pre {
+  margin: 0;
+}
+
+/* Actions Row */
+.project-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  flex-wrap: wrap;
 }
 
 .flip-card {

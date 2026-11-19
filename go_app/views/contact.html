@@ -353,14 +353,16 @@
           </div>
 
           {% if success_message %}
-          <div style="padding:16px 20px; background:#dcfce7; border:1px solid #86efac; border-radius:12px; color:#166534; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
-            ✓ {{ success_message }}
+          <div style="display:flex; align-items:center; gap:8px; padding:16px 20px; background:#dcfce7; border:1px solid #86efac; border-radius:12px; color:#166534; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>{{ success_message }}</span>
           </div>
           {% endif %}
 
           {% if error_message %}
-          <div style="padding:16px 20px; background:#fee2e2; border:1px solid #fca5a5; border-radius:12px; color:#991b1b; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
-            ✕ {{ error_message }}
+          <div style="display:flex; align-items:center; gap:8px; padding:16px 20px; background:#fee2e2; border:1px solid #fca5a5; border-radius:12px; color:#991b1b; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>{{ error_message }}</span>
           </div>
           {% endif %}
 
@@ -657,7 +659,7 @@ function switchContactTab(tab) {
 
       result.innerHTML = '<div class="booking-success-box">' +
         '<div class="booking-success-title">' +
-          '<span>✓ 15-Minute Discovery Call Confirmed!</span>' +
+          '<span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg>15-Minute Discovery Call Confirmed!</span>' +
         '</div>' +
         '<p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">' +
           'Your session has been locked in. An invitation with Google Meet details has been dispatched to <strong>' + escapeHtml(payload.email) + '</strong>.' +

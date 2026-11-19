@@ -1,21 +1,25 @@
 {% extends 'base.html' %}
 
-{% block title %}Blog — JO4 Dev Insights{% endblock %}
+{% block title %}Technical Research, High-Concurrency Go &amp; AppSec Blog | JO4 Dev{% endblock %}
 
-{% block meta_description %}Practical notes on web development, SEO, automation and business software from JO4 Dev.{% endblock %}
+{% block meta_description %}Deep dives into high-concurrency Go microservices, OWASP Top 10 API penetration testing, binary LoRa telemetry, and production system architectures.{% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="/static/css/blog.css?v=20260929v2">
+<link rel="stylesheet" href="/static/css/blog.css?v=20261119v1">
 {% endblock %}
 
 {% block content %}
 
+<!-- ==============================================================
+     BLOG HERO
+============================================================== -->
 <header class="page-hero">
-  <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex;">Insights & Strategy</span>
-  <h1>The Dev Log.</h1>
+  <span class="eyebrow" style="margin-bottom: 20px; display: inline-flex; align-items: center;">
+    <span class="status-pulse-dot"></span>Technical Research &amp; Engineering Log
+  </span>
+  <h1>Systems Engineering &amp; Offensive AppSec.</h1>
   <p class="lead-text">
-    Deep dives into custom software, automation logic, and the technical 
-    decisions that drive modern business growth.
+    In-depth architectural breakdowns, zero-allocation Go microservice benchmarks, adversarial API vulnerability post-mortems, and industrial RF hardware telemetry.
   </p>
 </header>
 
@@ -25,36 +29,85 @@
   <div class="section">
     <span class="sr-only" id="blog-heading">Blog Posts</span>
 
+    {% if posts and posts|length > 0 %}
+    <!-- Featured Lead Story (Post 1) -->
+    {% with first_post=posts|first %}
+    <div class="blog-featured" data-aos="fade-up">
+      <div class="blog-featured-card">
+        <div class="blog-featured-header">
+          <span class="blog-badge-featured">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            Featured Research
+          </span>
+          <div class="blog-card-meta" style="margin-bottom: 0;">
+            <time datetime="{{ first_post.CreatedAt|date:"2006-01-02" }}">{{ first_post.CreatedAt|date:"02 Jan 2006" }}</time>
+            <span style="margin: 0 8px;">&bull;</span>
+            <span>{{ first_post.Views }} views</span>
+          </div>
+        </div>
+
+        <h2 class="blog-featured-title">
+          <a href="/blog/{{ first_post.Slug }}">{{ first_post.Title }}</a>
+        </h2>
+
+        <p class="blog-featured-summary">
+          {{ first_post.Summary }}
+        </p>
+
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <a href="/blog/{{ first_post.Slug }}" class="btn-primary-custom" style="padding: 12px 28px;">
+            Read Deep Dive
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    <!-- Topic Filter Bar -->
+    <div class="blog-filter-strip" data-aos="fade-up" data-aos-delay="40">
+      <span class="blog-filter-chip active">All Topics ({{ posts|length }})</span>
+      <span class="blog-filter-chip">Go &amp; Concurrency</span>
+      <span class="blog-filter-chip">OWASP &amp; AppSec</span>
+      <span class="blog-filter-chip">IoT &amp; LoRa RF</span>
+    </div>
+
+    <!-- Article Grid -->
     <div class="blog-grid">
       {% for post in posts %}
-      <article class="blog-card" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 100 }}">
+      <article class="blog-card" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
         <a href="/blog/{{ post.Slug }}" class="blog-card-link">
           <div class="blog-card-image">
             {% if post.MediaPath %}
             <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="600" height="338">
             {% else %}
             <div class="blog-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
               </svg>
+              <span style="font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;">Engineering Write-Up</span>
             </div>
             {% endif %}
           </div>
           <div class="blog-card-body">
             <div class="blog-card-meta">
-              <time datetime="{{ post.CreatedAt|date:"2006-01-02" }}">{{ post.CreatedAt|date:"2006-01-02" }}</time>
+              <time datetime="{{ post.CreatedAt|date:"2006-01-02" }}">{{ post.CreatedAt|date:"02 Jan 2006" }}</time>
               <span class="blog-read-time">{{ post.Views }} views</span>
             </div>
             <h3 class="blog-card-title">{{ post.Title }}</h3>
             <p class="blog-card-summary">{{ post.Summary }}</p>
-            <span class="blog-more">Read Article <span class="arrow">→</span></span>
+            <span class="blog-more">
+              Read Article
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </span>
           </div>
         </a>
       </article>
       {% empty %}
       <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
-        <p class="lead-text" style="margin: 0 auto;">No posts yet. Check back soon!</p>
+        <p class="lead-text" style="margin: 0 auto;">No posts published yet. Check back soon!</p>
       </div>
       {% endfor %}
     </div>
@@ -64,15 +117,18 @@
 <!-- ==============================================================
      BOTTOM CTA
 ============================================================== -->
-<section aria-label="Call to action" style="border-top:1px solid var(--color-border-subtle); background: var(--color-surface-1);">
-  <div class="section" style="text-align:center; padding-top:clamp(72px,10vw,120px); padding-bottom:clamp(72px,10vw,120px);">
-    <h2 class="display-section" style="max-width:600px; margin: 0 auto 24px;" data-aos="fade-up">
-      Ready to build your<br>
-      <span class="text-accent">own system?</span>
+<section aria-label="Call to action" style="border-top:1px solid var(--border-subtle); background: var(--surface-1);">
+  <div class="section" style="text-align:center; padding-top:clamp(72px,8vw,110px); padding-bottom:clamp(72px,8vw,110px);">
+    <h2 class="display-section" style="max-width:640px; margin: 0 auto 20px;" data-aos="fade-up">
+      Need high-throughput engineering or an<br>
+      <span class="text-accent">AppSec code audit?</span>
     </h2>
+    <p class="lead-text" style="max-width:540px; margin: 0 auto 32px;" data-aos="fade-up" data-aos-delay="40">
+      Let's benchmark your infrastructure or run a comprehensive adversarial security review before your next release.
+    </p>
     <div data-aos="fade-up" data-aos-delay="80">
-      <a href="/book" class="btn-primary-custom" style="padding: 18px 44px;">
-        Book a Free Discovery Call
+      <a href="/book" class="btn-primary-custom" style="padding: 16px 38px;">
+        Book a Free 15-Min Discovery Call
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 8h10M9 4l4 4-4 4"/>
         </svg>

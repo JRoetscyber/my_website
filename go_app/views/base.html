@@ -12,6 +12,20 @@
   <meta name="geo.placename" content="Pretoria, Gauteng, South Africa">
   <meta name="author" content="Jonathan Roets">
 
+  <!-- Instant Zero-Flicker Device Theme Detection (Dark Mode by OS / Preference) -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- OpenGraph Metadata -->
   <meta property="og:site_name" content="Jonathan Roets Portfolio">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -102,9 +116,28 @@
         <span class="nav-brand-text">JO4<span class="nav-brand-accent">DEV</span><span class="nav-brand-sub">&bull; J. ROETS</span></span>
       </a>
 
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <!-- Mobile Actions (Theme Toggle + Hamburger) -->
+      <div class="nav-actions-mobile">
+        <button class="theme-toggle-btn theme-toggle-btn--mobile" aria-label="Toggle dark/light theme" title="Toggle theme">
+          <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
 
       <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/" class="nav-link-pill {% if current_path == '/' %}active{% endif %}">Home</a></li>
@@ -116,6 +149,24 @@
         <li><a href="/blog" class="nav-link-pill {% if current_path == '/blog' %}active{% endif %}">Blog</a></li>
         <li>
           <a href="/contact" class="nav-cta">Get in Touch</a>
+        </li>
+        <li class="nav-theme-item">
+          <button class="theme-toggle-btn theme-toggle-btn--desktop" aria-label="Toggle dark/light theme" title="Toggle theme">
+            <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
         </li>
       </ul>
     </div>
@@ -193,6 +244,37 @@
 
   <!-- Scripts -->
   <script src="/static/js/main.js?v=20261113v1" defer></script>
+
+  <!-- Theme Switcher Interaction Handler -->
+  <script>
+    (function() {
+      function getActiveTheme() {
+        return document.documentElement.getAttribute('data-theme') ||
+          (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      }
+
+      function toggleTheme() {
+        var current = getActiveTheme();
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+      }
+
+      document.querySelectorAll('.theme-toggle-btn').forEach(function(btn) {
+        btn.addEventListener('click', toggleTheme);
+      });
+
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          try {
+            if (!localStorage.getItem('theme')) {
+              document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            }
+          } catch (err) {}
+        });
+      }
+    })();
+  </script>
 
   {% block scripts %}{% endblock %}
 
