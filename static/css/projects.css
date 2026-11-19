@@ -1,4 +1,23 @@
 /* 13. PROJECT FLIP CARDS (Evidence Room) */
+.projects-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .projects-mini-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .projects-mini-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .flip-hint-bar {
   display: inline-flex;
   align-items: center;
@@ -18,7 +37,7 @@
 .flip-card {
   perspective: 1200px;
   cursor: pointer;
-  height: clamp(380px, 50vh, 460px);
+  height: clamp(400px, 48vh, 470px);
   outline: none;
   display: block;
 }
@@ -84,6 +103,60 @@
   justify-content: center;
   background: var(--surface-1);
   color: var(--border);
+}
+
+.fc-front-tech-preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 18px;
+  background: var(--surface-1);
+  text-align: center;
+}
+.fc-tech-badge-strip {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.fc-tech-pill {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat-sm);
+  color: var(--accent);
+}
+.fc-tech-center-icon {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--neu-flat);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+.fc-tech-meta strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.fc-tech-meta span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
 .flip-card-back {

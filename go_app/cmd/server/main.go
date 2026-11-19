@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -49,6 +50,11 @@ var mdBufferPool = sync.Pool{
 
 var routeMap = map[string]string{
 	"home":                         "/",
+	"about":                        "/about",
+	"security":                     "/security",
+	"engineering":                  "/engineering",
+	"archive":                      "/archive",
+	"contact":                      "/contact",
 	"services.services":            "/services",
 	"services.web_design":          "/web-design",
 	"services.seo_services":        "/seo",
@@ -71,6 +77,7 @@ var routeMap = map[string]string{
 	"admin.blogs_page":             "/admin/blogs",
 	"admin.faqs_page":              "/admin/faqs",
 	"admin.services_page":          "/admin/services",
+	"admin.content_page":           "/admin/content",
 	"admin.booking_settings_page":  "/admin/booking",
 	"admin.invoices_page":          "/admin/invoices",
 	"admin.funds_page":             "/admin/funds",
@@ -82,9 +89,15 @@ var routeMap = map[string]string{
 // AssetVersion is appended to static asset URLs for deterministic cache-busting
 const AssetVersion = "20260929v2"
 
+func registerFilter(name string, fn pongo2.FilterFunction) {
+	if err := pongo2.RegisterFilter(name, fn); err != nil {
+		log.Printf("[TEMPLATE] Warning: failed to register filter %q: %v", name, err)
+	}
+}
+
 func initPongo2Filters() {
 	// Register markdown filter using sync.Pool
-	pongo2.RegisterFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		buf := mdBufferPool.Get().(*bytes.Buffer)
 		buf.Reset()
 		defer mdBufferPool.Put(buf)
@@ -96,7 +109,7 @@ func initPongo2Filters() {
 	})
 
 	// Register from_json filter
-	pongo2.RegisterFilter("from_json", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("from_json", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		raw := in.String()
 		if strings.TrimSpace(raw) == "" {
 			return pongo2.AsValue([]interface{}{}), nil
@@ -109,7 +122,7 @@ func initPongo2Filters() {
 	})
 
 	// Register truncate filter
-	pongo2.RegisterFilter("truncate", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("truncate", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		length := param.Integer()
 		if length <= 0 {
 			length = 150
@@ -123,13 +136,13 @@ func initPongo2Filters() {
 	})
 
 	// Register striptags filter
-	pongo2.RegisterFilter("striptags", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("striptags", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		cleaned := htmlTagRegex.ReplaceAllString(in.String(), "")
 		return pongo2.AsValue(cleaned), nil
 	})
 
 	// Register splitlines filter
-	pongo2.RegisterFilter("splitlines", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("splitlines", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		lines := strings.Split(strings.ReplaceAll(in.String(), "\r\n", "\n"), "\n")
 		var res []string
 		for _, l := range lines {
@@ -141,7 +154,7 @@ func initPongo2Filters() {
 	})
 
 	// Register tojson filter
-	pongo2.RegisterFilter("tojson", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("tojson", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		b, err := json.Marshal(in.Interface())
 		if err != nil {
 			return pongo2.AsValue("{}"), nil
@@ -150,7 +163,7 @@ func initPongo2Filters() {
 	})
 
 	// Register split filter (auto-trims whitespace and ignores empty items)
-	pongo2.RegisterFilter("split", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("split", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		sep := param.String()
 		if sep == "" {
 			sep = ","
@@ -166,25 +179,25 @@ func initPongo2Filters() {
 	})
 
 	// Register strip and trim filters
-	pongo2.RegisterFilter("strip", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("strip", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		return pongo2.AsValue(strings.TrimSpace(in.String())), nil
 	})
-	pongo2.RegisterFilter("trim", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("trim", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		return pongo2.AsValue(strings.TrimSpace(in.String())), nil
 	})
 
 	// Register format filter
-	pongo2.RegisterFilter("format", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("format", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		return pongo2.AsValue(fmt.Sprintf(in.String(), param.Interface())), nil
 	})
 
 	// Register selectattr filter
-	pongo2.RegisterFilter("selectattr", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("selectattr", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		return in, nil
 	})
 
 	// Register forceescape filter
-	pongo2.RegisterFilter("forceescape", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	registerFilter("forceescape", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		return pongo2.AsValue(pongo2.MustApplyFilter("escape", in, nil)), nil
 	})
 
@@ -205,6 +218,11 @@ func initPongo2Filters() {
 	// Flask-compatible url_for helper
 	routeMap := map[string]string{
 		"home":                       "/",
+		"about":                      "/about",
+		"security":                   "/security",
+		"engineering":                "/engineering",
+		"archive":                    "/archive",
+		"contact":                    "/contact",
 		"services.services":          "/services",
 		"services.web_design":        "/web-design",
 		"services.seo_services":      "/seo",
@@ -375,9 +393,13 @@ func main() {
 			host = redisURL[:idx]
 			port = redisURL[idx+1:]
 		}
+		redisPort := 6379
+		if parsedPort, err := strconv.Atoi(port); err == nil && parsedPort > 0 {
+			redisPort = parsedPort
+		}
 		pageCacheConfig.Storage = fiberRedisStorage.New(fiberRedisStorage.Config{
 			Host:      host,
-			Port:      func() int { p := 6379; fmt.Sscanf(port, "%d", &p); return p }(),
+			Port:      redisPort,
 			Password:  cfg.RedisPassword,
 			Database:  1, // Use DB 1 to separate from Cache-Aside DB 0
 			PoolSize:  20,
@@ -464,6 +486,14 @@ func main() {
 
 	// Public Routes
 	app.Get("/", publicHandler.Home)
+	app.Get("/about", publicHandler.About)
+	app.Get("/security", publicHandler.Security)
+	app.Get("/engineering", publicHandler.Engineering)
+	app.Get("/archive", publicHandler.Archive)
+	app.Get("/contact", publicHandler.Contact)
+	app.Post("/contact", publicHandler.SubmitContact)
+	app.Get("/Jonathan_Roets_CV.pdf", publicHandler.DownloadCV)
+	app.Get("/cv", publicHandler.DownloadCV)
 	app.Get("/services", publicHandler.Services)
 	app.Get("/web-design", publicHandler.WebDesign)
 	app.Get("/seo", publicHandler.SEO)
@@ -584,6 +614,12 @@ func main() {
 	admin.Post("/delete_service/:id", adminHandler.DeleteService)
 	admin.Delete("/delete_service/:id", adminHandler.DeleteService)
 
+	// Site Pages CMS (Home, About, Security, Engineering)
+	admin.Get("/content", adminHandler.ContentPage)
+	admin.Post("/content/upload-avatar", adminHandler.UploadAvatar)
+	admin.Post("/content/:page", adminHandler.SaveContent)
+	admin.Post("/content/:page/reset", adminHandler.ResetContent)
+
 	// Booking Settings
 	admin.Get("/booking", adminHandler.BookingSettingsPage)
 	admin.Post("/booking", adminHandler.UpdateBookingSettings)
@@ -671,8 +707,14 @@ func main() {
 }
 
 func fileExists(path string) bool {
-	info, err := os.Stat(path)
-	if os.IsNotExist(err) {
+	clean := filepath.Clean(path)
+	root, err := os.OpenRoot(filepath.Dir(clean))
+	if err != nil {
+		return false
+	}
+	defer func() { _ = root.Close() }()
+	info, err := root.Stat(filepath.Base(clean))
+	if err != nil {
 		return false
 	}
 	return !info.IsDir()

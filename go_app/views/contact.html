@@ -1,0 +1,709 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact &amp; Connect | Jonathan Roets — Software &amp; Security Engineer{% endblock %}
+
+{% block meta_description %}Book a 15-minute technical discovery call with Jonathan Roets or send a direct inquiry for application security testing and Go backend engineering.{% endblock %}
+
+{% block meta_keywords %}Book Discovery Call Jonathan Roets, Schedule Technical Chat, AppSec Assessment Pretoria, Go Developer Contact, Cybersecurity Consultant South Africa{% endblock %}
+
+{% block og_title %}Contact &amp; Connect | Jonathan Roets — Software &amp; Security Engineer{% endblock %}
+{% block og_description %}Book a 15-minute technical discovery call with Jonathan Roets or send a direct inquiry for application security testing and Go backend engineering.{% endblock %}
+
+{% block twitter_title %}Contact &amp; Connect | Jonathan Roets — Software &amp; Security Engineer{% endblock %}
+{% block twitter_description %}Book a 15-minute technical discovery call with Jonathan Roets or send a direct inquiry for application security testing and Go backend engineering.{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="/static/css/booking.css?v=20261119v2">
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     CONTACT HERO
+============================================================ -->
+<header class="page-hero">
+  <div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; justify-content:center;">
+    <span class="neu-pill-badge">GET IN TOUCH</span>
+    <span class="neu-pill-badge" style="background:rgba(13,148,136,0.12); color:var(--accent); border-color:rgba(13,148,136,0.3);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      15-MIN DISCOVERY CALLS OPEN
+    </span>
+  </div>
+  <h1>Let's Connect &amp; Build.</h1>
+  <p class="lead-text">
+    Book a high-signal 15-minute discovery call directly to Google Meet, or send a scoped project inquiry for application security testing and high-concurrency Go backend systems.
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============================================================
+     MODE SWITCHER: DISCOVERY CALL vs DIRECT MESSAGE
+============================================================ -->
+<section class="section" style="padding-top:10px;" aria-label="Contact and Booking Options">
+
+  <div class="contact-tab-switcher" role="tablist" aria-label="Contact options">
+    <button type="button" class="contact-tab-btn active" id="tabBtnBook" role="tab" aria-selected="true" aria-controls="panelBook" onclick="switchContactTab('book')">
+      <svg viewBox="0 0 24 24" class="tab-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span>Book 15-Min Discovery Call</span>
+      <span class="tab-badge">Instant Sync</span>
+    </button>
+    <button type="button" class="contact-tab-btn" id="tabBtnMessage" role="tab" aria-selected="false" aria-controls="panelMessage" onclick="switchContactTab('message')">
+      <svg viewBox="0 0 24 24" class="tab-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      <span>Send a Direct Message</span>
+    </button>
+  </div>
+
+  <!-- ============================================================
+       PANEL 1: 15-MIN DISCOVERY CALL BOOKING WIDGET (DEFAULT)
+  ============================================================ -->
+  <div id="panelBook" class="contact-tab-panel" role="tabpanel" aria-labelledby="tabBtnBook">
+    <div class="booking-card" data-aos="fade-up">
+      <form id="bookingForm" class="booking-form" onsubmit="return false;" hx-boost="false">
+        <div class="booking-grid">
+          
+          <!-- Calendar & Slots Column -->
+          <div class="booking-panel">
+            <div class="booking-panel-kicker">Live Calendar Availability</div>
+            <h2>Pick a Day &amp; Slot</h2>
+            <p>
+              Direct live sync with Jonathan's calendar. 15-minute focused discussion with instant Google Meet link generation.
+            </p>
+
+            <div class="booking-calendar">
+              <div class="booking-calendar-head">
+                <button type="button" class="booking-calendar-nav" id="bookingPrevMonth" aria-label="Previous month">‹</button>
+                <div class="booking-calendar-title" id="bookingCalendarTitle"></div>
+                <button type="button" class="booking-calendar-nav" id="bookingNextMonth" aria-label="Next month">›</button>
+              </div>
+              <div class="booking-calendar-weekdays" aria-hidden="true">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+              <div class="booking-calendar-days" id="bookingCalendarDays"></div>
+            </div>
+
+            <input id="scheduledAt" name="scheduled_at" type="hidden" required>
+            <div class="booking-availability">
+              <div class="booking-label" id="bookingAvailabilityLabel">Available Times (SAST / UTC+2)</div>
+              <div class="booking-slots" id="bookingSlots" aria-label="Available booking slots"></div>
+              <div class="booking-calendar-note" id="bookingCalendarNote"></div>
+            </div>
+          </div>
+
+          <!-- Form Details Column -->
+          <div class="booking-panel booking-panel-form">
+            <div class="booking-panel-kicker">Call Details</div>
+            <h2>Your Details</h2>
+            <p>Tell Jonathan who you are and what you'd like to dive into.</p>
+
+            <div class="booking-row">
+              <div>
+                <label class="booking-label" for="bookingName">Full Name *</label>
+                <input class="booking-input" id="bookingName" name="name" type="text" autocomplete="name" placeholder="e.g. Sarah Connor" required>
+              </div>
+              <div>
+                <label class="booking-label" for="bookingEmail">Email Address *</label>
+                <input class="booking-input" id="bookingEmail" name="email" type="email" autocomplete="email" placeholder="s.connor@organization.com" required>
+              </div>
+            </div>
+
+            <div class="booking-row">
+              <div>
+                <label class="booking-label" for="bookingCompany">Company / Org</label>
+                <input class="booking-input" id="bookingCompany" name="company" type="text" autocomplete="organization" placeholder="e.g. Cyberdyne Systems">
+              </div>
+              <div>
+                <label class="booking-label" for="bookingPhone">Phone / WhatsApp</label>
+                <input class="booking-input" id="bookingPhone" name="phone" type="tel" autocomplete="tel" placeholder="+27 82 123 4567">
+              </div>
+            </div>
+
+            <div class="booking-row">
+              <div>
+                <label class="booking-label" for="bookingProjectType">Discussion Topic *</label>
+                <select class="booking-input" id="bookingProjectType" name="project_type">
+                  <option value="appsec">AppSec Assessment / Penetration Testing</option>
+                  <option value="go-backend">Go Fiber / High-Concurrency Architecture</option>
+                  <option value="hardware-iot">Embedded Telemetry &amp; LoRa RF</option>
+                  <option value="job-opportunity">Engineering Role / Hiring Opportunity</option>
+                  <option value="general-chat">General Technical Consultation</option>
+                </select>
+              </div>
+              <div>
+                <label class="booking-label" for="bookingBudget">Budget / Scope Range</label>
+                <select class="booking-input" id="bookingBudget" name="budget">
+                  <option value="0">Hiring / Role / Consultation</option>
+                  <option value="15000">R10k - R25k (Scoping / Audit)</option>
+                  <option value="50000">R25k - R75k (Assessment / Microservice)</option>
+                  <option value="100000">R75k - R150k (Full System / Pentest)</option>
+                  <option value="250000">R150k+ (Enterprise Project)</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="booking-label" for="bookingNotes">What would you like to discuss? *</label>
+            <textarea class="booking-input booking-textarea" id="bookingNotes" name="notes" rows="3" placeholder="Brief outline of your application, security scope, backend bottleneck, or opportunity..." required></textarea>
+
+            <button class="btn-primary-custom booking-submit" type="button" id="bookingSubmit">
+              Confirm 15-Min Discovery Call
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4"/>
+              </svg>
+            </button>
+
+            <div class="booking-result" id="bookingResult" aria-live="polite"></div>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Trust Signals Under Booking Widget -->
+    <div class="booking-trust-bar" data-aos="fade-up">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Instant Google Meet invite</span>
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Direct 1:1 technical dialogue</span>
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Zero sales pressure</span>
+      </div>
+    </div>
+
+    <!-- Direct Channels Row -->
+    <div class="contact-quick-channels" data-aos="fade-up">
+      <div class="contact-quick-channels-title">Prefer direct communication? Connect on other platforms</div>
+      <div class="contact-channels-grid">
+        
+        <a href="mailto:jroetscyber@gmail.com" class="service-card-v2" style="display:block; text-decoration:none;">
+          <div style="padding:16px 20px; display:flex; align-items:center; gap:14px;">
+            <div class="service-icon-v2" style="width:40px; height:40px; margin-bottom:0; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Direct Email</div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">jroetscyber@gmail.com</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://github.com/JRoetscyber" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+          <div style="padding:16px 20px; display:flex; align-items:center; gap:14px;">
+            <div class="service-icon-v2" style="width:40px; height:40px; margin-bottom:0; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">GitHub</div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">JRoetscyber ↗</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://linkedin.com/in/jonathan-roets-b93420356" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+          <div style="padding:16px 20px; display:flex; align-items:center; gap:14px;">
+            <div class="service-icon-v2" style="width:40px; height:40px; margin-bottom:0; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect x="2" y="9" width="4" height="12"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">LinkedIn</div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">Jonathan Roets ↗</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://leetcode.com/u/jroetscyber" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+          <div style="padding:16px 20px; display:flex; align-items:center; gap:14px;">
+            <div class="service-icon-v2" style="width:40px; height:40px; margin-bottom:0; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:20px; height:20px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <div>
+              <div style="font-family:var(--font-mono); font-size:0.68rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">LeetCode</div>
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">jroetscyber ↗</div>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       PANEL 2: DIRECT MESSAGE FORM & CHANNELS
+  ============================================================ -->
+  <div id="panelMessage" class="contact-tab-panel" role="tabpanel" aria-labelledby="tabBtnMessage" style="display:none;">
+    <div class="row g-5">
+
+      <!-- Left: Direct Channels & Presence -->
+      <div class="col-lg-5" data-aos="fade-up">
+        <span class="neu-pill-badge" style="margin-bottom:20px;">Direct Channels</span>
+        <h2 class="display-section" style="font-size:clamp(1.6rem, 3vw, 2.2rem); margin-bottom:20px;">
+          Let's build something<br>resilient together.
+        </h2>
+        <p class="lead-text" style="margin-bottom:32px;">
+          Whether you are scheduling a scoped web application penetration test, reviewing architecture for high-concurrency Go services, or hiring for AppSec roles.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Direct Email -->
+          <a href="mailto:jroetscyber@gmail.com" class="service-card-v2" style="display:block; text-decoration:none;">
+            <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+              <div class="service-icon-v2" style="width:48px; height:48px; margin-bottom:0; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:24px; height:24px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Direct Email</div>
+                <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">jroetscyber@gmail.com</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- GitHub -->
+          <a href="https://github.com/JRoetscyber" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+            <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+              <div class="service-icon-v2" style="width:48px; height:48px; margin-bottom:0; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:24px; height:24px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">GitHub Repositories</div>
+                <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">github.com/JRoetscyber ↗</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- LinkedIn -->
+          <a href="https://linkedin.com/in/jonathan-roets-b93420356" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+            <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+              <div class="service-icon-v2" style="width:48px; height:48px; margin-bottom:0; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:24px; height:24px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <rect x="2" y="9" width="4" height="12"></rect>
+                  <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Professional Network</div>
+                <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">in/jonathan-roets-b93420356 ↗</div>
+              </div>
+            </div>
+          </a>
+
+          <!-- LeetCode -->
+          <a href="https://leetcode.com/u/jroetscyber" target="_blank" rel="noopener" class="service-card-v2" style="display:block; text-decoration:none;">
+            <div style="padding:20px 24px; display:flex; align-items:center; gap:16px;">
+              <div class="service-icon-v2" style="width:48px; height:48px; margin-bottom:0; flex-shrink:0;">
+                <svg viewBox="0 0 24 24" class="svc-icon-svg" style="width:24px; height:24px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Algorithms &amp; Problem Solving</div>
+                <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">leetcode.com/u/jroetscyber ↗</div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- Right: Contact Form -->
+      <div class="col-lg-7" data-aos="fade-up" data-aos-delay="100">
+        <div class="widget-card" style="padding:clamp(32px, 4vw, 48px);">
+          
+          <div style="margin-bottom:24px;">
+            <span class="neu-pill-badge" style="margin-bottom:12px;">Direct Inquiries</span>
+            <h3 style="font-family:var(--font-display); font-size:1.4rem; font-weight:800; color:var(--text-primary);">Send a Message</h3>
+            <p style="font-size:0.9rem; color:var(--text-secondary); margin:0;">
+              Direct message sent to Jonathan's inbox. Expect a response within 24 hours.
+            </p>
+          </div>
+
+          {% if success_message %}
+          <div style="padding:16px 20px; background:#dcfce7; border:1px solid #86efac; border-radius:12px; color:#166534; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
+            ✓ {{ success_message }}
+          </div>
+          {% endif %}
+
+          {% if error_message %}
+          <div style="padding:16px 20px; background:#fee2e2; border:1px solid #fca5a5; border-radius:12px; color:#991b1b; font-size:0.95rem; font-weight:600; margin-bottom:24px;">
+            ✕ {{ error_message }}
+          </div>
+          {% endif %}
+
+          <form action="/contact" method="POST" id="contactForm">
+            <div style="display:flex; flex-direction:column; gap:20px;">
+              
+              <!-- Full Name -->
+              <div>
+                <label for="name" class="form-label">Full Name *</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Sarah Connor" required>
+              </div>
+
+              <!-- Email Address -->
+              <div>
+                <label for="email" class="form-label">Email Address *</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="s.connor@organization.com" required>
+              </div>
+
+              <!-- Inquiry Domain -->
+              <div>
+                <label for="subject" class="form-label">Area of Interest *</label>
+                <select id="subject" name="subject" class="form-control" required style="cursor:pointer;">
+                  <option value="AppSec Assessment">Application Security Testing / Web Pentesting</option>
+                  <option value="Go / Backend Engineering">Go Fiber / Backend Systems Architecture</option>
+                  <option value="Hardware / Telemetry">Embedded Hardware / IoT &amp; LoRa RF</option>
+                  <option value="Job Opportunity">AppSec / Software Engineering Role Opportunity</option>
+                  <option value="Other">General Technical Inquiry</option>
+                </select>
+              </div>
+
+              <!-- Message Details -->
+              <div>
+                <label for="message" class="form-label">Details / Requirements *</label>
+                <textarea id="message" name="message" class="form-control" rows="5" placeholder="Describe the application scope, microservice requirements, or opportunity..." required></textarea>
+              </div>
+
+              <!-- Submit Button -->
+              <div style="margin-top:10px;">
+                <button type="submit" class="btn-primary-custom neu-btn-primary" style="width:100%; justify-content:center;">
+                  Send Message
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 8h10M9 4l4 4-4 4"/>
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ============================================================
+   TAB SWITCHING LOGIC
+============================================================ */
+function switchContactTab(tab) {
+  var panelBook = document.getElementById('panelBook');
+  var panelMessage = document.getElementById('panelMessage');
+  var btnBook = document.getElementById('tabBtnBook');
+  var btnMessage = document.getElementById('tabBtnMessage');
+
+  if (tab === 'book') {
+    if (panelBook) panelBook.style.display = 'block';
+    if (panelMessage) panelMessage.style.display = 'none';
+    if (btnBook) {
+      btnBook.classList.add('active');
+      btnBook.setAttribute('aria-selected', 'true');
+    }
+    if (btnMessage) {
+      btnMessage.classList.remove('active');
+      btnMessage.setAttribute('aria-selected', 'false');
+    }
+    if (history.replaceState) {
+      history.replaceState(null, null, '#book');
+    }
+  } else {
+    if (panelBook) panelBook.style.display = 'none';
+    if (panelMessage) panelMessage.style.display = 'block';
+    if (btnMessage) {
+      btnMessage.classList.add('active');
+      btnMessage.setAttribute('aria-selected', 'true');
+    }
+    if (btnBook) {
+      btnBook.classList.remove('active');
+      btnBook.setAttribute('aria-selected', 'false');
+    }
+    if (history.replaceState) {
+      history.replaceState(null, null, '#message');
+    }
+  }
+}
+
+/* ============================================================
+   15-MINUTE DISCOVERY CALENDAR & BOOKING ENGINE
+============================================================ */
+(function () {
+  var form = document.getElementById('bookingForm');
+  var scheduledAt = document.getElementById('scheduledAt');
+  var slots = document.getElementById('bookingSlots');
+  var result = document.getElementById('bookingResult');
+  var submit = document.getElementById('bookingSubmit');
+  var calendarDays = document.getElementById('bookingCalendarDays');
+  var calendarTitle = document.getElementById('bookingCalendarTitle');
+  var prevMonth = document.getElementById('bookingPrevMonth');
+  var nextMonth = document.getElementById('bookingNextMonth');
+  var availabilityLabel = document.getElementById('bookingAvailabilityLabel');
+  var calendarNote = document.getElementById('bookingCalendarNote');
+
+  // Handle initial tab selection from hash or server message
+  {% if success_message or error_message %}
+  switchContactTab('message');
+  {% else %}
+  if (window.location.hash === '#message' || window.location.search.indexOf('mode=message') !== -1) {
+    switchContactTab('message');
+  } else {
+    switchContactTab('book');
+  }
+  {% endif %}
+
+  if (!form || !scheduledAt || !slots || !result || !submit || !calendarDays || !calendarTitle) return;
+
+  var visibleMonth = new Date();
+  visibleMonth.setDate(1);
+  var selectedDate = null;
+  var horizonDays = 21;
+
+  function pad(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function toDateString(date) {
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate());
+  }
+
+  function sameDay(a, b) {
+    return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function renderCalendar() {
+    calendarDays.innerHTML = '';
+    slots.innerHTML = '';
+    scheduledAt.value = '';
+    calendarTitle.textContent = visibleMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var lastDate = new Date(today);
+    lastDate.setDate(lastDate.getDate() + horizonDays);
+    var firstDay = new Date(visibleMonth);
+    var offset = (firstDay.getDay() + 6) % 7;
+    var daysInMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate();
+
+    for (var blank = 0; blank < offset; blank += 1) {
+      calendarDays.appendChild(document.createElement('span'));
+    }
+
+    for (var day = 1; day <= daysInMonth; day += 1) {
+      var date = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day);
+      var dayOfWeek = date.getDay();
+      var disabled = date < today || date > lastDate || dayOfWeek === 0 || dayOfWeek === 6;
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'booking-day';
+      button.textContent = day;
+      button.disabled = disabled;
+      if (sameDay(date, selectedDate)) button.classList.add('active');
+      button.addEventListener('click', function () {
+        selectedDate = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), Number(this.textContent));
+        renderCalendar();
+        loadAvailability(toDateString(selectedDate));
+      });
+      calendarDays.appendChild(button);
+    }
+  }
+
+  async function loadAvailability(dateValue) {
+    slots.innerHTML = '<div class="booking-calendar-note">Checking real-time availability...</div>';
+    calendarNote.textContent = '';
+    scheduledAt.value = '';
+    availabilityLabel.textContent = 'Available Times for ' + selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+
+    try {
+      var response = await fetch('/api/booking-availability?date=' + encodeURIComponent(dateValue));
+      var data = await response.json();
+      if (!response.ok || data.status !== 'success') throw new Error(data.message || 'Could not load availability.');
+
+      horizonDays = (data.settings && data.settings.horizon_days) || horizonDays;
+      slots.innerHTML = '';
+
+      if (!data.calendar_connected && data.calendar_error) {
+        calendarNote.textContent = 'Calendar sync standard availability active.';
+      }
+
+      if (!data.slots || !data.slots.length) {
+        slots.innerHTML = '<div class="booking-calendar-note" style="grid-column:1/-1; padding:12px; text-align:center;">No open slots on this day. Please select another date.</div>';
+        return;
+      }
+
+      data.slots.forEach(function (slot) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'booking-slot';
+        button.textContent = slot.label;
+        button.dataset.value = slot.value;
+        button.addEventListener('click', function () {
+          scheduledAt.value = this.dataset.value;
+          slots.querySelectorAll('.booking-slot').forEach(function (item) {
+            item.classList.toggle('active', item === button);
+          });
+        });
+        slots.appendChild(button);
+      });
+    } catch (error) {
+      slots.innerHTML = '';
+      calendarNote.textContent = error.message;
+    }
+  }
+
+  async function handleBookingSubmission(event) {
+    if (event) event.preventDefault();
+    result.className = 'booking-result';
+    result.style.display = 'none';
+    result.textContent = '';
+
+    var nameVal = (document.getElementById('bookingName').value || '').trim();
+    var emailVal = (document.getElementById('bookingEmail').value || '').trim();
+    var notesVal = (document.getElementById('bookingNotes').value || '').trim();
+
+    if (!nameVal || !emailVal) {
+      result.style.display = 'block';
+      result.classList.add('error');
+      result.textContent = 'Please enter your full name and email address.';
+      return;
+    }
+
+    if (!scheduledAt.value) {
+      result.style.display = 'block';
+      result.classList.add('error');
+      result.textContent = 'Please select a date and an available time slot before confirming.';
+      return;
+    }
+
+    submit.disabled = true;
+    submit.innerHTML = 'Securing 15-Min Slot...';
+
+    var rawData = new FormData(form);
+    var payload = {
+      name: nameVal,
+      email: emailVal,
+      company: rawData.get('company') || '',
+      phone: rawData.get('phone') || '',
+      project_type: rawData.get('project_type'),
+      budget: parseFloat(rawData.get('budget')) || 0,
+      notes: notesVal || '15-min discovery call',
+      scheduled_at: scheduledAt.value
+    };
+
+    try {
+      var response = await fetch('/api/book-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var data = await response.json();
+
+      if (!response.ok || data.status !== 'success') {
+        throw new Error(data.message || 'Booking submission failed. Please try again.');
+      }
+
+      result.style.display = 'block';
+      result.classList.add('success');
+      
+      var calBtnHtml = '';
+      if (data.calendar_url) {
+        calBtnHtml = '<a href="' + escapeHtml(data.calendar_url) + '" target="_blank" rel="noopener" class="booking-cal-btn">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' +
+          'Add to Google Calendar ↗</a>';
+      }
+
+      result.innerHTML = '<div class="booking-success-box">' +
+        '<div class="booking-success-title">' +
+          '<span>✓ 15-Minute Discovery Call Confirmed!</span>' +
+        '</div>' +
+        '<p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">' +
+          'Your session has been locked in. An invitation with Google Meet details has been dispatched to <strong>' + escapeHtml(payload.email) + '</strong>.' +
+        '</p>' +
+        calBtnHtml +
+      '</div>';
+
+      form.reset();
+      scheduledAt.value = '';
+      if (selectedDate) loadAvailability(toDateString(selectedDate));
+    } catch (error) {
+      result.style.display = 'block';
+      result.classList.add('error');
+      result.textContent = error.message;
+    } finally {
+      submit.disabled = false;
+      submit.innerHTML = 'Confirm 15-Min Discovery Call <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+    }
+  }
+
+  submit.addEventListener('click', handleBookingSubmission);
+  form.addEventListener('submit', handleBookingSubmission);
+
+  if (prevMonth) {
+    prevMonth.addEventListener('click', function () {
+      visibleMonth.setMonth(visibleMonth.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+
+  if (nextMonth) {
+    nextMonth.addEventListener('click', function () {
+      visibleMonth.setMonth(visibleMonth.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  // Pre-select next available business day
+  selectedDate = new Date();
+  selectedDate.setDate(selectedDate.getDate() + 1);
+  while (selectedDate.getDay() === 0 || selectedDate.getDay() === 6) {
+    selectedDate.setDate(selectedDate.getDate() + 1);
+  }
+  visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  renderCalendar();
+  loadAvailability(toDateString(selectedDate));
+}());
+</script>
+{% endblock %}

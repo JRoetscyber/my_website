@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ content.MetaTitle|default:"Security Tools & Research | Jonathan Roets — AppSec Engineer" }}{% endblock %}
+
+{% block meta_description %}{{ content.MetaDescription|default:"Open-source security tools, API fuzzers, OWASP Top 10 automated test suites, and offensive security research write-ups by Jonathan Roets." }}{% endblock %}
+
+{% block meta_keywords %}Security Tools, Go Fuzzer, OWASP Top 10, AppSec Research, Web Pentesting Tools, IDOR Hunter, Jonathan Roets Security, Penetration Testing South Africa{% endblock %}
+
+{% block og_title %}{{ content.MetaTitle|default:"Security Tools & Research | Jonathan Roets — AppSec Engineer" }}{% endblock %}
+{% block og_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block twitter_title %}{{ content.MetaTitle|default:"Security Tools & Research | Jonathan Roets — AppSec Engineer" }}{% endblock %}
+{% block twitter_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     SECURITY HERO
+============================================================ -->
+<header class="page-hero">
+  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:20px;">
+    <span class="neu-pill-badge">{{ content.HeroEyebrow }}</span>
+  </div>
+  <h1>{{ content.HeroTitle }}</h1>
+  <p class="lead-text">
+    {{ content.HeroLead }}
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============================================================
+     RESEARCH HIGHLIGHT BAR
+============================================================ -->
+{% if content.Stats %}
+<section style="background:var(--surface-1); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:24px 0;">
+  <div class="wd-trust-inner">
+    {% for st in content.Stats %}
+    <div class="wd-trust-item">
+      <strong>{{ st.Value }}</strong>
+      <span>{{ st.Label }}</span>
+    </div>
+    {% if not forloop.Last %}<div class="wd-trust-divider" aria-hidden="true"></div>{% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================================================
+     OPEN-SOURCE SECURITY TOOLS SHOWCASE
+============================================================ -->
+<section class="section" aria-labelledby="tools-showcase-heading">
+  <div class="section-header" data-aos="fade-up">
+    <span class="neu-pill-badge" style="margin-bottom:20px;">{{ content.ToolsEyebrow }}</span>
+    <h2 class="display-section" id="tools-showcase-heading">
+      {{ content.ToolsTitle }}
+    </h2>
+    <p class="lead-text" style="margin-top:16px;">
+      {{ content.ToolsLead }}
+    </p>
+  </div>
+
+  <div class="services-grid" style="grid-template-columns:repeat(auto-fit, minmax(min(100%, 540px), 1fr)); gap:32px;">
+
+    {% for tool in content.Tools %}
+    <div class="service-card-v2"{% if tool.Anchor %} id="{{ tool.Anchor }}"{% endif %} data-aos="fade-up">
+      <div class="service-card-v2-inner" style="padding:clamp(28px, 4vw, 44px);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; margin-bottom:16px;">
+          <div class="service-icon-v2" style="margin-bottom:0;" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="svc-icon-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              {% if tool.Icon == 'zap' %}
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              {% elif tool.Icon == 'shield' %}
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              {% elif tool.Icon == 'radio' %}
+              <path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82"></path>
+              <circle cx="12" cy="12" r="1"></circle>
+              {% elif tool.Icon == 'database' %}
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              {% else %}
+              <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+              {% endif %}
+            </svg>
+          </div>
+          {% if tool.RepoURL %}
+          <a href="{{ tool.RepoURL }}" target="_blank" rel="noopener" class="btn-ghost-custom neu-btn-secondary" style="padding:6px 16px; font-size:0.75rem;">
+            GitHub Repo &#8599;
+          </a>
+          {% endif %}
+        </div>
+        <span class="mini-card-tag" style="margin-bottom:12px;">{{ tool.Tag }}</span>
+        <h3>{{ tool.Title }}</h3>
+        <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.75; margin-bottom:20px;">
+          {{ tool.Description }}
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px;">
+          {% for chip in tool.Chips %}
+          {% if chip %}<span class="neu-chip">{{ chip }}</span>{% endif %}
+          {% endfor %}
+        </div>
+        <div style="border-top:1px solid var(--border); padding-top:18px; width:100%; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">Status: {{ tool.Status|default:"Active" }}</span>
+          {% if tool.RepoURL %}
+          <a href="{{ tool.RepoURL }}" target="_blank" rel="noopener" class="svc-learn-more" style="margin-top:0;">View on GitHub &rsaquo;</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+<!-- ============================================================
+     RESEARCH CASE STUDIES & WRITE-UPS
+============================================================ -->
+<section class="section" aria-labelledby="writeups-heading" style="padding-top:0;">
+  <div class="section-header" data-aos="fade-up">
+    <span class="neu-pill-badge" style="margin-bottom:20px;">{{ content.WriteupsEyebrow }}</span>
+    <h2 class="display-section" id="writeups-heading">
+      {{ content.WriteupsTitle }}
+    </h2>
+    <p class="lead-text" style="margin-top:16px;">
+      {{ content.WriteupsLead }}
+    </p>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:24px;">
+
+    {% for wp in content.Writeups %}
+    <div class="widget-card" data-aos="fade-up">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+        <div style="max-width:800px;">
+          <span class="mini-card-tag" style="margin-bottom:12px;">{{ wp.Tag }}</span>
+          <h3 style="font-size:1.3rem; margin-bottom:10px; color:var(--text-primary);">
+            {{ wp.Title }}
+          </h3>
+          <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.7; margin-bottom:16px;">
+            {{ wp.Description }}
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            {% for chip in wp.Chips %}
+            {% if chip %}<span class="neu-chip" style="font-size:0.72rem;">{{ chip }}</span>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% if wp.LinkURL %}
+        <a href="{{ wp.LinkURL }}" class="btn-ghost-custom neu-btn-secondary" style="padding:10px 20px; font-size:0.8rem; align-self:flex-start;">
+          {{ wp.LinkText|default:"Read Write-up" }} &rsaquo;
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA SECTION
+============================================================ -->
+<section class="cta-band" aria-label="Engage Security Assessment">
+  <div class="cta-band-card" data-aos="fade-up">
+    <span class="neu-pill-badge" style="justify-content:center; margin-bottom:24px;">
+      {{ content.CTAEyebrow }}
+    </span>
+    <h2 class="display-section" style="max-width:740px; margin:0 auto 20px;">
+      {{ content.CTATitleLine1 }}<br>
+      {{ content.CTATitleLine2 }}
+    </h2>
+    <p class="lead-text" style="margin:0 auto 36px; text-align:center;">
+      {{ content.CTALead }}
+    </p>
+    <div class="cta-band-actions">
+      <a href="{{ content.CTAPrimaryURL|default:'/contact' }}" class="btn-primary-custom neu-btn-primary">
+        {{ content.CTAPrimaryLabel|default:"Schedule Scoped Review" }}
+      </a>
+      <a href="/about" class="btn-ghost-custom neu-btn-secondary">
+        Read Bio &amp; Matrix <span class="arrow">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

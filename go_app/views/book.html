@@ -1,46 +1,49 @@
 {% extends 'base.html' %}
 
-{% block title %}Book a Call — JO4 Dev{% endblock %}
-{% block meta_description %}Book a free 30-minute call to discuss your website, CRM, SEO or automation project.{% endblock %}
+{% block title %}Book 15-Min Discovery Call | Jonathan Roets — Software &amp; Security Engineer{% endblock %}
+{% block meta_description %}Book a free 15-minute technical discovery call with Jonathan Roets to discuss application security testing, penetration testing, or Go backend systems.{% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="/static/css/booking.css?v=20260929v2">
+<link rel="stylesheet" href="/static/css/booking.css?v=20261119v2">
 {% endblock %}
 
 {% block content %}
 
 <!-- ==============================================================
-     THE SINGULARITY — BOOKING PAGE
+     THE SINGULARITY — 15-MINUTE DISCOVERY CALL PAGE
      Zero distractions. One action.
 ============================================================== -->
 <section class="booking-page" aria-labelledby="booking-heading">
 
   <!-- Eyebrow -->
   <div class="booking-eyebrow" data-aos="fade-up">
-    <span class="eyebrow" style="justify-content: center;">Schedule a Session</span>
+    <div style="display:inline-flex; align-items:center; gap:8px;">
+      <span class="neu-pill-badge">SCHEDULE A SESSION</span>
+      <span class="neu-pill-badge" style="background:rgba(13,148,136,0.12); color:var(--accent); border-color:rgba(13,148,136,0.3);">
+        15-MIN DISCOVERY CALL
+      </span>
+    </div>
   </div>
 
   <!-- Headline -->
   <h1 class="booking-headline" id="booking-heading" data-aos="fade-up" data-aos-delay="60">
-    30 minutes.<br>
-    <span class="text-accent">Zero obligation.</span>
+    15 minutes.<br>
+    <span class="text-accent">Zero Fluff. Direct 1:1.</span>
   </h1>
 
   <!-- Subline -->
   <p class="booking-sub" data-aos="fade-up" data-aos-delay="120">
-    Pick a time that works for you. We'll talk about your agency's current
-    process, where the bottlenecks are, and whether a custom system makes
-    sense for your operation.
+    Pick a day and time that suits you. We'll talk about your application security requirements, architecture bottlenecks in Go microservices, or explore engineering roles.
   </p>
 
   <div class="booking-card" data-aos="fade-up" data-aos-delay="180">
-    <form id="bookingForm" class="booking-form">
+    <form id="bookingForm" class="booking-form" hx-boost="false">
       <div class="booking-grid">
         <div class="booking-panel">
-          <div class="booking-panel-kicker">Pick a time</div>
-          <h2>Choose a day, then a slot.</h2>
+          <div class="booking-panel-kicker">Live Calendar Availability</div>
+          <h2>Pick a Day &amp; Slot</h2>
           <p>
-            Availability checks your calendar, then blocks out the meeting plus buffer time.
+            Real-time calendar synchronization. 15-minute focused discussion with instant Google Meet link generation.
           </p>
 
           <div class="booking-calendar">
@@ -57,64 +60,67 @@
 
           <input id="scheduledAt" name="scheduled_at" type="hidden" required>
           <div class="booking-availability">
-            <div class="booking-label" id="bookingAvailabilityLabel">Available times</div>
+            <div class="booking-label" id="bookingAvailabilityLabel">Available Times (SAST / UTC+2)</div>
             <div class="booking-slots" id="bookingSlots" aria-label="Available booking slots"></div>
             <div class="booking-calendar-note" id="bookingCalendarNote"></div>
           </div>
         </div>
 
         <div class="booking-panel booking-panel-form">
+          <div class="booking-panel-kicker">Call Details</div>
+          <h2>Your Details</h2>
+          <p>Tell Jonathan who you are and what you'd like to dive into.</p>
+
           <div class="booking-row">
             <div>
-              <label class="booking-label" for="bookingName">Name</label>
-              <input class="booking-input" id="bookingName" name="name" type="text" autocomplete="name" required>
+              <label class="booking-label" for="bookingName">Full Name *</label>
+              <input class="booking-input" id="bookingName" name="name" type="text" autocomplete="name" placeholder="e.g. Sarah Connor" required>
             </div>
             <div>
-              <label class="booking-label" for="bookingEmail">Email</label>
-              <input class="booking-input" id="bookingEmail" name="email" type="email" autocomplete="email" required>
+              <label class="booking-label" for="bookingEmail">Email Address *</label>
+              <input class="booking-input" id="bookingEmail" name="email" type="email" autocomplete="email" placeholder="s.connor@organization.com" required>
             </div>
           </div>
 
           <div class="booking-row">
             <div>
-              <label class="booking-label" for="bookingCompany">Company</label>
-              <input class="booking-input" id="bookingCompany" name="company" type="text" autocomplete="organization">
+              <label class="booking-label" for="bookingCompany">Company / Org</label>
+              <input class="booking-input" id="bookingCompany" name="company" type="text" autocomplete="organization" placeholder="e.g. Cyberdyne Systems">
             </div>
             <div>
-              <label class="booking-label" for="bookingPhone">Phone</label>
-              <input class="booking-input" id="bookingPhone" name="phone" type="tel" autocomplete="tel">
+              <label class="booking-label" for="bookingPhone">Phone / WhatsApp</label>
+              <input class="booking-input" id="bookingPhone" name="phone" type="tel" autocomplete="tel" placeholder="+27 82 123 4567">
             </div>
           </div>
 
           <div class="booking-row">
             <div>
-              <label class="booking-label" for="bookingProjectType">Project type</label>
+              <label class="booking-label" for="bookingProjectType">Discussion Topic *</label>
               <select class="booking-input" id="bookingProjectType" name="project_type">
-                <option value="portal">Client portal</option>
-                <option value="crm">CRM / lead system</option>
-                <option value="automation">Automation</option>
-                <option value="erp">ERP / operations system</option>
-                <option value="static">Website</option>
+                <option value="appsec">AppSec Assessment / Penetration Testing</option>
+                <option value="go-backend">Go Fiber / High-Concurrency Architecture</option>
+                <option value="hardware-iot">Embedded Telemetry &amp; LoRa RF</option>
+                <option value="job-opportunity">Engineering Role / Hiring Opportunity</option>
+                <option value="general-chat">General Technical Consultation</option>
               </select>
             </div>
             <div>
-              <label class="booking-label" for="bookingBudget">Budget range</label>
+              <label class="booking-label" for="bookingBudget">Budget / Scope Range</label>
               <select class="booking-input" id="bookingBudget" name="budget">
-                <option value="2000">R2k - R5k</option>
-                <option value="10000">R5k - R10k</option>
-                <option value="15000">R15k - R30k</option>
-                <option value="50000">R30k - R75k</option>
-                <option value="100000">R75k - R150k</option>
-                <option value="250000">R150k+</option>
+                <option value="0">Hiring / Role / Consultation</option>
+                <option value="15000">R10k - R25k (Scoping / Audit)</option>
+                <option value="50000">R25k - R75k (Assessment / Microservice)</option>
+                <option value="100000">R75k - R150k (Full System / Pentest)</option>
+                <option value="250000">R150k+ (Enterprise Project)</option>
               </select>
             </div>
           </div>
 
-          <label class="booking-label" for="bookingNotes">What should we discuss?</label>
-          <textarea class="booking-input booking-textarea" id="bookingNotes" name="notes" rows="4" placeholder="Current tools, bottlenecks, deadline, or anything useful."></textarea>
+          <label class="booking-label" for="bookingNotes">What would you like to discuss? *</label>
+          <textarea class="booking-input booking-textarea" id="bookingNotes" name="notes" rows="3" placeholder="Brief outline of your application, security scope, backend bottleneck, or opportunity..." required></textarea>
 
-          <button class="btn-primary-custom booking-submit" type="submit" id="bookingSubmit">
-            Request the Call
+          <button class="btn-primary-custom booking-submit" type="button" id="bookingSubmit">
+            Confirm 15-Min Discovery Call
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M3 8h10M9 4l4 4-4 4"/>
             </svg>
@@ -127,36 +133,19 @@
   </div>
 
   <!-- Trust signals below the widget -->
-  <div style="margin-top: 40px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; justify-content: center;"
-       data-aos="fade-up" data-aos-delay="260">
-
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">No sales pressure</span>
+  <div class="booking-trust-bar" data-aos="fade-up" data-aos-delay="260">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Instant Google Meet invite</span>
     </div>
-
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">Straight technical talk</span>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Direct 1:1 technical dialogue</span>
     </div>
-
-    <div style="display:flex; align-items:center; gap:10px;">
-      <div class="service-icon" style="margin:0; width:36px; height:36px;" aria-hidden="true">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:16px;height:16px;">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <span style="font-size:0.82rem; color:var(--color-text-muted); font-family:var(--font-mono); letter-spacing:0.05em;">You get a plan, not a proposal</span>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" class="trust-icon" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>Zero sales pressure</span>
     </div>
-
   </div>
 
 </section>
@@ -197,6 +186,12 @@
     return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   }
 
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
   function renderCalendar() {
     calendarDays.innerHTML = '';
     slots.innerHTML = '';
@@ -235,25 +230,25 @@
   }
 
   async function loadAvailability(dateValue) {
-    slots.innerHTML = '<div class="booking-calendar-note">Checking availability...</div>';
+    slots.innerHTML = '<div class="booking-calendar-note">Checking real-time availability...</div>';
     calendarNote.textContent = '';
     scheduledAt.value = '';
-    availabilityLabel.textContent = 'Available times for ' + selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    availabilityLabel.textContent = 'Available Times for ' + selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 
     try {
-      var response = await fetch('{{ url_for("booking.booking_availability") }}?date=' + encodeURIComponent(dateValue));
+      var response = await fetch('/api/booking-availability?date=' + encodeURIComponent(dateValue));
       var data = await response.json();
       if (!response.ok || data.status !== 'success') throw new Error(data.message || 'Could not load availability.');
 
-      horizonDays = data.settings.horizon_days || horizonDays;
+      horizonDays = (data.settings && data.settings.horizon_days) || horizonDays;
       slots.innerHTML = '';
 
       if (!data.calendar_connected && data.calendar_error) {
-        calendarNote.textContent = 'Calendar sync is pending; showing standard availability.';
+        calendarNote.textContent = 'Calendar sync standard availability active.';
       }
 
-      if (!data.slots.length) {
-        slots.innerHTML = '<div class="booking-calendar-note">No open slots on this day.</div>';
+      if (!data.slots || !data.slots.length) {
+        slots.innerHTML = '<div class="booking-calendar-note" style="grid-column:1/-1; padding:12px; text-align:center;">No open slots on this day. Please select another date.</div>';
         return;
       }
 
@@ -277,17 +272,47 @@
     }
   }
 
-  form.addEventListener('submit', async function (event) {
-    event.preventDefault();
+  async function handleBookingSubmission(event) {
+    if (event) event.preventDefault();
     result.className = 'booking-result';
+    result.style.display = 'none';
     result.textContent = '';
-    submit.disabled = true;
-    submit.textContent = 'Saving...';
 
-    var payload = Object.fromEntries(new FormData(form).entries());
+    var nameVal = (document.getElementById('bookingName').value || '').trim();
+    var emailVal = (document.getElementById('bookingEmail').value || '').trim();
+    var notesVal = (document.getElementById('bookingNotes').value || '').trim();
+
+    if (!nameVal || !emailVal) {
+      result.style.display = 'block';
+      result.classList.add('error');
+      result.textContent = 'Please enter your full name and email address.';
+      return;
+    }
+
+    if (!scheduledAt.value) {
+      result.style.display = 'block';
+      result.classList.add('error');
+      result.textContent = 'Please select a date and an available time slot before confirming.';
+      return;
+    }
+
+    submit.disabled = true;
+    submit.innerHTML = 'Securing 15-Min Slot...';
+
+    var rawData = new FormData(form);
+    var payload = {
+      name: nameVal,
+      email: emailVal,
+      company: rawData.get('company') || '',
+      phone: rawData.get('phone') || '',
+      project_type: rawData.get('project_type'),
+      budget: parseFloat(rawData.get('budget')) || 0,
+      notes: notesVal || '15-min discovery call',
+      scheduled_at: scheduledAt.value
+    };
 
     try {
-      var response = await fetch('{{ url_for("booking.book_call") }}', {
+      var response = await fetch('/api/book-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -295,32 +320,60 @@
       var data = await response.json();
 
       if (!response.ok || data.status !== 'success') {
-        throw new Error(data.message || 'Booking failed.');
+        throw new Error(data.message || 'Booking submission failed. Please try again.');
       }
 
+      result.style.display = 'block';
       result.classList.add('success');
-      result.innerHTML = '<strong>Your session has been successfully booked! We will be in touch shortly.</strong>';
+      
+      var calBtnHtml = '';
+      if (data.calendar_url) {
+        calBtnHtml = '<a href="' + escapeHtml(data.calendar_url) + '" target="_blank" rel="noopener" class="booking-cal-btn">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' +
+          'Add to Google Calendar ↗</a>';
+      }
+
+      result.innerHTML = '<div class="booking-success-box">' +
+        '<div class="booking-success-title">' +
+          '<span>✓ 15-Minute Discovery Call Confirmed!</span>' +
+        '</div>' +
+        '<p style="margin:0; font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">' +
+          'Your session has been locked in. An invitation with Google Meet details has been dispatched to <strong>' + escapeHtml(payload.email) + '</strong>.' +
+        '</p>' +
+        calBtnHtml +
+      '</div>';
+
       form.reset();
+      scheduledAt.value = '';
       if (selectedDate) loadAvailability(toDateString(selectedDate));
     } catch (error) {
+      result.style.display = 'block';
       result.classList.add('error');
       result.textContent = error.message;
     } finally {
       submit.disabled = false;
-      submit.innerHTML = 'Request the Call <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+      submit.innerHTML = 'Confirm 15-Min Discovery Call <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
     }
-  });
+  }
 
-  prevMonth.addEventListener('click', function () {
-    visibleMonth.setMonth(visibleMonth.getMonth() - 1);
-    renderCalendar();
-  });
+  submit.addEventListener('click', handleBookingSubmission);
+  form.addEventListener('submit', handleBookingSubmission);
 
-  nextMonth.addEventListener('click', function () {
-    visibleMonth.setMonth(visibleMonth.getMonth() + 1);
-    renderCalendar();
-  });
+  if (prevMonth) {
+    prevMonth.addEventListener('click', function () {
+      visibleMonth.setMonth(visibleMonth.getMonth() - 1);
+      renderCalendar();
+    });
+  }
 
+  if (nextMonth) {
+    nextMonth.addEventListener('click', function () {
+      visibleMonth.setMonth(visibleMonth.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  // Pre-select next available business day
   selectedDate = new Date();
   selectedDate.setDate(selectedDate.getDate() + 1);
   while (selectedDate.getDay() === 0 || selectedDate.getDay() === 6) {
@@ -332,5 +385,3 @@
 }());
 </script>
 {% endblock %}
-
-

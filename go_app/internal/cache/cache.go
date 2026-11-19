@@ -101,6 +101,10 @@ func ServicesKey() string {
 	return FormatKey("services", "list:all", "v1")
 }
 
+func PageContentKey(pageKey string) string {
+	return FormatKey("pagecontent", pageKey, "v1")
+}
+
 func FAQsKey() string {
 	return FormatKey("faqs", "list:all", "v1")
 }
@@ -174,8 +178,13 @@ func (m *Manager) Invalidate(ctx context.Context, patterns ...string) {
 
 		// Invalidate Redis if connected
 		if m.available && m.client != nil {
+			baseCtx := ctx
+			if baseCtx == nil {
+				baseCtx = context.Background()
+			}
+			detachedCtx := context.WithoutCancel(baseCtx)
 			go func(pat string) {
-				subCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+				subCtx, cancel := context.WithTimeout(detachedCtx, 3*time.Second)
 				defer cancel()
 				iter := m.client.Scan(subCtx, 0, pat, 0).Iterator()
 				for iter.Next(subCtx) {

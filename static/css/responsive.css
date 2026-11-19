@@ -1,0 +1,769 @@
+/* ==========================================================================
+   responsive.css — Project-wide Responsive & Viewport Scaling Stylesheet
+   JO4 Dev Portfolio & Systems Engineering Showcase
+   
+   Architecture:
+   1. VARIABLES: Fluid design tokens (:root)
+   2. BASE: Fluid resets, media scaling, horizontal scroll prevention
+   3. LAYOUT: Responsive containers, fluid grids, flexible flexbox
+   4. COMPONENTS: Hero viewport fit (100svh), nav, cards, forms, footer
+   5. BREAKPOINTS: Progressive enhancement from 1024px to 3840px+
+   6. HIGH-DPI & ACCESSIBILITY: Retina/High-DPI, touch/hover, motion
+   ========================================================================== */
+
+/* ==========================================================================
+   1. VARIABLES (Custom Properties for Fluid Scaling)
+   ========================================================================== */
+:root {
+  /* Fluid Container Widths */
+  --resp-container-max:    1320px;
+  --resp-container-gutter: clamp(1rem, 3.5vw, 2.5rem);
+
+  /* Legacy & Cross-Template Variable Aliases */
+  --max-w:                 var(--resp-container-max);
+  --pad-x:                 var(--resp-container-gutter);
+  --container-max:         var(--resp-container-max);
+  --container-pad:         var(--resp-container-gutter);
+  --section-py:            var(--resp-section-py);
+
+  /* Fluid Spacing Scale */
+  --resp-space-2xs:        clamp(0.25rem, 0.2rem + 0.25vw, 0.4rem);
+  --resp-space-xs:         clamp(0.45rem, 0.35rem + 0.4vw, 0.65rem);
+  --resp-space-sm:         clamp(0.75rem, 0.6rem + 0.6vw, 1rem);
+  --resp-space-md:         clamp(1rem, 0.8rem + 0.8vw, 1.4rem);
+  --resp-space-lg:         clamp(1.5rem, 1.2rem + 1.2vw, 2.2rem);
+  --resp-space-xl:         clamp(2rem, 1.6rem + 1.8vw, 3rem);
+  --resp-space-2xl:        clamp(2.75rem, 2.2rem + 2.5vw, 4.25rem);
+
+  /* Section Vertical Rhythm */
+  --resp-section-py:       clamp(2.5rem, 4.5vw, 4.5rem);
+
+  /* Fluid Typography Scale */
+  --resp-text-xs:          clamp(0.68rem, 0.64rem + 0.15vw, 0.75rem);
+  --resp-text-sm:          clamp(0.8rem, 0.76rem + 0.2vw, 0.88rem);
+  --resp-text-base:        clamp(0.92rem, 0.88rem + 0.2vw, 1rem);
+  --resp-text-md:          clamp(1rem, 0.94rem + 0.28vw, 1.15rem);
+  --resp-text-lg:          clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+  --resp-text-xl:          clamp(1.35rem, 1.2rem + 0.6vw, 1.7rem);
+  --resp-text-2xl:         clamp(1.65rem, 1.45rem + 0.9vw, 2.2rem);
+  --resp-text-hero:        clamp(1.9rem, 3.8vw + 0.5rem, 3.2rem);
+
+  /* Line Height & Comfortable Reading Widths */
+  --resp-line-height-body: 1.6;
+  --resp-line-height-heading: 1.14;
+  --resp-max-ch:           65ch;
+
+  /* Viewport Height Fallbacks */
+  --resp-nav-height:       64px;
+}
+
+/* ==========================================================================
+   2. BASE RESETS & ZERO HORIZONTAL OVERFLOW
+   ========================================================================== */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-size: var(--resp-text-base);
+  line-height: var(--resp-line-height-body);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* Responsive Media Constraint */
+img,
+video,
+svg,
+canvas,
+picture {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Accessible Minimum Touch Targets (>= 44x44px) */
+a,
+button,
+input,
+select,
+textarea,
+.nav-toggle,
+.neu-orbit-disc,
+.btn-primary-custom,
+.btn-ghost-custom {
+  touch-action: manipulation;
+}
+
+/* ==========================================================================
+   3. LAYOUT & CONTAINERS
+   ========================================================================== */
+.section,
+.hero-inner,
+.footer-inner,
+.page-hero,
+.cta-band-card {
+  width: 100%;
+  max-width: var(--resp-container-max);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+.section {
+  padding-top: var(--resp-section-py);
+  padding-bottom: var(--resp-section-py);
+  padding-left: var(--resp-container-gutter);
+  padding-right: var(--resp-container-gutter);
+}
+
+.lead-text {
+  max-width: var(--resp-max-ch);
+  font-size: var(--resp-text-md);
+  line-height: 1.65;
+}
+
+/* Fluid Auto-Fit Grids */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: var(--resp-space-md);
+  width: 100%;
+}
+
+.projects-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--resp-space-md);
+  width: 100%;
+}
+
+/* ==========================================================================
+   4. COMPONENTS (HERO VIEWPORT FIT, NAVIGATION, CARDS)
+   ========================================================================== */
+
+/* ── Hero Section (Fits 100svh on every display) ─────────────── */
+.hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: clamp(1rem, 2vw, 2.5rem) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-inner {
+  padding-left: var(--resp-container-gutter);
+  padding-right: var(--resp-container-gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 2.5vw, 2.5rem);
+}
+
+.hero-content {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.hero-eyebrow {
+  margin-bottom: var(--resp-space-xs);
+}
+
+.hero-headline {
+  font-size: var(--resp-text-hero);
+  line-height: var(--resp-line-height-heading);
+  letter-spacing: -0.03em;
+  margin-bottom: var(--resp-space-xs);
+}
+
+.hero-lead {
+  font-size: var(--resp-text-md);
+  line-height: 1.6;
+  margin-bottom: var(--resp-space-sm);
+  max-width: 58ch;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--resp-space-md);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Orbit Visual (Proportional Scaling & Containment) ───────── */
+.neu-hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.neu-orbit-stage {
+  position: relative;
+  width: clamp(260px, 32vw, 420px);
+  height: clamp(260px, 32vw, 420px);
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Restrain geological contour background to zero overflow */
+.neu-contours {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: min(240px, 35vw);
+  height: min(240px, 35vw);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+  overflow: hidden;
+}
+
+/* ── Floating Navigation Pill ────────────────────────────────── */
+.site-nav {
+  max-width: var(--resp-container-max);
+}
+
+/* ── Service & Mini-Project Cards ────────────────────────────── */
+.service-card-v2,
+.project-mini-card {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.service-card-v2-inner,
+.mini-card-body {
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  box-sizing: border-box;
+}
+
+/* ── Subpage Heroes (.page-hero, .svc-page-hero) ─────────────── */
+.page-hero,
+.svc-page-hero {
+  width: 100%;
+  padding-top: calc(var(--resp-nav-height, 64px) + clamp(2rem, 4vw, 3.75rem));
+  padding-bottom: clamp(1.5rem, 3.5vw, 2.5rem);
+  padding-left: var(--resp-container-gutter);
+  padding-right: var(--resp-container-gutter);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.page-hero {
+  max-width: var(--resp-container-max);
+}
+
+.svc-page-hero {
+  min-height: auto !important;
+}
+
+.svc-page-hero-inner {
+  max-width: var(--resp-container-max);
+  margin: 0 auto;
+  padding: 0 !important;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.page-hero h1,
+.svc-page-hero h1,
+.display-hero {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: clamp(1.85rem, 3.4vw + 0.4rem, 3rem) !important;
+  font-weight: 800;
+  line-height: 1.15 !important;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  max-width: 840px;
+  margin: 0 auto 16px auto;
+  box-sizing: border-box;
+}
+
+.display-section {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: clamp(1.5rem, 2.8vw + 0.2rem, 2.35rem) !important;
+  font-weight: 800;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.page-hero .lead-text,
+.svc-page-hero .lead-text {
+  font-size: var(--resp-text-md);
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 65ch;
+  margin: 0 auto;
+}
+
+/* ── Trust & Stats Banner Strip (Security, Engineering, Archive) ─ */
+.wd-trust-inner {
+  max-width: var(--resp-container-max);
+  margin: 0 auto;
+  padding: 0 var(--resp-container-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.wd-trust-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 6px 16px;
+  box-sizing: border-box;
+}
+
+.wd-trust-item strong {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.wd-trust-item span {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.wd-trust-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .wd-trust-inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 8px;
+  }
+  .wd-trust-divider { display: none; }
+}
+
+/* ── Subpage Cards & Panels Polish ───────────────────────────── */
+.widget-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  box-sizing: border-box;
+}
+
+.service-card-v2 {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
+  box-sizing: border-box;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.service-card-v2:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--neu-flat-lg);
+}
+
+/* Service Detail Sections (services.html) */
+.svc-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .svc-detail-grid {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+
+.svc-panel-card {
+  background: var(--surface-0);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: var(--neu-flat);
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+}
+
+/* Flip cards on Evidence Room / Projects */
+.flip-card {
+  perspective: 1200px;
+  height: clamp(400px, 48vh, 480px);
+  box-sizing: border-box;
+}
+
+.projects-mini-grid .col-12 .flip-card {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Ensure all animated elements stay visible (never stuck at opacity: 0) */
+[data-aos] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ==========================================================================
+   5. PROGRESSIVE MEDIA QUERIES (DESKTOP & LARGE DISPLAYS)
+   ========================================================================== */
+
+/* ── 1024px: Minimum Desktop, Small Tablets Landscape ────────── */
+@media (min-width: 1024px) {
+  :root {
+    --resp-container-max: 1080px;
+    --resp-nav-height: 64px;
+  }
+
+  .hero-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .hero-content {
+    align-items: flex-start;
+    max-width: 54%;
+  }
+
+  .hero-chips {
+    justify-content: flex-start;
+  }
+
+  .hero-actions {
+    justify-content: flex-start;
+  }
+
+  .neu-hero-visual {
+    width: 44%;
+    justify-content: center;
+  }
+
+  .neu-orbit-stage {
+    width: clamp(280px, 30vw, 360px);
+    height: clamp(280px, 30vw, 360px);
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  }
+  .home-services .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .projects-mini-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── 1280px: Small Laptops (13" MacBook, Ultrabooks) ─────────── */
+@media (min-width: 1280px) {
+  :root {
+    --resp-container-max: 1200px;
+    --resp-text-hero: 2.85rem;
+  }
+
+  .hero-content {
+    max-width: 55%;
+  }
+
+  .neu-hero-visual {
+    width: 43%;
+  }
+
+  .neu-orbit-stage {
+    width: clamp(340px, 28vw, 400px);
+    height: clamp(340px, 28vw, 400px);
+  }
+}
+
+/* ── 1366px: Standard 14" Laptops & Business Displays ────────── */
+@media (min-width: 1366px) {
+  :root {
+    --resp-container-max: 1260px;
+  }
+
+  .neu-orbit-stage {
+    width: 380px;
+    height: 380px;
+  }
+}
+
+/* ── 1440px: MacBook Air 13" Older & Standard Desktops ───────── */
+@media (min-width: 1440px) {
+  :root {
+    --resp-container-max: 1320px;
+    --resp-text-hero: 3rem;
+  }
+
+  .hero-content {
+    max-width: 580px;
+  }
+
+  .neu-orbit-stage {
+    width: 410px;
+    height: 410px;
+  }
+}
+
+/* ── 1536px: Windows 15" Laptops at 125% DPI Scale ───────────── */
+@media (min-width: 1536px) {
+  :root {
+    --resp-container-max: 1380px;
+  }
+
+  .hero-content {
+    max-width: 610px;
+  }
+
+  .neu-orbit-stage {
+    width: 430px;
+    height: 430px;
+  }
+}
+
+/* ── 1728px: MacBook Pro 16" (Liquid Retina XDR) ─────────────── */
+@media (min-width: 1728px) {
+  :root {
+    --resp-container-max: 1440px;
+    --resp-text-hero: 3.25rem;
+  }
+
+  .hero-inner {
+    gap: 3.5rem;
+  }
+
+  .neu-orbit-stage {
+    width: 460px;
+    height: 460px;
+  }
+
+  .neu-orbit-disc {
+    width: 66px;
+    height: 66px;
+  }
+
+  .neu-center-hub {
+    width: 96px;
+    height: 96px;
+  }
+
+  .neu-center-mascot {
+    width: 64px;
+  }
+}
+
+/* ── 1920px: 24" Full HD Displays & Scaled 4K TVs ────────────── */
+@media (min-width: 1920px) {
+  :root {
+    --resp-container-max: 1480px;
+    --resp-text-base: 1.02rem;
+    --resp-text-hero: 3.4rem;
+    --resp-max-ch: 68ch;
+  }
+
+  .section {
+    padding-left: clamp(2rem, 4vw, 3.5rem);
+    padding-right: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .hero-content {
+    max-width: 640px;
+  }
+
+  .neu-orbit-stage {
+    width: 480px;
+    height: 480px;
+  }
+}
+
+/* ── 2240px: iMac 24" 4.5K Retina ────────────────────────────── */
+@media (min-width: 2240px) {
+  :root {
+    --resp-container-max: 1560px;
+    --resp-text-base: 1.05rem;
+    --resp-text-hero: 3.6rem;
+  }
+
+  .hero-content {
+    max-width: 680px;
+  }
+
+  .neu-orbit-stage {
+    width: 500px;
+    height: 500px;
+  }
+}
+
+/* ── 2560px: 27" QHD, iMac 27" 5K, 32" 4K Scaled Displays ────── */
+@media (min-width: 2560px) {
+  :root {
+    --resp-container-max: 1640px;
+    --resp-text-base: 1.08rem;
+    --resp-text-hero: 3.8rem;
+    --resp-section-py: 5rem;
+    --resp-max-ch: 72ch;
+  }
+
+  .hero-content {
+    max-width: 720px;
+  }
+
+  .neu-orbit-stage {
+    width: 520px;
+    height: 520px;
+  }
+
+  .services-grid {
+    gap: 2rem;
+  }
+
+  .projects-mini-grid {
+    gap: 2rem;
+  }
+}
+
+/* ── 3440px: 34" Ultrawide Monitors (21:9 Aspect Ratio) ──────── */
+@media (min-width: 3440px) {
+  :root {
+    /* Strict container clamp ensures ultrawide content does not stretch edge-to-edge */
+    --resp-container-max: 1720px;
+    --resp-text-base: 1.12rem;
+    --resp-text-hero: 4rem;
+  }
+
+  .section,
+  .hero-inner,
+  .footer-inner {
+    max-width: var(--resp-container-max);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-inner {
+    justify-content: space-around;
+  }
+
+  .neu-orbit-stage {
+    width: 540px;
+    height: 540px;
+  }
+}
+
+/* ── 3840px: 43" 4K Monitors and 72" TV Raw 4K ───────────────── */
+@media (min-width: 3840px) {
+  :root {
+    /* Prevents content from looking like a tiny ribbon or sprawling edge-to-edge */
+    --resp-container-max: 1840px;
+    --resp-text-base: 1.18rem;
+    --resp-text-hero: 4.4rem;
+    --resp-section-py: 6rem;
+  }
+
+  .hero-content {
+    max-width: 820px;
+  }
+
+  .neu-orbit-stage {
+    width: 580px;
+    height: 580px;
+  }
+
+  .neu-orbit-disc {
+    width: 74px;
+    height: 74px;
+  }
+
+  .neu-center-hub {
+    width: 110px;
+    height: 110px;
+  }
+
+  .neu-center-mascot {
+    width: 76px;
+  }
+}
+
+/* ==========================================================================
+   6. HIGH-DPI & ACCESSIBILITY ENHANCEMENTS
+   ========================================================================== */
+
+/* ── High-DPI Screens (Apple Retina, 4K Displays) ────────────── */
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+  .site-nav,
+  .service-card-v2,
+  .project-mini-card,
+  .widget-card,
+  .cta-band-card,
+  .neu-orbit-disc,
+  .neu-center-hub {
+    /* Enhanced sub-pixel anti-aliasing */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .nav-logo-img,
+  .neu-center-mascot {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* ── Reduced Motion Respect ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .neu-center-hub {
+    animation: none;
+  }
+}

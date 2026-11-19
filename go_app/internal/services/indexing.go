@@ -97,7 +97,9 @@ func NotifySearchEngines(cfg *config.Config, urls []string) error {
 			log.Printf("[Indexing] Warning: Failed to submit to %s: %v", endpoint, postErr)
 			continue
 		}
-		resp.Body.Close()
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("[Indexing] Warning: Failed to close response body for %s: %v", endpoint, err)
+		}
 		log.Printf("[Indexing] IndexNow submission to %s returned HTTP %d for %d URLs", endpoint, resp.StatusCode, len(validURLs))
 	}
 
@@ -107,7 +109,9 @@ func NotifySearchEngines(cfg *config.Config, urls []string) error {
 	if pingReq, pingErr := http.NewRequest("GET", googlePing, nil); pingErr == nil {
 		pingReq.Header.Set("User-Agent", "JO4-Dev-AutoIndexer/1.0")
 		if pingResp, err := client.Do(pingReq); err == nil {
-			pingResp.Body.Close()
+			if closeErr := pingResp.Body.Close(); closeErr != nil {
+				log.Printf("[Indexing] Warning: Failed to close Google ping response body: %v", closeErr)
+			}
 			log.Printf("[Indexing] Google sitemap ping returned HTTP %d", pingResp.StatusCode)
 		}
 	}

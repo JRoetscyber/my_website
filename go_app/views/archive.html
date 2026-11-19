@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Web Archive | Jonathan Roets — Full-Stack Architecture{% endblock %}
+
+{% block meta_description %}Historical client web applications engineered by Jonathan Roets. Framed around speed, custom Go backends, zero bloatware, and 100/100 Lighthouse scores.{% endblock %}
+
+{% block meta_keywords %}Web Archive, Full-Stack Architecture, High Performance Web, Sub-20ms TTFB, 100/100 Lighthouse, Jonathan Roets Portfolio{% endblock %}
+
+{% block og_title %}Client Web Archive | Jonathan Roets — Full-Stack Architecture{% endblock %}
+{% block og_description %}Historical client web applications engineered by Jonathan Roets. Framed around speed, custom Go backends, zero bloatware, and 100/100 Lighthouse scores.{% endblock %}
+
+{% block twitter_title %}Client Web Archive | Jonathan Roets — Full-Stack Architecture{% endblock %}
+{% block twitter_description %}Historical client web applications engineered by Jonathan Roets. Framed around speed, custom Go backends, zero bloatware, and 100/100 Lighthouse scores.{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     ARCHIVE HERO
+============================================================ -->
+<header class="page-hero">
+  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:20px;">
+    <span class="neu-pill-badge">HISTORICAL CLIENT BUILDS</span>
+  </div>
+  <h1>Client Web Archive.</h1>
+  <p class="lead-text">
+    A showcase of full-stack client web systems. Framed strictly around <strong>engineering architecture, sub-20ms server response times, and zero-bloat performance</strong>.
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============================================================
+     ARCHIVE METRICS BAR
+============================================================ -->
+<section style="background:var(--surface-1); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:24px 0;">
+  <div class="wd-trust-inner">
+    <div class="wd-trust-item">
+      <strong>100 / 100</strong>
+      <span>Lighthouse Scores</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>0% Bloat</strong>
+      <span>No Generic CMS</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Compiled Go</strong>
+      <span>Server Rendering</span>
+    </div>
+    <div class="wd-trust-divider" aria-hidden="true"></div>
+    <div class="wd-trust-item">
+      <strong>Sub-20ms</strong>
+      <span>TTFB Latency</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ARCHIVE CONTEXT STATEMENT
+============================================================ -->
+<section class="section" aria-label="Archive context" style="padding-bottom:20px;">
+  <div class="widget-card" data-aos="fade-up" style="background:var(--surface-0); border-left:4px solid var(--accent);">
+    <h3 style="font-size:1.15rem; color:var(--text-primary); margin-bottom:10px;">Why This Archive Exists</h3>
+    <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.75; margin:0;">
+      While my active focus is <strong>offensive application security, penetration testing, and backend systems engineering</strong>, these historical builds demonstrate core software engineering discipline: crafting lean, maintainable, high-performance web systems without reliance on bloated site builders or brittle dependencies. Every build delivered sub-20ms TTFB, custom database schemas, and clean architectural separation.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     ARCHIVE PROJECTS GRID
+============================================================ -->
+<section class="section" aria-labelledby="archive-projects-heading" style="padding-top:20px;">
+  <div class="section-header" data-aos="fade-up">
+    <span class="neu-pill-badge" style="margin-bottom:20px;">Delivered Deployments</span>
+    <h2 class="display-section" id="archive-projects-heading">
+      Full-Stack Case Studies.
+    </h2>
+    <p class="lead-text" style="margin-top:16px;">
+      Explore the architecture, database models, and performance benchmarks for each client delivery.
+    </p>
+  </div>
+
+  <div class="projects-mini-grid" data-aos="fade-up" data-aos-delay="100">
+    {% for project in projects %}
+    {% if project.Slug %}
+    <div>
+      <a href="/projects/{{ project.Slug }}" class="project-mini-card">
+        <div class="mini-card-image">
+          {% if project.MediaPath %}
+          <img src="{{ project.MediaPath }}" alt="{{ project.Title }}" loading="lazy" width="600" height="338">
+          {% else %}
+          <div class="mini-card-placeholder">System Preview</div>
+          {% endif %}
+        </div>
+        <div class="mini-card-body">
+          <span class="mini-card-tag">{% if project.Category == 'true' or project.Category == 'True' or project.Category == 'TRUE' or not project.Category %}Web Architecture{% else %}{{ project.Category }}{% endif %}</span>
+          <h4 style="margin-bottom:8px;">{{ project.Title }}</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.6; margin-bottom:16px;">
+            {{ project.Description|striptags|truncate:110 }}
+          </p>
+          {% if project.TechStack %}
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            {% for tech in project.TechStack|split:"," %}
+            <span class="neu-chip" style="font-size:0.68rem; padding:4px 10px;">{{ tech }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </a>
+    </div>
+    {% endif %}
+    {% empty %}
+    <!-- Featured Built Systems when DB is empty -->
+    <div>
+      <div class="project-mini-card">
+        <div class="mini-card-body" style="padding:28px;">
+          <span class="mini-card-tag">Full-Stack Web</span>
+          <h4 style="margin-bottom:10px;">High-Speed Corporate Web Platform</h4>
+          <p style="font-size:0.88rem; color:var(--text-secondary); line-height:1.65; margin-bottom:16px;">
+            Custom Go Fiber server-rendered corporate portal replacing an insecure, slow WordPress instance. Achieved 14ms TTFB, 100/100 Lighthouse performance, and zero render-blocking requests.
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="neu-chip" style="font-size:0.7rem;">Go (Fiber)</span>
+            <span class="neu-chip" style="font-size:0.7rem;">SQLite / WAL</span>
+            <span class="neu-chip" style="font-size:0.7rem;">Docker</span>
+            <span class="neu-chip" style="font-size:0.7rem;">100/100 CWV</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="project-mini-card">
+        <div class="mini-card-body" style="padding:28px;">
+          <span class="mini-card-tag">E-Commerce &amp; Invoicing</span>
+          <h4 style="margin-bottom:10px;">Automated Booking &amp; Quote Dispatcher</h4>
+          <p style="font-size:0.88rem; color:var(--text-secondary); line-height:1.65; margin-bottom:16px;">
+            Interactive booking schedule system with automated calendar .ics dispatch, daily invoice sequencing, and dynamic lead scoring matrix operating under concurrency.
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="neu-chip" style="font-size:0.7rem;">Go</span>
+            <span class="neu-chip" style="font-size:0.7rem;">Lead Scoring</span>
+            <span class="neu-chip" style="font-size:0.7rem;">PDF Generation</span>
+            <span class="neu-chip" style="font-size:0.7rem;">Redis</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BANNER
+============================================================ -->
+<section class="cta-band" aria-label="Architecture CTA">
+  <div class="cta-band-card" data-aos="fade-up">
+    <span class="neu-pill-badge" style="justify-content:center; margin-bottom:24px;">
+      Looking Forward
+    </span>
+    <h2 class="display-section" style="max-width:760px; margin:0 auto 20px;">
+      Ready to explore my active work in<br>
+      <span class="text-accent">Offensive Security &amp; Systems Engineering?</span>
+    </h2>
+    <p class="lead-text" style="margin:0 auto 36px; text-align:center;">
+      Check out my open-source security tools, fuzzers, and systems research.
+    </p>
+    <div class="cta-band-actions">
+      <a href="/security" class="btn-primary-custom neu-btn-primary">
+        Security Research Track
+      </a>
+      <a href="/engineering" class="btn-ghost-custom neu-btn-secondary">
+        Systems Track <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

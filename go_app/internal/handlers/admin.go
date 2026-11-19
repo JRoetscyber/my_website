@@ -542,11 +542,12 @@ func (h *AdminHandler) SaveProject(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "uploads")
-		_ = os.MkdirAll(uploadDir, os.ModePerm)
-		dest := filepath.Join(uploadDir, file.Filename)
+		uploadDir := resolveUploadsDir()
+		_ = os.MkdirAll(uploadDir, 0750)
+		safeName := filepath.Base(file.Filename)
+		dest := filepath.Join(uploadDir, safeName)
 		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/uploads/" + file.Filename
+			mediaPath = "/static/uploads/" + safeName
 		}
 	}
 
@@ -630,11 +631,12 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "uploads")
-		_ = os.MkdirAll(uploadDir, os.ModePerm)
-		dest := filepath.Join(uploadDir, file.Filename)
+		uploadDir := resolveUploadsDir()
+		_ = os.MkdirAll(uploadDir, 0750)
+		safeName := filepath.Base(file.Filename)
+		dest := filepath.Join(uploadDir, safeName)
 		if err := c.SaveFile(file, dest); err == nil {
-			project.MediaPath = "/static/uploads/" + file.Filename
+			project.MediaPath = "/static/uploads/" + safeName
 		}
 	}
 
@@ -745,11 +747,12 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "uploads")
-		_ = os.MkdirAll(uploadDir, os.ModePerm)
-		dest := filepath.Join(uploadDir, file.Filename)
+		uploadDir := resolveUploadsDir()
+		_ = os.MkdirAll(uploadDir, 0750)
+		safeName := filepath.Base(file.Filename)
+		dest := filepath.Join(uploadDir, safeName)
 		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/uploads/" + file.Filename
+			mediaPath = "/static/uploads/" + safeName
 		}
 	}
 
@@ -809,11 +812,12 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 		file, err = c.FormFile("media_file")
 	}
 	if err == nil && file != nil {
-		uploadDir := filepath.Join("static", "uploads")
-		_ = os.MkdirAll(uploadDir, os.ModePerm)
-		dest := filepath.Join(uploadDir, file.Filename)
+		uploadDir := resolveUploadsDir()
+		_ = os.MkdirAll(uploadDir, 0750)
+		safeName := filepath.Base(file.Filename)
+		dest := filepath.Join(uploadDir, safeName)
 		if err := c.SaveFile(file, dest); err == nil {
-			post.MediaPath = "/static/uploads/" + file.Filename
+			post.MediaPath = "/static/uploads/" + safeName
 		}
 	}
 

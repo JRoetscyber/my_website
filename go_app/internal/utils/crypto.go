@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/subtle"
@@ -51,9 +50,6 @@ func CheckPasswordHash(storedHash, password string) bool {
 			var h func() hash.Hash
 			keyLen := 32
 			switch hashName {
-			case "sha1":
-				h = sha1.New
-				keyLen = 20
 			case "sha512":
 				h = sha512.New
 				keyLen = 64

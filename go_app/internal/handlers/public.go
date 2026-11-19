@@ -114,11 +114,16 @@ func (h *PublicHandler) Home(c *fiber.Ctx) error {
 		return list, err
 	})
 
+	homeContent, _ := cache.GetOrSet(h.Cache, ctx, cache.PageContentKey("home"), 30*time.Minute, func(ctx context.Context) (models.HomeContent, error) {
+		return database.GetHomeContent(h.DB.WithContext(ctx)), nil
+	})
+
 	return h.render(c, "index", fiber.Map{
 		"projects": projects,
 		"blogs":    blogPosts,
 		"faqs":     faqs,
 		"services": servicesList,
+		"content":  homeContent,
 	})
 }
 
@@ -168,6 +173,105 @@ func (h *PublicHandler) AppDev(c *fiber.Ctx) error {
 
 func (h *PublicHandler) Automation(c *fiber.Ctx) error {
 	return h.render(c, "automation", fiber.Map{})
+}
+
+// Rebranded Core Pages: About, Security, Engineering, Archive, Contact
+func (h *PublicHandler) About(c *fiber.Ctx) error {
+	aboutContent, _ := cache.GetOrSet(h.Cache, context.Background(), cache.PageContentKey("about"), 30*time.Minute, func(ctx context.Context) (models.AboutContent, error) {
+		return database.GetAboutContent(h.DB.WithContext(ctx)), nil
+	})
+	return h.render(c, "about", fiber.Map{
+		"content": aboutContent,
+	})
+}
+
+func (h *PublicHandler) Security(c *fiber.Ctx) error {
+	securityContent, _ := cache.GetOrSet(h.Cache, context.Background(), cache.PageContentKey("security"), 30*time.Minute, func(ctx context.Context) (models.SecurityContent, error) {
+		return database.GetSecurityContent(h.DB.WithContext(ctx)), nil
+	})
+	return h.render(c, "security", fiber.Map{
+		"content": securityContent,
+	})
+}
+
+func (h *PublicHandler) Engineering(c *fiber.Ctx) error {
+	engineeringContent, _ := cache.GetOrSet(h.Cache, context.Background(), cache.PageContentKey("engineering"), 30*time.Minute, func(ctx context.Context) (models.EngineeringContent, error) {
+		return database.GetEngineeringContent(h.DB.WithContext(ctx)), nil
+	})
+	return h.render(c, "engineering", fiber.Map{
+		"content": engineeringContent,
+	})
+}
+
+func (h *PublicHandler) Archive(c *fiber.Ctx) error {
+	projects, _ := cache.GetOrSet(h.Cache, context.Background(), cache.ProjectListKey(), 15*time.Minute, func(ctx context.Context) ([]models.Project, error) {
+		var list []models.Project
+		err := h.DB.WithContext(ctx).Order("id desc").Find(&list).Error
+		return list, err
+	})
+	return h.render(c, "archive", fiber.Map{
+		"projects": projects,
+	})
+}
+
+func (h *PublicHandler) Contact(c *fiber.Ctx) error {
+	return h.render(c, "contact", fiber.Map{})
+}
+
+func (h *PublicHandler) SubmitContact(c *fiber.Ctx) error {
+	name := strings.TrimSpace(c.FormValue("name"))
+	email := strings.TrimSpace(c.FormValue("email"))
+	subject := strings.TrimSpace(c.FormValue("subject"))
+	message := strings.TrimSpace(c.FormValue("message"))
+
+	if name == "" || email == "" || message == "" {
+		return h.render(c, "contact", fiber.Map{
+			"error_message": "Name, email, and message are required fields.",
+		})
+	}
+
+	lead := models.Lead{
+		ClientName:       name,
+		ContactRole:      subject,
+		ProjectType:      "AppSec / Systems Inquiry",
+		TargetProject:    subject + ": " + message,
+		Status:           "New",
+		LastActivityDate: time.Now(),
+	}
+	_ = h.DB.Create(&lead)
+
+	if h.Worker != nil {
+		h.Worker.Enqueue(func(ctx context.Context) {
+			if h.Cfg.MailUsername != "" && h.Cfg.MailPassword != "" {
+				_ = services.SendLeadNotification(h.Cfg, lead)
+			}
+		})
+	}
+
+	return h.render(c, "contact", fiber.Map{
+		"success_message": "Thank you, " + name + "! Your message has been received. I will respond to " + email + " within 24 hours.",
+	})
+}
+
+func (h *PublicHandler) DownloadCV(c *fiber.Ctx) error {
+	const cvFilename = "Jonathan_Roets_CV.pdf"
+	candidateDirs := []string{"./static", "../static", "static"}
+	if envDir := strings.TrimSpace(os.Getenv("STATIC_DIR")); envDir != "" {
+		candidateDirs = append([]string{filepath.Clean(envDir)}, candidateDirs...)
+	}
+	for _, dir := range candidateDirs {
+		root, err := os.OpenRoot(dir)
+		if err != nil {
+			continue
+		}
+		fi, statErr := root.Stat(cvFilename)
+		_ = root.Close()
+		if statErr == nil && !fi.IsDir() {
+			c.Set("Content-Disposition", "attachment; filename=\"Jonathan_Roets_CV.pdf\"")
+			return c.SendFile(filepath.Join(dir, cvFilename))
+		}
+	}
+	return c.Redirect("/about")
 }
 
 // Projects / Portfolio
@@ -600,16 +704,21 @@ func (h *PublicHandler) Sitemap(c *fiber.Ctx) error {
 		Freq     string
 	}{
 		{"/", "1.0", "weekly"},
-		{"/services", "0.8", "monthly"},
-		{"/web-design", "0.8", "monthly"},
-		{"/seo", "0.8", "monthly"},
-		{"/mobile-apps", "0.8", "monthly"},
+		{"/about", "0.9", "monthly"},
+		{"/security", "0.9", "weekly"},
+		{"/engineering", "0.9", "weekly"},
+		{"/archive", "0.8", "monthly"},
+		{"/contact", "0.9", "monthly"},
+		{"/services", "0.7", "monthly"},
+		{"/web-design", "0.7", "monthly"},
+		{"/seo", "0.7", "monthly"},
+		{"/mobile-apps", "0.7", "monthly"},
 		{"/appsec", "0.8", "monthly"},
-		{"/automation", "0.8", "monthly"},
-		{"/projects", "0.9", "weekly"},
+		{"/automation", "0.7", "monthly"},
+		{"/projects", "0.8", "weekly"},
 		{"/blog", "0.8", "weekly"},
 		{"/faq", "0.7", "weekly"},
-		{"/book", "0.9", "weekly"},
+		{"/book", "0.8", "weekly"},
 	}
 
 	for _, sr := range staticRoutes {
@@ -688,7 +797,7 @@ func (h *PublicHandler) ConvertWebP(c *fiber.Ctx) error {
 	if _, err := os.Stat("static"); os.IsNotExist(err) {
 		uploadDir = filepath.Join("../static", "uploads", "webp")
 	}
-	_ = os.MkdirAll(uploadDir, 0755)
+	_ = os.MkdirAll(uploadDir, 0750)
 
 	randSuffix := fmt.Sprintf("%d", time.Now().UnixNano()%100000)
 	baseName := strings.TrimSuffix(filepath.Base(file.Filename), ext)

@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="/static/css/projects.css?v=20260929v2">
+<link rel="stylesheet" href="/static/css/projects.css?v=20261116v2">
 {% endblock %}
 
 {% block content %}
@@ -112,7 +112,7 @@
         Tap any card to flip and view project details
       </div>
 
-      <div class="projects-mini-grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));">
+      <div class="projects-mini-grid">
         {% for project in projects %}
         <div data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
           <div class="flip-card" tabindex="0" role="button" aria-label="View details for {{ project.Title }}" aria-pressed="false">
@@ -203,17 +203,224 @@
           </div>
         </div>
         {% empty %}
-        <div class="col-12">
-          <div class="flip-card">
+        <!-- Featured Build 1: PMD Online ERP -->
+        <div data-aos="fade-up">
+          <div class="flip-card" tabindex="0" role="button" aria-label="View details for PMD Online ERP" aria-pressed="false">
             <div class="flip-card-inner">
               <div class="flip-card-front">
-                <span class="fc-tag">Portfolio</span>
-                <h3 class="fc-title">No projects yet</h3>
+                <div class="fc-front-content">
+                  <span class="fc-tag">Industrial ERP Platform</span>
+                  <h3 class="fc-title">PMD Online &bull; Packaging ERP &amp; Die Management</h3>
+                  <div class="fc-flip-cue" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                    Flip for details
+                  </div>
+                </div>
+                <div class="fc-front-image">
+                  <div class="fc-front-tech-preview">
+                    <div class="fc-tech-badge-strip">
+                      <span class="fc-tech-pill">SQL SERVER</span>
+                      <span class="fc-tech-pill">SUB-15MS</span>
+                      <span class="fc-tech-pill">REDIS</span>
+                    </div>
+                    <div class="fc-tech-center-icon">
+                      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                    </div>
+                    <div class="fc-tech-meta">
+                      <strong>ENTERPRISE PREPRESS &amp; DIE ERP</strong>
+                      <span>Corrugated Manufacturing &bull; 100k+ Runs</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="flip-card-back">
-                <span class="fc-tag">Portfolio</span>
-                <h3 class="fc-back-title">No projects yet</h3>
-                <p class="fc-desc">Add projects from the admin panel and they will appear here automatically.</p>
+                <span class="fc-tag">Industrial ERP Platform</span>
+                <h3 class="fc-back-title">PMD Online ERP System</h3>
+                <div class="lh-gauges">
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 100;"/>
+                      </svg>
+                      <span class="lh-score">100</span>
+                    </div>
+                    <span class="lh-label">Performance</span>
+                  </div>
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 100;"/>
+                      </svg>
+                      <span class="lh-score">100</span>
+                    </div>
+                    <span class="lh-label">Security</span>
+                  </div>
+                </div>
+                <p class="fc-desc">Enterprise prepress, stereo layout, and cutting die management for corrugated manufacturing. Sub-15ms queries on MS SQL Server with compiled Go endpoints.</p>
+                <div class="tag-list">
+                  <span class="tag">Go (Fiber)</span>
+                  <span class="tag">MS SQL Server</span>
+                  <span class="tag">PL/SQL</span>
+                  <span class="tag">Redis Singleflight</span>
+                  <span class="tag">Docker</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Build 2: CV Die Estimator -->
+        <div data-aos="fade-up" data-aos-delay="80">
+          <div class="flip-card" tabindex="0" role="button" aria-label="View details for Computer Vision Die Estimator" aria-pressed="false">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="fc-front-content">
+                  <span class="fc-tag">Computer Vision &amp; Math</span>
+                  <h3 class="fc-title">Computer Vision Die-Line Estimator</h3>
+                  <div class="fc-flip-cue" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                    Flip for details
+                  </div>
+                </div>
+                <div class="fc-front-image">
+                  <div class="fc-front-tech-preview">
+                    <div class="fc-tech-badge-strip">
+                      <span class="fc-tech-pill">OPENCV</span>
+                      <span class="fc-tech-pill">&lt;400MS TRACE</span>
+                      <span class="fc-tech-pill">NUMPY</span>
+                    </div>
+                    <div class="fc-tech-center-icon">
+                      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </div>
+                    <div class="fc-tech-meta">
+                      <strong>GEOMETRIC DIE-LINE ESTIMATOR</strong>
+                      <span>Vector &amp; Raster Polygon Costing</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flip-card-back">
+                <span class="fc-tag">Computer Vision &amp; Math</span>
+                <h3 class="fc-back-title">CV Die-Line Estimator</h3>
+                <div class="lh-gauges">
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 98;"/>
+                      </svg>
+                      <span class="lh-score">98</span>
+                    </div>
+                    <span class="lh-label">Accuracy</span>
+                  </div>
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 100;"/>
+                      </svg>
+                      <span class="lh-score">100</span>
+                    </div>
+                    <span class="lh-label">Speed</span>
+                  </div>
+                </div>
+                <p class="fc-desc">Sub-400ms vector curve and raster polygon tracing for automated die costing. Replaced 30-minute manual prepress estimations with instant quotes.</p>
+                <div class="tag-list">
+                  <span class="tag">Python</span>
+                  <span class="tag">OpenCV</span>
+                  <span class="tag">NumPy</span>
+                  <span class="tag">Go Worker Pool</span>
+                  <span class="tag">CAD / DXF</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Build 3: LoRa RF Gateway -->
+        <div data-aos="fade-up" data-aos-delay="160">
+          <div class="flip-card" tabindex="0" role="button" aria-label="View details for LoRa RF Telemetry Gateway" aria-pressed="false">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="fc-front-content">
+                  <span class="fc-tag">Embedded IoT &amp; Telemetry</span>
+                  <h3 class="fc-title">LoRa RF Remote Telemetry Gateway</h3>
+                  <div class="fc-flip-cue" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                    Flip for details
+                  </div>
+                </div>
+                <div class="fc-front-image">
+                  <div class="fc-front-tech-preview">
+                    <div class="fc-tech-badge-strip">
+                      <span class="fc-tech-pill">915 MHZ</span>
+                      <span class="fc-tech-pill">BARE-METAL C++</span>
+                      <span class="fc-tech-pill">WAL INGEST</span>
+                    </div>
+                    <div class="fc-tech-center-icon">
+                      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82"></path>
+                        <circle cx="12" cy="12" r="1"></circle>
+                      </svg>
+                    </div>
+                    <div class="fc-tech-meta">
+                      <strong>LONG-RANGE RF TELEMETRY</strong>
+                      <span>Autonomous Industrial Ingest Pipeline</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flip-card-back">
+                <span class="fc-tag">Embedded IoT &amp; Telemetry</span>
+                <h3 class="fc-back-title">LoRa RF Telemetry Gateway</h3>
+                <div class="lh-gauges">
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 99;"/>
+                      </svg>
+                      <span class="lh-score">99</span>
+                    </div>
+                    <span class="lh-label">Reliability</span>
+                  </div>
+                  <div class="lh-gauge lh-high">
+                    <div class="lh-gauge-ring">
+                      <svg viewBox="0 0 60 60" aria-hidden="true">
+                        <circle class="lh-bg" cx="30" cy="30" r="24"/>
+                        <circle class="lh-fill" cx="30" cy="30" r="24" style="--score: 100;"/>
+                      </svg>
+                      <span class="lh-score">100</span>
+                    </div>
+                    <span class="lh-label">Uptime</span>
+                  </div>
+                </div>
+                <p class="fc-desc">Low-power long-range 915 MHz RF packet decoder and time-series telemetry ingest pipeline for agricultural and industrial environments.</p>
+                <div class="tag-list">
+                  <span class="tag">C++ (Embedded)</span>
+                  <span class="tag">Go Gateway</span>
+                  <span class="tag">LoRaWAN</span>
+                  <span class="tag">SQLite WAL</span>
+                  <span class="tag">Telemetry</span>
+                </div>
               </div>
             </div>
           </div>
@@ -224,233 +431,27 @@
   </section>
 
   <!-- ==============================================================
-       INTERACTIVE SANDBOX — CRM LEAD SCORING ENGINE v2 (Always shown at the bottom)
+       SYSTEM ARCHITECTURE & CONSULTING CTA
   ============================================================== -->
-  <section class="sandbox-section section-full" aria-labelledby="sandbox-heading">
-    <div class="section">
-
-      <div class="section-header" data-aos="fade-up">
-        <span class="eyebrow" style="margin-bottom:20px; display:inline-flex;">Live Demo</span>
-        <h2 class="display-section" id="sandbox-heading">
-          Test the engine.
-        </h2>
-        <p class="lead-text" style="margin-top: 16px;">
-          Configure a lead profile and paste their actual inquiry message.
-          The engine reads the text, detects behavioural signals, and routes
-          with the same logic deployed in production CRM systems.
-        </p>
+  <section class="section" aria-label="Architecture consultation" style="border-top:1px solid var(--border); padding-top:clamp(60px, 8vw, 100px); padding-bottom:clamp(60px, 8vw, 100px);">
+    <div style="background:var(--surface-0); border:1px solid rgba(255,255,255,0.85); box-shadow:var(--neu-flat); border-radius:24px; padding:clamp(32px, 5vw, 64px); text-align:center; max-width:960px; margin:0 auto;" data-aos="fade-up">
+      <span class="neu-pill-badge" style="margin-bottom:20px; display:inline-flex;">Battle-Tested Engineering</span>
+      <h2 class="display-section" style="max-width:720px; margin:0 auto 20px;">
+        Have a complex system to build, scale, or audit?
+      </h2>
+      <p class="lead-text" style="max-width:680px; margin:0 auto 36px; font-size:1.05rem;">
+        From high-throughput Go Fiber microservices and computer vision engines to full-spectrum penetration testing and web security hardening, I deliver resilient systems that perform under load.
+      </p>
+      <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; align-items:center;">
+        <a href="/book" class="btn-primary-custom" style="padding:16px 36px;">
+          Discuss Your Project
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="/security" class="btn-ghost-custom" style="padding:16px 32px;">
+          View Security Research
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5-5-5-5"/></svg>
+        </a>
       </div>
-
-      <div data-aos="fade-up" data-aos-delay="80">
-        <div class="scorer-shell">
-
-          <!-- ── LEFT: INPUTS ── -->
-          <div class="scorer-inputs">
-            <span class="eyebrow" style="margin-bottom: 24px; display: inline-flex;">Lead Profile</span>
-
-            <form id="scorerForm" novalidate>
-
-              <div class="form-group">
-                <label class="form-label-custom" for="leadSource">Lead Source</label>
-                <select id="leadSource" class="form-control-custom" required>
-                  <option value="" disabled selected>Where did they come from?</option>
-                  <option value="referral">Existing client referral</option>
-                  <option value="whatsapp">WhatsApp direct inquiry</option>
-                  <option value="linkedin">LinkedIn Professional Network</option>
-                  <option value="website">Website contact form</option>
-                  <option value="facebook">Facebook / Instagram ad</option>
-                  <option value="cold">Cold — no prior contact</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label-custom" for="engagementHistory">Engagement History</label>
-                <select id="engagementHistory" class="form-control-custom" required>
-                  <option value="" disabled selected>Prior digital interaction?</option>
-                  <option value="multi_deep">3+ visits — viewed Pricing &amp; Solutions pages</option>
-                  <option value="multi">2–3 site visits in last 48 hours</option>
-                  <option value="single_specific">1 visit — went directly to a case study</option>
-                  <option value="single_general">1 visit — general browsing</option>
-                  <option value="none">First contact — no prior engagement</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label-custom" for="budget">Stated Budget</label>
-                <select id="budget" class="form-control-custom" required>
-                  <option value="" disabled selected>Budget indication?</option>
-                  <option value="retainer">Monthly Retainer / Project-based</option>
-                  <option value="high">R500k+ (Enterprise)</option>
-                  <option value="mid">R100k – R500k</option>
-                  <option value="low">R50k – R100k</option>
-                  <option value="startup">Startup / Pilot (under R50k)</option>
-                  <option value="unconfirmed">Unconfirmed</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label-custom" for="timing">Submission Timing</label>
-                <select id="timing" class="form-control-custom" required>
-                  <option value="" disabled selected>When did they contact?</option>
-                  <option value="biz_answered">Business hours — responded immediately</option>
-                  <option value="biz_missed">Business hours — went to voicemail</option>
-                  <option value="after_hours">After hours (18:00–22:00)</option>
-                  <option value="weekend">Weekend / public holiday</option>
-                </select>
-              </div>
-
-              <!-- Free-text message scanner -->
-              <div class="form-group">
-                <label class="form-label-custom" for="leadMessage">
-                  Lead's Inquiry Message
-                  <span style="color:var(--color-text-muted); margin-left:6px; font-style:normal;">(paste their actual text)</span>
-                </label>
-                <textarea id="leadMessage" class="form-control-custom" rows="4"
-                          placeholder="e.g. Hi, we're looking for a custom CRM integration for our sales team. We need it to sync with our ERP and handle automated lead scoring. When can we discuss a quote?"></textarea>
-                <div class="textarea-hint">
-                  <span class="hint-chip hot-hint">Hot signals</span>
-                  <span style="color:var(--color-text-muted); font-size:0.7rem;">integration · custom · automation · sync · project · asap · quote · enterprise</span>
-                </div>
-                <div class="textarea-hint" style="margin-top:5px;">
-                  <span class="hint-chip cold-hint">Cold signals</span>
-                  <span style="color:var(--color-text-muted); font-size:0.7rem;">just looking · maybe next year · how much does · is this still available</span>
-                </div>
-              </div>
-
-              <button type="submit" class="btn-primary-custom" id="scoreBtn"
-                      style="width: 100%; justify-content: center; margin-top: 4px;">
-                <span id="scoreBtnLabel">Run Scoring Engine</span>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                     stroke-linejoin="round" aria-hidden="true">
-                  <path d="M3 8h10M9 4l4 4-4 4"/>
-                </svg>
-              </button>
-
-            </form>
-          </div>
-
-          <!-- ── RIGHT: OUTPUT ── -->
-          <div class="scorer-output" id="scorerOutput" aria-live="polite">
-
-            <!-- Idle -->
-            <div class="scorer-idle" id="scorerIdle">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-                   stroke="var(--color-border)" stroke-width="1"
-                   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              <p style="font-family:var(--font-mono); font-size:0.72rem;
-                        letter-spacing:0.12em; text-transform:uppercase;
-                        color:var(--color-text-muted); margin:0;">
-                Awaiting lead profile
-              </p>
-            </div>
-
-            <!-- Processing -->
-            <div class="scorer-processing" id="scorerProcessing" style="display:none;">
-              <div class="processing-ring" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-              <p style="font-family:var(--font-mono); font-size:0.72rem;
-                        letter-spacing:0.12em; text-transform:uppercase;
-                        color:var(--color-text-muted); margin:0;" id="processingLabel">
-                Scanning message...
-              </p>
-            </div>
-
-            <!-- Result -->
-            <div class="scorer-result-panel" id="scorerResult" style="display:none;">
-
-              <!-- Score ring + badge -->
-              <div class="score-ring-row">
-                <div class="score-ring-wrapper" role="img" aria-label="Lead score">
-                  <svg class="score-ring-svg" viewBox="0 0 120 120" aria-hidden="true">
-                    <circle cx="60" cy="60" r="54" fill="none"
-                            stroke="var(--color-border)" stroke-width="6"/>
-                    <circle id="scoreArc" cx="60" cy="60" r="54" fill="none"
-                            stroke="var(--accent)" stroke-width="6"
-                            stroke-linecap="round"
-                            stroke-dasharray="339.292" stroke-dashoffset="339.292"
-                            transform="rotate(-90 60 60)"
-                            style="transition: stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),
-                                               stroke 0.3s ease;"/>
-                  </svg>
-                  <div class="score-ring-label">
-                    <span class="score-number" id="scoreNumber">0</span>
-                    <span class="score-denom">/100</span>
-                  </div>
-                </div>
-
-                <div class="score-badge-block">
-                  <div class="priority-badge" id="priorityBadge">—</div>
-                  <div class="routing-line" id="routingLine">—</div>
-                  <div class="confidence-line" id="confidenceLine"></div>
-                </div>
-              </div>
-
-              <!-- Detected signals row (populated by JS) -->
-              <div id="detectedSignalsWrap" style="display:none;">
-                <div class="signals-header">
-                  <span class="form-label-custom" style="margin:0;">Detected Signals</span>
-                </div>
-                <div class="signals-row" id="detectedSignals"></div>
-              </div>
-
-              <!-- 5-category breakdown -->
-              <div class="score-breakdown" id="scoreBreakdown">
-                <div class="breakdown-row" id="bar-source">
-                  <span class="breakdown-label">Source</span>
-                  <div class="breakdown-track"><div class="breakdown-fill"></div></div>
-                  <span class="breakdown-pts">0/20</span>
-                </div>
-                <div class="breakdown-row" id="bar-engagement">
-                  <span class="breakdown-label">Velocity</span>
-                  <div class="breakdown-track"><div class="breakdown-fill"></div></div>
-                  <span class="breakdown-pts">0/20</span>
-                </div>
-                <div class="breakdown-row" id="bar-readiness">
-                  <span class="breakdown-label">Readiness</span>
-                  <div class="breakdown-track"><div class="breakdown-fill"></div></div>
-                  <span class="breakdown-pts">0/20</span>
-                </div>
-                <div class="breakdown-row" id="bar-intent">
-                  <span class="breakdown-label">Intent</span>
-                  <div class="breakdown-track"><div class="breakdown-fill"></div></div>
-                  <span class="breakdown-pts">0/20</span>
-                </div>
-                <div class="breakdown-row" id="bar-resilience">
-                  <span class="breakdown-label">SA Resilience</span>
-                  <div class="breakdown-track"><div class="breakdown-fill"></div></div>
-                  <span class="breakdown-pts">0/20</span>
-                </div>
-              </div>
-
-              <!-- Routing + advisories card -->
-              <div class="routing-card" id="routingCard">
-                <div class="routing-row">
-                  <span class="routing-key">Channel</span>
-                  <span class="routing-val" id="routingChannel">—</span>
-                </div>
-                <div class="routing-row">
-                  <span class="routing-key">Agent</span>
-                  <span class="routing-val" id="routingAgent">—</span>
-                </div>
-                <div class="routing-row">
-                  <span class="routing-key">SLA</span>
-                  <span class="routing-val" id="routingSLA">—</span>
-                </div>
-                <!-- Contextual advisories injected here by JS -->
-                <div id="routingAdvisories"></div>
-              </div>
-
-            </div><!-- /scorer-result-panel -->
-          </div><!-- /scorer-output -->
-
-        </div><!-- /scorer-shell -->
-      </div>
-
     </div>
   </section>
 
@@ -466,9 +467,7 @@
           The logic, exposed.
         </h2>
         <p class="lead-text" style="margin-top: 16px;">
-          This is the actual lead-routing function from the CRM automation
-          project. No off-the-shelf plugins — every rule is explicit, testable,
-          and owned by the client.
+          This is the actual query deduplication and singleflight cache engine from the PMD Online ERP system. Eliminates cache stampedes on MS SQL Server during high-volume production handovers.
         </p>
       </div>
 
@@ -480,7 +479,7 @@
             <div class="code-block-dots" aria-hidden="true">
               <span></span><span></span><span></span>
             </div>
-            <span class="code-block-filename">lead_router.py</span>
+            <span class="code-block-filename">singleflight_cache.go</span>
             <button class="code-copy-btn" id="copyCodeBtn" aria-label="Copy code to clipboard">
               Copy
             </button>
@@ -488,63 +487,45 @@
 
           <!-- Code body -->
           <div class="code-block-body">
-            <pre id="codeSnippet" aria-label="Python code snippet: lead routing logic"><span class="tok-cm"># lead_router.py — JO4 Dev CRM Automation Engine
-# Distributes inbound leads to agents based on area + budget rules.</span>
+            <pre id="codeSnippet" aria-label="Go code snippet: singleflight caching logic"><span class="tok-cm">// singleflight_cache.go — PMD Online Enterprise Query Deduplicator</span>
+<span class="tok-cm">// Eliminates cache stampedes on MS SQL Server during peak shift handovers.</span>
 
-<span class="tok-kw">from</span> dataclasses <span class="tok-kw">import</span> dataclass
-<span class="tok-kw">from</span> typing <span class="tok-kw">import</span> Optional
-<span class="tok-kw">from</span> .models <span class="tok-kw">import</span> Agent, Lead, Assignment
-<span class="tok-kw">from</span> .notifications <span class="tok-kw">import</span> send_agent_alert
+<span class="tok-kw">package</span> cache
 
+<span class="tok-kw">import</span> (
+    <span class="tok-str">"context"</span>
+    <span class="tok-str">"time"</span>
+    <span class="tok-str">"golang.org/x/sync/singleflight"</span>
+)
 
-<span class="tok-dec">@dataclass</span>
-<span class="tok-kw">class</span> <span class="tok-cls">RoutingResult</span>:
-    agent: Optional[<span class="tok-cls">Agent</span>]
-    reason: str
-    confidence: float  <span class="tok-cm"># 0.0 – 1.0</span>
+<span class="tok-kw">type</span> <span class="tok-cls">PrepressQueryEngine</span> <span class="tok-kw">struct</span> {
+    group <span class="tok-cls">singleflight</span>.Group
+    store <span class="tok-cls">Store</span>
+}
 
+<span class="tok-kw">func</span> (e *<span class="tok-cls">PrepressQueryEngine</span>) <span class="tok-fn">GetStereoLayout</span>(ctx <span class="tok-cls">context</span>.Context, dieID <span class="tok-kw">string</span>) (*<span class="tok-cls">StereoLayout</span>, <span class="tok-kw">error</span>) {
+    <span class="tok-cm">// Deduplicate concurrent incoming requests for identical die IDs</span>
+    v, err, _ := e.group.<span class="tok-fn">Do</span>(dieID, <span class="tok-kw">func</span>() (<span class="tok-kw">interface</span>{}, <span class="tok-kw">error</span>) {
+        <span class="tok-cm">// 1. Check hot in-memory / Redis cache (&lt;2ms)</span>
+        <span class="tok-kw">if</span> cached, ok := e.store.<span class="tok-fn">Get</span>(ctx, dieID); ok {
+            <span class="tok-kw">return</span> cached, <span class="tok-kw">nil</span>
+        }
 
-<span class="tok-kw">def</span> <span class="tok-fn">route_lead</span>(lead: <span class="tok-cls">Lead</span>, agents: list[<span class="tok-cls">Agent</span>]) -> <span class="tok-cls">RoutingResult</span>:
-    <span class="tok-str">"""
-    Route an inbound lead to the best available agent.
+        <span class="tok-cm">// 2. Fall back to compiled MS SQL Server query (&lt;15ms)</span>
+        layout, err := e.store.<span class="tok-fn">FetchFromMSSQL</span>(ctx, dieID)
+        <span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+            <span class="tok-kw">return</span> <span class="tok-kw">nil</span>, err
+        }
 
-    Priority:
-        1. Area match (suburb in agent's coverage zones)
-        2. Budget within agent's mandate bracket
-        3. Least-loaded agent among qualifying candidates
-    """</span>
-    candidates = [
-        a <span class="tok-kw">for</span> a <span class="tok-kw">in</span> agents
-        <span class="tok-kw">if</span> a.is_active <span class="tok-kw">and</span> lead.suburb <span class="tok-kw">in</span> a.coverage_zones
-    ]
+        e.store.<span class="tok-fn">Set</span>(ctx, dieID, layout, 15*<span class="tok-cls">time</span>.Minute)
+        <span class="tok-kw">return</span> layout, <span class="tok-kw">nil</span>
+    })
 
-    <span class="tok-kw">if not</span> candidates:
-        <span class="tok-kw">return</span> <span class="tok-cls">RoutingResult</span>(
-            agent=<span class="tok-kw">None</span>,
-            reason=<span class="tok-str">"no_area_match"</span>,
-            confidence=<span class="tok-num">0.0</span>
-        )
-
-    <span class="tok-cm"># Filter by budget bracket</span>
-    budget_match = [
-        a <span class="tok-kw">for</span> a <span class="tok-kw">in</span> candidates
-        <span class="tok-kw">if</span> a.min_mandate <= lead.budget <= a.max_mandate
-    ]
-    pool = budget_match <span class="tok-kw">or</span> candidates  <span class="tok-cm"># fall back to area-only match</span>
-    confidence = <span class="tok-num">0.95</span> <span class="tok-kw">if</span> budget_match <span class="tok-kw">else</span> <span class="tok-num">0.65</span>
-
-    <span class="tok-cm"># Assign to least-loaded agent</span>
-    chosen = <span class="tok-fn">min</span>(pool, key=<span class="tok-kw">lambda</span> a: a.open_leads_count)
-
-    assignment = <span class="tok-cls">Assignment</span>.create(lead=lead, agent=chosen)
-    assignment.save()
-    <span class="tok-fn">send_agent_alert</span>(chosen, lead)
-
-    <span class="tok-kw">return</span> <span class="tok-cls">RoutingResult</span>(
-        agent=chosen,
-        reason=<span class="tok-str">"area_and_budget_match"</span> <span class="tok-kw">if</span> budget_match <span class="tok-kw">else</span> <span class="tok-str">"area_only_match"</span>,
-        confidence=confidence
-    )</pre>
+    <span class="tok-kw">if</span> err != <span class="tok-kw">nil</span> {
+        <span class="tok-kw">return</span> <span class="tok-kw">nil</span>, err
+    }
+    <span class="tok-kw">return</span> v.(*<span class="tok-cls">StereoLayout</span>), <span class="tok-kw">nil</span>
+}</pre>
           </div>
 
         </div>

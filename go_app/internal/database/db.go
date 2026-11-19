@@ -84,6 +84,7 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		{&models.Transaction{}, "transactions"},
 		{&models.FAQSubmission{}, "faq_submissions"},
 		{&models.Order{}, "orders"},
+		{&models.PageContent{}, "page_contents"},
 	}
 
 	for _, tm := range newModels {
@@ -311,6 +312,9 @@ func SeedDefaults(db *gorm.DB, cfg *config.Config) {
 		}
 		log.Println("[DB] Seeded core FAQs (Ownership, Go Fiber, Timelines, Hosting, Automation, SEO)")
 	}
+
+	// Seed default CMS page content for Home, About, Security, and Engineering
+	SeedPageContents(db)
 }
 
 // ensureSchemaColumns guarantees critical columns and backfills exist on legacy SQLite databases.

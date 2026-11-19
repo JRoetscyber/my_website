@@ -24,11 +24,22 @@ type WebPConversionResult struct {
 
 // ConvertToWebP converts an image file (JPG, PNG, BMP) to WebP format
 func ConvertToWebP(inputPath, outputPath, quality, method string) (*WebPConversionResult, error) {
-	if quality == "" {
-		quality = "80"
+	cleanIn := filepath.Clean(inputPath)
+	cleanOut := filepath.Clean(outputPath)
+	if cleanIn == "" || cleanOut == "" || strings.HasPrefix(cleanIn, "-") || strings.HasPrefix(cleanOut, "-") {
+		return nil, errors.New("invalid input or output path")
 	}
-	if method == "" {
-		method = "6"
+
+	q := strings.TrimSpace(quality)
+	if q == "" || strings.EqualFold(q, "auto") {
+		q = "80"
+	} else if val, err := strconv.Atoi(q); err != nil || val < 0 || val > 100 {
+		q = "80"
+	}
+
+	m := strings.TrimSpace(method)
+	if val, err := strconv.Atoi(m); err != nil || val < 0 || val > 6 {
+		m = "6"
 	}
 
 	// 1. Locate converter executable (Custom C++ tool or cwebp)
@@ -37,22 +48,12 @@ func ConvertToWebP(inputPath, outputPath, quality, method string) (*WebPConversi
 	var cmd *exec.Cmd
 	if strings.Contains(converterBin, "converter") {
 		// Custom C++ converter: ./converter <input> <output> [quality] [method]
-		cmd = exec.Command(converterBin, inputPath, outputPath, quality, method)
+		// #nosec G204 -- converterBin is resolved from fixed allow-listed paths and args/paths are strictly validated above
+		cmd = exec.Command(converterBin, cleanIn, cleanOut, q, m)
 	} else if strings.Contains(converterBin, "cwebp") {
 		// Google cwebp fallback: cwebp -q <quality> -m <method> <input> -o <output>
-		q := quality
-		if strings.EqualFold(q, "auto") {
-			q = "80"
-		}
-		// ensure quality is integer 0-100
-		if val, err := strconv.Atoi(q); err != nil || val < 0 || val > 100 {
-			q = "80"
-		}
-		m := method
-		if val, err := strconv.Atoi(m); err != nil || val < 0 || val > 6 {
-			m = "6"
-		}
-		cmd = exec.Command("cwebp", "-q", q, "-m", m, inputPath, "-o", outputPath)
+		// #nosec G204 -- binary is fixed literal "cwebp" and q/m/paths are strictly validated above
+		cmd = exec.Command("cwebp", "-q", q, "-m", m, cleanIn, "-o", cleanOut)
 	} else {
 		return nil, errors.New("no WebP encoder found (neither custom converter nor cwebp is available on host)")
 	}

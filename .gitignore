@@ -221,3 +221,5 @@ claude.exe
 *.db-shm
 .env
 .vs/
+.chrome-temp/
+screenshots/

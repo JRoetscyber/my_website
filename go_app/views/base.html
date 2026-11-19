@@ -3,26 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <title>{% block title %}Jonathan Roets — Software Engineer &amp; Security Researcher{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Software Engineer &amp; Security Researcher specializing in high-concurrency Go Fiber backends, AppSec, OWASP Top 10 web penetration testing, and hardware telemetry.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}Software Engineer Pretoria, AppSec Engineer South Africa, Junior Penetration Tester Gauteng, Go Fiber Security Tools, Web Application Security Researcher, Cybersecurity Portfolio{% endblock %}">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="googlebot" content="index, follow">
   <meta name="geo.region" content="ZA">
-  <meta name="geo.placename" content="South Africa">
-  <meta name="author" content="JO4 Development Studio">
+  <meta name="geo.placename" content="Pretoria, Gauteng, South Africa">
+  <meta name="author" content="Jonathan Roets">
 
   <!-- OpenGraph Metadata -->
-  <meta property="og:site_name" content="JO4 Dev">
+  <meta property="og:site_name" content="Jonathan Roets Portfolio">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-  <meta property="og:title" content="{% block og_title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Jonathan Roets — Software Engineer &amp; Security Researcher{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}High-concurrency Go Fiber systems, custom offensive security tooling, and developer-led penetration testing.{% endblock %}">
   <meta property="og:url" content="{% block og_url %}{% if canonical_url %}{{ canonical_url }}{% elif current_path == '/' %}https://jo4.co.za/{% elif current_path %}https://jo4.co.za{{ current_path }}{% else %}https://jo4.co.za/{% endif %}{% endblock %}">
   <meta property="og:image" content="{% block og_image %}https://jo4.co.za/static/assets/logo.webp{% endblock %}">
 
   <!-- Twitter Card Metadata -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{% block twitter_title %}JO4 Dev — High-Performance Web Systems, Native Apps & SEO{% endblock %}">
-  <meta name="twitter:description" content="{% block twitter_description %}Custom websites, automated business tools and native mobile apps built with Dragon and Go Fiber. Zero templates. Battle-ready performance.{% endblock %}">
+  <meta name="twitter:title" content="{% block twitter_title %}Jonathan Roets — Software Engineer &amp; Security Researcher{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}High-concurrency Go Fiber systems, custom offensive security tooling, and developer-led penetration testing.{% endblock %}">
   <meta name="twitter:image" content="{% block twitter_image %}https://jo4.co.za/static/assets/logo.webp{% endblock %}">
 
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -30,70 +31,75 @@
   <!-- Preload Critical Typography (Self-Hosted, Zero External Roundtrips) -->
   <link rel="preload" href="/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/syne-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/syne-800.woff2" as="font" type="font/woff2" crossorigin>
 
   {% block head_styles %}
   <!-- Core Stylesheet (Pure CSS tokens, layout, nav, footer, and grid) -->
-  <link rel="stylesheet" href="/static/css/core.css?v=20261005064232">
-  <link rel="stylesheet" href="/static/css/grid.css?v=20261005064232">
+  <link rel="stylesheet" href="/static/css/core.css?v=20261116v2">
+  <link rel="stylesheet" href="/static/css/grid.css?v=20261116v2">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20261116v2">
   {% endblock %}
+
+  <!-- HTMX for Instant Sub-Millisecond Navigation & Partial DOM Swaps -->
+  <script src="/static/js/htmx.min.js" defer></script>
 
   <!-- Dynamic Canonical Link -->
   <link rel="canonical" href="{% block canonical %}{% if canonical_url %}{{ canonical_url }}{% elif current_path == '/' %}https://jo4.co.za/{% elif current_path %}https://jo4.co.za{{ current_path }}{% else %}https://jo4.co.za/{% endif %}{% endblock %}">
   
   {% block head_extra %}{% endblock %}
   
-  <!-- Global JSON-LD Schema (Organization, WebSite & ProfessionalService) -->
+  <!-- Global JSON-LD Schema (Person & WebSite Schema) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
-        "@id": "https://jo4.co.za/#organization",
-        "name": "JO4 Dev",
+        "@type": "Person",
+        "@id": "https://jo4.co.za/#person",
+        "name": "Jonathan Roets",
         "url": "https://jo4.co.za",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://jo4.co.za/static/assets/logo.webp"
+        "email": "jroetscyber@gmail.com",
+        "jobTitle": "Software Engineer & Security Researcher",
+        "image": "https://jo4.co.za/static/assets/logo.webp",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Pretoria",
+          "addressRegion": "Gauteng",
+          "addressCountry": "ZA"
         },
-        "description": "High-performance custom web development, native mobile applications, and business automation engineered with Go Fiber and Dragon.",
-        "areaServed": {
-          "@type": "Country",
-          "name": "South Africa"
-        },
-        "knowsAbout": ["Go Fiber", "Custom Web Development", "Search Engine Optimization", "C++", "Kotlin", "Swift", "Docker", "Cloudflare"]
+        "sameAs": [
+          "https://github.com/JRoetscyber",
+          "https://linkedin.com/in/jonathan-roets-b93420356",
+          "https://leetcode.com/u/jroetscyber"
+        ],
+        "knowsAbout": ["Application Security", "Penetration Testing", "Go Development", "Python", "SQL", "OWASP Top 10", "Computer Vision", "Hardware Telemetry", "LoRa", "DevSecOps"]
       },
       {
         "@type": "WebSite",
         "@id": "https://jo4.co.za/#website",
         "url": "https://jo4.co.za",
-        "name": "JO4 Dev",
+        "name": "Jonathan Roets — Software & Security Engineer",
         "publisher": {
-          "@id": "https://jo4.co.za/#organization"
+          "@id": "https://jo4.co.za/#person"
         }
-      },
-      {
-        "@type": "ProfessionalService",
-        "@id": "https://jo4.co.za/#service",
-        "name": "JO4 Dev",
-        "url": "https://jo4.co.za",
-        "image": "https://jo4.co.za/static/assets/logo.webp",
-        "priceRange": "$$"
       }
     ]
   }
   </script>
   {% block json_ld_schema %}{% endblock %}
 </head>
-<body>
+<body hx-boost="true">
+
+  <!-- HTMX Loading Bar -->
+  <div id="htmx-progress" aria-hidden="true"></div>
 
   <!-- NAV (Floating Neumorphic Pill) -->
   <nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="/" class="nav-logo" aria-label="JO4 Dev Home">
-        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="nav-logo-img" width="84" height="78">
-        <span class="nav-brand-text">JO4<span class="nav-brand-accent">.DEV</span></span>
+        <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Logo" class="nav-logo-img" width="84" height="78">
+        <span class="nav-brand-text">JO4<span class="nav-brand-accent">DEV</span><span class="nav-brand-sub">&bull; J. ROETS</span></span>
       </a>
 
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -103,19 +109,20 @@
       <ul class="nav-links" id="navLinks" role="list">
         <li><a href="/" class="nav-link-pill {% if current_path == '/' %}active{% endif %}">Home</a></li>
         <li><a href="/services" class="nav-link-pill {% if current_path == '/services' %}active{% endif %}">Services</a></li>
-        <li><a href="/mobile-apps" class="nav-link-pill {% if current_path == '/mobile-apps' %}active{% endif %}">Mobile Apps</a></li>
-        <li><a href="/projects" class="nav-link-pill {% if current_path == '/projects' %}active{% endif %}">Work</a></li>
+        <li><a href="/projects" class="nav-link-pill {% if current_path == '/projects' %}active{% endif %}">Projects &amp; Demos</a></li>
+        <li><a href="/security" class="nav-link-pill {% if current_path == '/security' %}active{% endif %}">Security</a></li>
+        <li><a href="/engineering" class="nav-link-pill {% if current_path == '/engineering' %}active{% endif %}">Engineering</a></li>
+        <li><a href="/about" class="nav-link-pill {% if current_path == '/about' %}active{% endif %}">About</a></li>
         <li><a href="/blog" class="nav-link-pill {% if current_path == '/blog' %}active{% endif %}">Blog</a></li>
-        <li><a href="/faq" class="nav-link-pill {% if current_path == '/faq' %}active{% endif %}">FAQ</a></li>
         <li>
-          <a href="/book" class="nav-cta">Register Now</a>
+          <a href="/contact" class="nav-cta">Get in Touch</a>
         </li>
       </ul>
     </div>
   </nav>
 
   <!-- MAIN -->
-  <main>
+  <main id="main-content">
     {% block content %}{% endblock %}
   </main>
 
@@ -126,11 +133,11 @@
 
         <div class="footer-brand">
           <a href="/" class="nav-logo" aria-label="JO4 Dev Home">
-            <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Mascot" class="nav-logo-img nav-logo-img--footer" width="84" height="78" loading="lazy">
-            <span class="nav-brand-text">JO4<span class="nav-brand-accent">.DEV</span></span>
+            <img src="/static/assets/logo.webp" srcset="/static/assets/logo.webp 1x, /static/assets/logo-168.webp 2x" alt="JO4 Dev Logo" class="nav-logo-img nav-logo-img--footer" width="84" height="78" loading="lazy">
+            <span class="nav-brand-text">JO4<span class="nav-brand-accent">DEV</span></span>
           </a>
-          <p style="margin-top: 14px; max-width: 320px;">
-            Ultra-fast websites, automation systems &amp; native apps engineered in Go Fiber &amp; Dragon. No cookie-cutter templates. Hosted battle-ready on Hostinger.
+          <p style="margin-top: 14px; max-width: 340px;">
+            Software Engineer, AppSec Researcher &amp; Freelance Systems Builder. High-throughput Go Fiber microservices, custom web applications, hardware IoT telemetry, and offensive application security tooling.
           </p>
           <div class="footer-scripture">
             <strong>Colossians 3:23</strong>
@@ -143,20 +150,34 @@
             <h5>Navigation</h5>
             <ul>
               <li><a href="/">Home</a></li>
-              <li><a href="/services">Services</a></li>
-              <li><a href="/mobile-apps">Mobile Apps</a></li>
-              <li><a href="/projects">Evidence Room</a></li>
-              <li><a href="/faq">FAQ</a></li>
-              <li><a href="/book">Book a Call</a></li>
+              <li><a href="/services">Freelance Services</a></li>
+              <li><a href="/projects">Projects &amp; Demos</a></li>
+              <li><a href="/security">Security Research</a></li>
+              <li><a href="/engineering">Systems Engineering</a></li>
+              <li><a href="/about">About &amp; Skills</a></li>
+              <li><a href="/blog">Write-ups &amp; Blog</a></li>
+              <li><a href="/contact">Contact &amp; Inquiries</a></li>
+              <li><a href="/contact#book" style="color:var(--accent); font-weight:700;">Book 15-Min Call ↗</a></li>
             </ul>
           </div>
           <div class="footer-col">
-            <h5>Pillars</h5>
+            <h5>Connect &amp; Social</h5>
             <ul>
-              <li><a href="/web-design">Web Development (Go Fiber)</a></li>
-              <li><a href="/seo">SEO &amp; Crawl Optimization</a></li>
-              <li><a href="/mobile-apps">Mobile Apps (C++, Kotlin, Swift)</a></li>
-              <li><a href="/appsec">DevSecOps &amp; Hosting</a></li>
+              <li><a href="https://github.com/JRoetscyber" target="_blank" rel="noopener">GitHub (@JRoetscyber)</a></li>
+              <li><a href="https://linkedin.com/in/jonathan-roets-b93420356" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://leetcode.com/u/jroetscyber" target="_blank" rel="noopener">LeetCode</a></li>
+              <li><a href="mailto:jroetscyber@gmail.com">jroetscyber@gmail.com</a></li>
+              <li><a href="/Jonathan_Roets_CV.pdf" target="_blank">Download CV (PDF)</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h5>Technical Domains</h5>
+            <ul>
+              <li><a href="/services">Freelance Web &amp; ERP Builds</a></li>
+              <li><a href="/security">Web Pentesting &amp; OWASP Top 10</a></li>
+              <li><a href="/engineering">Go Fiber &amp; Microservices</a></li>
+              <li><a href="/engineering">Computer Vision (OpenCV)</a></li>
+              <li><a href="/engineering">IoT &amp; LoRa RF Telemetry</a></li>
             </ul>
           </div>
         </nav>
@@ -164,14 +185,14 @@
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; <span id="footerYear">{{ year }}</span> JO4 Dev. All rights reserved.</p>
-        <p style="font-size: 0.8rem; color: var(--text-muted);">Faith-driven development &bull; Battle-ready performance &bull; Zero templates</p>
+        <p>&copy; <span id="footerYear">{{ year }}</span> JO4 Dev &bull; Jonathan Roets. All rights reserved.</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">High-concurrency systems &bull; Offensive AppSec research &bull; Built with purpose</p>
       </div>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="/static/js/main.js?v=20261005064232" defer></script>
+  <script src="/static/js/main.js?v=20261113v1" defer></script>
 
   {% block scripts %}{% endblock %}
 

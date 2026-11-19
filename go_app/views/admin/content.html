@@ -1,0 +1,857 @@
+{% extends "admin/admin.html" %}
+
+{% block admin_title %}Site Pages CMS — Admin{% endblock %}
+{% block admin_heading %}Site Pages CMS{% endblock %}
+
+{% block admin_head %}
+<style>
+  .cms-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .cms-tab-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.85);
+    background: var(--surface-0, #ebecf0);
+    color: var(--color-text-secondary, #475569);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 4px 4px 10px rgba(163,177,198,0.45), -4px -4px 10px rgba(255,255,255,0.85);
+    transition: all 0.2s ease;
+  }
+  .cms-tab-btn.active {
+    background: var(--accent, #0d9488);
+    color: #fff;
+    border-color: var(--accent, #0d9488);
+    box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+  }
+  .cms-action-bar {
+    position: sticky;
+    top: 12px;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    background: rgba(235, 236, 240, 0.94);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.9);
+    box-shadow: 6px 6px 14px rgba(163,177,198,0.45), -6px -6px 14px rgba(255,255,255,0.85);
+  }
+  .cms-section-card {
+    margin-bottom: 24px;
+  }
+  .cms-repeater-item {
+    background: rgba(255,255,255,0.42);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .cms-repeater-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(15,23,42,0.08);
+  }
+  .cms-repeater-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--accent, #0d9488);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .cms-mini-btn {
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(15,23,42,0.12);
+    background: #fff;
+    color: #334155;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .cms-mini-btn:hover { background: #f1f5f9; }
+  .cms-mini-btn.danger { color: #dc2626; border-color: rgba(220,38,38,0.25); }
+  .cms-mini-btn.danger:hover { background: #fef2f2; }
+  .cms-add-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px dashed var(--accent, #0d9488);
+    background: rgba(13,148,136,0.06);
+    color: var(--accent, #0d9488);
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .cms-add-btn:hover { background: rgba(13,148,136,0.14); }
+  .cms-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9999;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #fff;
+    background: #0d9488;
+    box-shadow: 0 10px 25px rgba(15,23,42,0.2);
+    display: none;
+  }
+  .cms-toast.error { background: #dc2626; }
+  .cms-avatar-preview {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .cms-hint {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin-top: 4px;
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+
+<div class="mb-4">
+  <h2 style="font-family:var(--font-display); font-weight:800; margin-bottom:4px;">Site Pages Content Manager</h2>
+  <p style="color:var(--color-text-muted); font-size:0.88rem; margin:0;">
+    Edit Homepage, About &amp; Skills Matrix, Security Research, and Systems Engineering directly. Changes flush the cache and go live immediately.
+  </p>
+</div>
+
+<!-- Page Selector Tabs -->
+<div class="cms-tabs" role="tablist">
+  <button type="button" class="cms-tab-btn{% if active_tab == 'home' %} active{% endif %}" data-tab="home">Homepage (/)</button>
+  <button type="button" class="cms-tab-btn{% if active_tab == 'about' %} active{% endif %}" data-tab="about">About &amp; Skills (/about)</button>
+  <button type="button" class="cms-tab-btn{% if active_tab == 'security' %} active{% endif %}" data-tab="security">Security Research (/security)</button>
+  <button type="button" class="cms-tab-btn{% if active_tab == 'engineering' %} active{% endif %}" data-tab="engineering">Systems Engineering (/engineering)</button>
+</div>
+
+<!-- Sticky Save / Preview / Reset Action Bar -->
+<div class="cms-action-bar">
+  <div>
+    <strong id="cmsCurrentTitle" style="font-size:0.95rem;">Homepage Content</strong>
+    <span id="cmsDirtyBadge" style="display:none; margin-left:10px; font-size:0.74rem; color:#d97706; font-weight:700;">● Unsaved changes</span>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <a id="cmsLiveLink" href="/" target="_blank" class="btn-admin-outline btn-admin-sm" style="text-decoration:none;">View Live Page &nearr;</a>
+    <button type="button" id="cmsResetBtn" class="btn-admin-outline btn-admin-sm btn-admin-danger">Reset Defaults</button>
+    <button type="button" id="cmsSaveBtn" class="btn-admin-primary btn-admin-sm" style="padding:8px 22px;">Save Changes</button>
+  </div>
+</div>
+
+<!-- Dynamic Editor Container -->
+<div id="cmsEditorRoot"></div>
+
+<div id="cmsToast" class="cms-toast" role="status" aria-live="polite"></div>
+
+<!-- Embedded Initial JSON State (HTML-escaped safely by Go json.Marshal) -->
+<script type="application/json" id="cms-data-home">{{ home_json|safe }}</script>
+<script type="application/json" id="cms-data-about">{{ about_json|safe }}</script>
+<script type="application/json" id="cms-data-security">{{ security_json|safe }}</script>
+<script type="application/json" id="cms-data-engineering">{{ engineering_json|safe }}</script>
+
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+(function () {
+  var state = {
+    home: JSON.parse(document.getElementById('cms-data-home').textContent || '{}'),
+    about: JSON.parse(document.getElementById('cms-data-about').textContent || '{}'),
+    security: JSON.parse(document.getElementById('cms-data-security').textContent || '{}'),
+    engineering: JSON.parse(document.getElementById('cms-data-engineering').textContent || '{}')
+  };
+
+  var meta = {
+    home: { title: 'Homepage Content (index.html)', url: '/' },
+    about: { title: 'About, Bio & Skills Matrix (about.html)', url: '/about' },
+    security: { title: 'Security Tools & Research (security.html)', url: '/security' },
+    engineering: { title: 'Systems Engineering Showcase (engineering.html)', url: '/engineering' }
+  };
+
+  var currentTab = '{{ active_tab|default:"home" }}';
+  var root = document.getElementById('cmsEditorRoot');
+  var saveBtn = document.getElementById('cmsSaveBtn');
+  var resetBtn = document.getElementById('cmsResetBtn');
+  var liveLink = document.getElementById('cmsLiveLink');
+  var titleEl = document.getElementById('cmsCurrentTitle');
+  var dirtyBadge = document.getElementById('cmsDirtyBadge');
+  var toastEl = document.getElementById('cmsToast');
+
+  function showToast(msg, isError) {
+    toastEl.textContent = msg;
+    toastEl.className = 'cms-toast' + (isError ? ' error' : '');
+    toastEl.style.display = 'block';
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function () { toastEl.style.display = 'none'; }, 3200);
+  }
+
+  function markDirty() {
+    dirtyBadge.style.display = 'inline';
+  }
+
+  function clearDirty() {
+    dirtyBadge.style.display = 'none';
+  }
+
+  function esc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function arrToCSV(arr) {
+    return Array.isArray(arr) ? arr.join(', ') : '';
+  }
+
+  function csvToArr(str) {
+    return String(str || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function arrToLines(arr) {
+    return Array.isArray(arr) ? arr.join('\n') : '';
+  }
+
+  function linesToArr(str) {
+    return String(str || '').split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function paragraphsToText(arr) {
+    return Array.isArray(arr) ? arr.join('\n\n') : '';
+  }
+
+  function textToParagraphs(str) {
+    return String(str || '').split(/\r?\n\s*\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function cardWrap(title, subtitle, bodyHtml) {
+    return '<div class="widget-card cms-section-card">' +
+      '<div class="widget-header">' +
+        '<div class="widget-title">' + esc(title) + '</div>' +
+        '<div class="widget-meta">' + esc(subtitle) + '</div>' +
+      '</div>' +
+      '<div class="widget-body">' + bodyHtml + '</div>' +
+    '</div>';
+  }
+
+  function fieldInput(label, path, value, opts) {
+    opts = opts || {};
+    var col = opts.col || 'col-12';
+    var hint = opts.hint ? '<div class="cms-hint">' + esc(opts.hint) + '</div>' : '';
+    var inputHtml = '';
+    if (opts.type === 'textarea') {
+      inputHtml = '<textarea class="admin-form-input cms-bind" data-path="' + esc(path) + '" data-kind="' + esc(opts.kind || 'text') + '" rows="' + (opts.rows || 3) + '">' + esc(value) + '</textarea>';
+    } else if (opts.type === 'select') {
+      var optionsHtml = (opts.options || []).map(function (o) {
+        var sel = (o.value === value) ? ' selected' : '';
+        return '<option value="' + esc(o.value) + '"' + sel + '>' + esc(o.label) + '</option>';
+      }).join('');
+      inputHtml = '<select class="admin-form-input cms-bind" data-path="' + esc(path) + '" data-kind="text">' + optionsHtml + '</select>';
+    } else {
+      inputHtml = '<input class="admin-form-input cms-bind" type="text" data-path="' + esc(path) + '" data-kind="' + esc(opts.kind || 'text') + '" value="' + esc(value) + '">';
+    }
+    return '<div class="' + col + ' mb-3">' +
+      '<label class="admin-form-label">' + esc(label) + '</label>' +
+      inputHtml + hint +
+    '</div>';
+  }
+
+  var ICON_OPTIONS = [
+    { value: 'shield', label: 'Shield (Security)' },
+    { value: 'zap', label: 'Lightning / Zap (Speed)' },
+    { value: 'monitor', label: 'Monitor (Web / UI)' },
+    { value: 'database', label: 'Database (SQL / Infra)' },
+    { value: 'radio', label: 'Radio Wave (RF / IoT)' },
+    { value: 'cpu', label: 'CPU / Hardware' },
+    { value: 'code', label: 'Code Brackets' },
+    { value: 'check', label: 'Checkmark' }
+  ];
+
+  function repeaterActions(listPath, idx, len) {
+    return '<div style="display:flex; gap:6px;">' +
+      (idx > 0 ? '<button type="button" class="cms-mini-btn cms-move" data-list="' + listPath + '" data-idx="' + idx + '" data-dir="-1">&uarr;</button>' : '') +
+      (idx < len - 1 ? '<button type="button" class="cms-mini-btn cms-move" data-list="' + listPath + '" data-idx="' + idx + '" data-dir="1">&darr;</button>' : '') +
+      '<button type="button" class="cms-mini-btn danger cms-remove" data-list="' + listPath + '" data-idx="' + idx + '">Remove</button>' +
+    '</div>';
+  }
+
+  // ── RENDER HOMEPAGE ──────────────────────────────────────────
+  function renderHome(d) {
+    var html = '';
+    html += cardWrap('Hero & SEO Metadata', 'Top banner of /', '<div class="row g-3">' +
+      fieldInput('Browser Page Title', 'meta_title', d.meta_title, { col: 'col-md-6' }) +
+      fieldInput('Meta Description (SEO)', 'meta_description', d.meta_description, { col: 'col-md-6' }) +
+      fieldInput('Hero Eyebrow Pill', 'hero_eyebrow', d.hero_eyebrow, { col: 'col-12' }) +
+      fieldInput('Headline Line 1', 'hero_title_line1', d.hero_title_line1, { col: 'col-md-6' }) +
+      fieldInput('Headline Accent Line (Teal)', 'hero_title_accent', d.hero_title_accent, { col: 'col-md-6' }) +
+      fieldInput('Hero Intro Paragraph', 'hero_lead', d.hero_lead, { col: 'col-12', type: 'textarea', rows: 3 }) +
+      fieldInput('Hero Chips (comma-separated)', 'hero_chips', arrToCSV(d.hero_chips), { col: 'col-12', kind: 'csv', hint: 'Example: Go Fiber, Freelance Builds, AppSec • OWASP, Sub-20ms TTFB' }) +
+      fieldInput('Primary Button Label', 'hero_primary_label', d.hero_primary_label, { col: 'col-md-3' }) +
+      fieldInput('Primary Button URL', 'hero_primary_url', d.hero_primary_url, { col: 'col-md-3' }) +
+      fieldInput('Secondary Button Label', 'hero_secondary_label', d.hero_secondary_label, { col: 'col-md-3' }) +
+      fieldInput('Secondary Button URL', 'hero_secondary_url', d.hero_secondary_url, { col: 'col-md-3' }) +
+    '</div>');
+
+    var pillars = d.pillars || [];
+    var pillarsBody = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'pillars_eyebrow', d.pillars_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Title Line 1', 'pillars_title_line1', d.pillars_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Title Accent Line', 'pillars_title_accent', d.pillars_title_accent, { col: 'col-md-4' }) +
+      fieldInput('Section Lead', 'pillars_lead', d.pillars_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    pillars.forEach(function (p, i) {
+      pillarsBody += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Pillar #' + (i + 1) + '</span>' + repeaterActions('pillars', i, pillars.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Icon', 'pillars.' + i + '.icon', p.icon, { col: 'col-md-3', type: 'select', options: ICON_OPTIONS }) +
+          fieldInput('Tag', 'pillars.' + i + '.tag', p.tag, { col: 'col-md-4' }) +
+          fieldInput('Title', 'pillars.' + i + '.title', p.title, { col: 'col-md-5' }) +
+          fieldInput('Description', 'pillars.' + i + '.description', p.description, { col: 'col-12', type: 'textarea', rows: 2 }) +
+          fieldInput('Chips (comma-separated)', 'pillars.' + i + '.chips', arrToCSV(p.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Link Text', 'pillars.' + i + '.link_text', p.link_text, { col: 'col-md-3' }) +
+          fieldInput('Link URL', 'pillars.' + i + '.link_url', p.link_url, { col: 'col-md-3' }) +
+        '</div></div>';
+    });
+    pillarsBody += '<button type="button" class="cms-add-btn" data-add="home_pillar">+ Add Pillar Card</button>';
+    html += cardWrap('Core Pillars Section', pillars.length + ' cards', pillarsBody);
+
+    var demos = d.demos || [];
+    var demosBody = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'demos_eyebrow', d.demos_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'demos_title', d.demos_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'demos_lead', d.demos_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    demos.forEach(function (item, i) {
+      demosBody += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Featured System #' + (i + 1) + '</span>' + repeaterActions('demos', i, demos.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Tag', 'demos.' + i + '.tag', item.tag, { col: 'col-md-4' }) +
+          fieldInput('Title', 'demos.' + i + '.title', item.title, { col: 'col-md-8' }) +
+          fieldInput('Description', 'demos.' + i + '.description', item.description, { col: 'col-12', type: 'textarea', rows: 2 }) +
+          fieldInput('Chips (comma-separated)', 'demos.' + i + '.chips', arrToCSV(item.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Link Text', 'demos.' + i + '.link_text', item.link_text, { col: 'col-md-3' }) +
+          fieldInput('Link URL', 'demos.' + i + '.link_url', item.link_url, { col: 'col-md-3' }) +
+        '</div></div>';
+    });
+    demosBody += '<button type="button" class="cms-add-btn" data-add="home_demo">+ Add Featured System Card</button>';
+    html += cardWrap('Featured Production Systems', demos.length + ' cards', demosBody);
+
+    var secTools = d.security_tools || [];
+    var secBody = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'security_eyebrow', d.security_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'security_title', d.security_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'security_lead', d.security_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    secTools.forEach(function (item, i) {
+      secBody += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Security Tool #' + (i + 1) + '</span>' + repeaterActions('security_tools', i, secTools.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Tag', 'security_tools.' + i + '.tag', item.tag, { col: 'col-md-4' }) +
+          fieldInput('Title', 'security_tools.' + i + '.title', item.title, { col: 'col-md-8' }) +
+          fieldInput('Description', 'security_tools.' + i + '.description', item.description, { col: 'col-12', type: 'textarea', rows: 2 }) +
+          fieldInput('Chips (comma-separated)', 'security_tools.' + i + '.chips', arrToCSV(item.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Repo Label', 'security_tools.' + i + '.repo_label', item.repo_label, { col: 'col-md-3' }) +
+          fieldInput('Repo URL', 'security_tools.' + i + '.repo_url', item.repo_url, { col: 'col-md-3' }) +
+          fieldInput('Link Text', 'security_tools.' + i + '.link_text', item.link_text, { col: 'col-md-6' }) +
+          fieldInput('Link URL', 'security_tools.' + i + '.link_url', item.link_url, { col: 'col-md-6' }) +
+        '</div></div>';
+    });
+    secBody += '<button type="button" class="cms-add-btn" data-add="home_tool">+ Add Security Tool Card</button>';
+    html += cardWrap('Featured Open-Source Security Tools', secTools.length + ' cards', secBody);
+
+    var proofRows = d.proof_rows || [];
+    var philBody = '<div class="row g-3 mb-3">' +
+      fieldInput('Eyebrow', 'philosophy_eyebrow', d.philosophy_eyebrow, { col: 'col-md-3' }) +
+      fieldInput('Title Line 1', 'philosophy_title_line1', d.philosophy_title_line1, { col: 'col-md-3' }) +
+      fieldInput('Title Line 2', 'philosophy_title_line2', d.philosophy_title_line2, { col: 'col-md-3' }) +
+      fieldInput('Title Accent', 'philosophy_title_accent', d.philosophy_title_accent, { col: 'col-md-3' }) +
+      fieldInput('Narrative Paragraph', 'philosophy_lead', d.philosophy_lead, { col: 'col-12', type: 'textarea', rows: 3 }) +
+      fieldInput('Faith Card Title', 'faith_title', d.faith_title, { col: 'col-md-4' }) +
+      fieldInput('Verse Reference', 'faith_verse_ref', d.faith_verse_ref, { col: 'col-md-4' }) +
+      fieldInput('Verse Text', 'faith_verse_text', d.faith_verse_text, { col: 'col-md-4' }) +
+      fieldInput('Mission Statement', 'faith_statement', d.faith_statement, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    proofRows.forEach(function (pr, i) {
+      philBody += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Proof Point #' + (i + 1) + '</span>' + repeaterActions('proof_rows', i, proofRows.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Icon', 'proof_rows.' + i + '.icon', pr.icon, { col: 'col-md-3', type: 'select', options: ICON_OPTIONS }) +
+          fieldInput('Title', 'proof_rows.' + i + '.title', pr.title, { col: 'col-md-9' }) +
+          fieldInput('Description', 'proof_rows.' + i + '.description', pr.description, { col: 'col-12', type: 'textarea', rows: 2 }) +
+        '</div></div>';
+    });
+    philBody += '<button type="button" class="cms-add-btn" data-add="home_proof">+ Add Proof Point</button>';
+    html += cardWrap('Engineering Philosophy & Proof Points', proofRows.length + ' items', philBody);
+
+    html += cardWrap('Bottom Call-To-Action Band', 'Footer CTA', '<div class="row g-3">' +
+      fieldInput('Availability Badge', 'cta_badge', d.cta_badge, { col: 'col-12' }) +
+      fieldInput('Headline Line 1', 'cta_title_line1', d.cta_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 2', 'cta_title_line2', d.cta_title_line2, { col: 'col-md-4' }) +
+      fieldInput('Headline Accent', 'cta_title_accent', d.cta_title_accent, { col: 'col-md-4' }) +
+      fieldInput('CTA Lead Copy', 'cta_lead', d.cta_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>');
+
+    return html;
+  }
+
+  // ── RENDER ABOUT & SKILLS ────────────────────────────────────
+  function renderAbout(d) {
+    var html = '';
+    html += cardWrap('About Hero & SEO', '/about header', '<div class="row g-3">' +
+      fieldInput('Browser Page Title', 'meta_title', d.meta_title, { col: 'col-md-6' }) +
+      fieldInput('Meta Description', 'meta_description', d.meta_description, { col: 'col-md-6' }) +
+      fieldInput('Hero Eyebrow', 'hero_eyebrow', d.hero_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Hero Title', 'hero_title', d.hero_title, { col: 'col-md-8' }) +
+      fieldInput('Hero Lead Text', 'hero_lead', d.hero_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>');
+
+    var avatarPreview = d.avatar_image
+      ? '<img src="' + esc(d.avatar_image) + '" style="width:100%;height:100%;object-fit:cover;" alt="Avatar">'
+      : '<span style="font-size:0.72rem; color:#64748b; font-weight:700;">SVG</span>';
+
+    var profileHtml = '<div class="row g-3 align-items-center mb-3">' +
+      '<div class="col-12" style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">' +
+        '<div class="cms-avatar-preview" id="cmsAvatarPreview">' + avatarPreview + '</div>' +
+        '<div>' +
+          '<label class="admin-form-label" style="margin-bottom:6px;">Profile Headshot Photo</label>' +
+          '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
+            '<input type="file" id="cmsAvatarFile" accept="image/png,image/jpeg,image/webp" hidden>' +
+            '<button type="button" class="cms-add-btn" id="cmsUploadAvatarBtn">Upload Photo</button>' +
+            (d.avatar_image ? '<button type="button" class="cms-mini-btn danger" id="cmsClearAvatarBtn">Remove Photo</button>' : '') +
+          '</div>' +
+          '<div class="cms-hint">PNG, JPG, or WEBP. Leave blank to display the clean monogram avatar.</div>' +
+        '</div>' +
+      '</div>' +
+      fieldInput('Availability Status Badge', 'status_badge', d.status_badge, { col: 'col-12' }) +
+      fieldInput('Full Name', 'full_name', d.full_name, { col: 'col-md-4' }) +
+      fieldInput('Role Title', 'role_title', d.role_title, { col: 'col-md-4' }) +
+      fieldInput('Location', 'location', d.location, { col: 'col-md-4' }) +
+      fieldInput('Email Address', 'email', d.email, { col: 'col-md-6' }) +
+      fieldInput('CV Download URL', 'cv_url', d.cv_url, { col: 'col-md-6' }) +
+      fieldInput('GitHub URL', 'github_url', d.github_url, { col: 'col-md-4' }) +
+      fieldInput('LinkedIn URL', 'linkedin_url', d.linkedin_url, { col: 'col-md-4' }) +
+      fieldInput('LeetCode URL', 'leetcode_url', d.leetcode_url, { col: 'col-md-4' }) +
+    '</div>';
+    html += cardWrap('Profile Card & Social Links', 'Left profile column', profileHtml);
+
+    var principles = d.principles || [];
+    var bioHtml = '<div class="row g-3 mb-3">' +
+      fieldInput('Bio Eyebrow', 'bio_eyebrow', d.bio_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Bio Headline Line 1', 'bio_title_line1', d.bio_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Bio Headline Accent', 'bio_title_accent', d.bio_title_accent, { col: 'col-md-4' }) +
+      fieldInput('Biography Paragraphs (separate paragraphs with a blank line)', 'bio_paragraphs', paragraphsToText(d.bio_paragraphs), { col: 'col-12', type: 'textarea', rows: 10, kind: 'paragraphs' }) +
+    '</div>';
+    principles.forEach(function (p, i) {
+      bioHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Principle Card #' + (i + 1) + '</span>' + repeaterActions('principles', i, principles.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Title', 'principles.' + i + '.title', p.title, { col: 'col-md-4' }) +
+          fieldInput('Description', 'principles.' + i + '.description', p.description, { col: 'col-md-8' }) +
+        '</div></div>';
+    });
+    bioHtml += '<button type="button" class="cms-add-btn" data-add="about_principle">+ Add Principle Card</button>';
+    html += cardWrap('Bio Story & Engineering Principles', 'Right narrative column', bioHtml);
+
+    var cats = d.skill_categories || [];
+    var skillsHtml = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'skills_eyebrow', d.skills_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'skills_title', d.skills_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'skills_lead', d.skills_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    cats.forEach(function (c, i) {
+      skillsHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Skill Category #' + (i + 1) + '</span>' + repeaterActions('skill_categories', i, cats.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Icon', 'skill_categories.' + i + '.icon', c.icon, { col: 'col-md-3', type: 'select', options: ICON_OPTIONS }) +
+          fieldInput('Tag', 'skill_categories.' + i + '.tag', c.tag, { col: 'col-md-4' }) +
+          fieldInput('Category Title', 'skill_categories.' + i + '.title', c.title, { col: 'col-md-5' }) +
+          fieldInput('Description', 'skill_categories.' + i + '.description', c.description, { col: 'col-12', type: 'textarea', rows: 2 }) +
+          fieldInput('Skills (comma-separated chips)', 'skill_categories.' + i + '.skills', arrToCSV(c.skills), { col: 'col-12', kind: 'csv', hint: 'Each comma-separated item renders as a pill chip.' }) +
+        '</div></div>';
+    });
+    skillsHtml += '<button type="button" class="cms-add-btn" data-add="about_skill_cat">+ Add Skill Category</button>';
+    html += cardWrap('Interactive Skills Matrix', cats.length + ' categories', skillsHtml);
+
+    html += cardWrap('Bottom CTA Band', '/about footer CTA', '<div class="row g-3">' +
+      fieldInput('Eyebrow', 'cta_eyebrow', d.cta_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 1', 'cta_title_line1', d.cta_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 2', 'cta_title_line2', d.cta_title_line2, { col: 'col-md-4' }) +
+      fieldInput('Lead Text', 'cta_lead', d.cta_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>');
+
+    return html;
+  }
+
+  // ── RENDER SECURITY RESEARCH ─────────────────────────────────
+  function renderSecurity(d) {
+    var html = '';
+    html += cardWrap('Security Hero & SEO', '/security header', '<div class="row g-3">' +
+      fieldInput('Browser Page Title', 'meta_title', d.meta_title, { col: 'col-md-6' }) +
+      fieldInput('Meta Description', 'meta_description', d.meta_description, { col: 'col-md-6' }) +
+      fieldInput('Hero Eyebrow', 'hero_eyebrow', d.hero_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Hero Title', 'hero_title', d.hero_title, { col: 'col-md-8' }) +
+      fieldInput('Hero Lead Text', 'hero_lead', d.hero_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>');
+
+    var stats = d.stats || [];
+    var statsHtml = '';
+    stats.forEach(function (st, i) {
+      statsHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Stat #' + (i + 1) + '</span>' + repeaterActions('stats', i, stats.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Bold Value', 'stats.' + i + '.value', st.value, { col: 'col-md-5' }) +
+          fieldInput('Label', 'stats.' + i + '.label', st.label, { col: 'col-md-7' }) +
+        '</div></div>';
+    });
+    statsHtml += '<button type="button" class="cms-add-btn" data-add="stat_item">+ Add Stat Item</button>';
+    html += cardWrap('Research Highlight Bar', stats.length + ' metrics', statsHtml);
+
+    var tools = d.tools || [];
+    var toolsHtml = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'tools_eyebrow', d.tools_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'tools_title', d.tools_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'tools_lead', d.tools_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    tools.forEach(function (t, i) {
+      toolsHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Security Tool #' + (i + 1) + '</span>' + repeaterActions('tools', i, tools.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Icon', 'tools.' + i + '.icon', t.icon, { col: 'col-md-3', type: 'select', options: ICON_OPTIONS }) +
+          fieldInput('Anchor ID', 'tools.' + i + '.anchor', t.anchor, { col: 'col-md-3', hint: 'e.g. go-fuzz-api' }) +
+          fieldInput('Tag', 'tools.' + i + '.tag', t.tag, { col: 'col-md-6' }) +
+          fieldInput('Tool Title', 'tools.' + i + '.title', t.title, { col: 'col-12' }) +
+          fieldInput('Description', 'tools.' + i + '.description', t.description, { col: 'col-12', type: 'textarea', rows: 3 }) +
+          fieldInput('Tech Chips (comma-separated)', 'tools.' + i + '.chips', arrToCSV(t.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Status Label', 'tools.' + i + '.status', t.status, { col: 'col-md-3' }) +
+          fieldInput('GitHub Repo URL', 'tools.' + i + '.repo_url', t.repo_url, { col: 'col-md-3' }) +
+        '</div></div>';
+    });
+    toolsHtml += '<button type="button" class="cms-add-btn" data-add="sec_tool">+ Add Security Tool</button>';
+    html += cardWrap('Open-Source Security Tools Showcase', tools.length + ' tools', toolsHtml);
+
+    var writeups = d.writeups || [];
+    var wpHtml = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'writeups_eyebrow', d.writeups_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'writeups_title', d.writeups_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'writeups_lead', d.writeups_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    writeups.forEach(function (w, i) {
+      wpHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Case Study #' + (i + 1) + '</span>' + repeaterActions('writeups', i, writeups.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Tag', 'writeups.' + i + '.tag', w.tag, { col: 'col-md-4' }) +
+          fieldInput('Title', 'writeups.' + i + '.title', w.title, { col: 'col-md-8' }) +
+          fieldInput('Description', 'writeups.' + i + '.description', w.description, { col: 'col-12', type: 'textarea', rows: 3 }) +
+          fieldInput('Chips (comma-separated)', 'writeups.' + i + '.chips', arrToCSV(w.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Button Label', 'writeups.' + i + '.link_text', w.link_text, { col: 'col-md-3' }) +
+          fieldInput('Link URL', 'writeups.' + i + '.link_url', w.link_url, { col: 'col-md-3' }) +
+        '</div></div>';
+    });
+    wpHtml += '<button type="button" class="cms-add-btn" data-add="sec_writeup">+ Add Case Study / Write-up</button>';
+    html += cardWrap('AppSec Case Studies & Write-ups', writeups.length + ' articles', wpHtml);
+
+    html += cardWrap('Bottom CTA Band', '/security footer CTA', '<div class="row g-3">' +
+      fieldInput('Eyebrow', 'cta_eyebrow', d.cta_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 1', 'cta_title_line1', d.cta_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 2', 'cta_title_line2', d.cta_title_line2, { col: 'col-md-4' }) +
+      fieldInput('Lead Text', 'cta_lead', d.cta_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+      fieldInput('Primary Button Label', 'cta_primary_label', d.cta_primary_label, { col: 'col-md-6' }) +
+      fieldInput('Primary Button URL', 'cta_primary_url', d.cta_primary_url, { col: 'col-md-6' }) +
+    '</div>');
+
+    return html;
+  }
+
+  // ── RENDER SYSTEMS ENGINEERING ───────────────────────────────
+  function renderEngineering(d) {
+    var html = '';
+    html += cardWrap('Engineering Hero & SEO', '/engineering header', '<div class="row g-3">' +
+      fieldInput('Browser Page Title', 'meta_title', d.meta_title, { col: 'col-md-6' }) +
+      fieldInput('Meta Description', 'meta_description', d.meta_description, { col: 'col-md-6' }) +
+      fieldInput('Hero Eyebrow', 'hero_eyebrow', d.hero_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Hero Title', 'hero_title', d.hero_title, { col: 'col-md-8' }) +
+      fieldInput('Hero Lead Text', 'hero_lead', d.hero_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>');
+
+    var stats = d.stats || [];
+    var statsHtml = '';
+    stats.forEach(function (st, i) {
+      statsHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">Metric #' + (i + 1) + '</span>' + repeaterActions('stats', i, stats.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Bold Value', 'stats.' + i + '.value', st.value, { col: 'col-md-5' }) +
+          fieldInput('Label', 'stats.' + i + '.label', st.label, { col: 'col-md-7' }) +
+        '</div></div>';
+    });
+    statsHtml += '<button type="button" class="cms-add-btn" data-add="stat_item">+ Add Stat Item</button>';
+    html += cardWrap('Engineering Stats Bar', stats.length + ' metrics', statsHtml);
+
+    var builds = d.builds || [];
+    var buildsHtml = '<div class="row g-3 mb-3">' +
+      fieldInput('Section Eyebrow', 'builds_eyebrow', d.builds_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Section Title', 'builds_title', d.builds_title, { col: 'col-md-8' }) +
+      fieldInput('Section Lead', 'builds_lead', d.builds_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+    '</div>';
+    builds.forEach(function (b, i) {
+      buildsHtml += '<div class="cms-repeater-item">' +
+        '<div class="cms-repeater-head"><span class="cms-repeater-title">System Build #' + (i + 1) + '</span>' + repeaterActions('builds', i, builds.length) + '</div>' +
+        '<div class="row g-3">' +
+          fieldInput('Anchor ID', 'builds.' + i + '.anchor', b.anchor, { col: 'col-md-3', hint: 'e.g. pmd-online' }) +
+          fieldInput('Tag', 'builds.' + i + '.tag', b.tag, { col: 'col-md-5' }) +
+          fieldInput('Status Badge', 'builds.' + i + '.badge', b.badge, { col: 'col-md-4' }) +
+          fieldInput('System Title', 'builds.' + i + '.title', b.title, { col: 'col-12' }) +
+          fieldInput('Description', 'builds.' + i + '.description', b.description, { col: 'col-12', type: 'textarea', rows: 4 }) +
+          fieldInput('Tech Stack Chips (comma-separated)', 'builds.' + i + '.chips', arrToCSV(b.chips), { col: 'col-md-6', kind: 'csv' }) +
+          fieldInput('Highlights Box Heading', 'builds.' + i + '.highlights_title', b.highlights_title, { col: 'col-md-6' }) +
+          fieldInput('Highlights Bullet Points (one per line)', 'builds.' + i + '.highlights', arrToLines(b.highlights), { col: 'col-12', type: 'textarea', rows: 4, kind: 'lines' }) +
+        '</div></div>';
+    });
+    buildsHtml += '<button type="button" class="cms-add-btn" data-add="eng_build">+ Add System Build</button>';
+    html += cardWrap('Enterprise & Embedded Systems Showcase', builds.length + ' builds', buildsHtml);
+
+    html += cardWrap('Bottom CTA Band', '/engineering footer CTA', '<div class="row g-3">' +
+      fieldInput('Eyebrow', 'cta_eyebrow', d.cta_eyebrow, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 1', 'cta_title_line1', d.cta_title_line1, { col: 'col-md-4' }) +
+      fieldInput('Headline Line 2', 'cta_title_line2', d.cta_title_line2, { col: 'col-md-4' }) +
+      fieldInput('Lead Text', 'cta_lead', d.cta_lead, { col: 'col-12', type: 'textarea', rows: 2 }) +
+      fieldInput('Primary Button Label', 'cta_primary_label', d.cta_primary_label, { col: 'col-md-6' }) +
+      fieldInput('Primary Button URL', 'cta_primary_url', d.cta_primary_url, { col: 'col-md-6' }) +
+    '</div>');
+
+    return html;
+  }
+
+  function setByPath(obj, path, val) {
+    var parts = path.split('.');
+    var cur = obj;
+    for (var i = 0; i < parts.length - 1; i++) {
+      var k = parts[i];
+      if (/^\d+$/.test(k)) k = parseInt(k, 10);
+      cur = cur[k];
+    }
+    var last = parts[parts.length - 1];
+    if (/^\d+$/.test(last)) last = parseInt(last, 10);
+    cur[last] = val;
+  }
+
+  function renderCurrent() {
+    titleEl.textContent = meta[currentTab].title;
+    liveLink.href = meta[currentTab].url;
+    document.querySelectorAll('.cms-tab-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.tab === currentTab);
+    });
+
+    var d = state[currentTab];
+    if (currentTab === 'home') root.innerHTML = renderHome(d);
+    else if (currentTab === 'about') root.innerHTML = renderAbout(d);
+    else if (currentTab === 'security') root.innerHTML = renderSecurity(d);
+    else if (currentTab === 'engineering') root.innerHTML = renderEngineering(d);
+
+    bindEvents();
+  }
+
+  function bindEvents() {
+    root.querySelectorAll('.cms-bind').forEach(function (el) {
+      el.addEventListener('input', function () {
+        var val = el.value;
+        var kind = el.dataset.kind;
+        if (kind === 'csv') val = csvToArr(val);
+        else if (kind === 'lines') val = linesToArr(val);
+        else if (kind === 'paragraphs') val = textToParagraphs(val);
+        setByPath(state[currentTab], el.dataset.path, val);
+        markDirty();
+      });
+    });
+
+    root.querySelectorAll('.cms-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var list = state[currentTab][btn.dataset.list];
+        var idx = parseInt(btn.dataset.idx, 10);
+        if (Array.isArray(list)) {
+          list.splice(idx, 1);
+          markDirty();
+          renderCurrent();
+        }
+      });
+    });
+
+    root.querySelectorAll('.cms-move').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var list = state[currentTab][btn.dataset.list];
+        var idx = parseInt(btn.dataset.idx, 10);
+        var dir = parseInt(btn.dataset.dir, 10);
+        var next = idx + dir;
+        if (Array.isArray(list) && next >= 0 && next < list.length) {
+          var tmp = list[idx];
+          list[idx] = list[next];
+          list[next] = tmp;
+          markDirty();
+          renderCurrent();
+        }
+      });
+    });
+
+    root.querySelectorAll('.cms-add-btn[data-add]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var kind = btn.dataset.add;
+        var d = state[currentTab];
+        if (kind === 'home_pillar') {
+          d.pillars = d.pillars || [];
+          d.pillars.push({ icon: 'monitor', tag: 'New Pillar', title: 'New Pillar Title', description: '', chips: [], link_text: 'Learn More', link_url: '/services' });
+        } else if (kind === 'home_demo') {
+          d.demos = d.demos || [];
+          d.demos.push({ tag: 'Featured Build', title: 'New Production System', description: '', chips: [], link_text: 'View Specs', link_url: '/engineering' });
+        } else if (kind === 'home_tool') {
+          d.security_tools = d.security_tools || [];
+          d.security_tools.push({ tag: 'Security Tool', repo_label: 'GitHub', repo_url: 'https://github.com/JRoetscyber', title: 'New Tool', description: '', chips: [], link_text: 'Read Architecture', link_url: '/security' });
+        } else if (kind === 'home_proof') {
+          d.proof_rows = d.proof_rows || [];
+          d.proof_rows.push({ icon: 'check', title: 'New Engineering Standard', description: '' });
+        } else if (kind === 'about_principle') {
+          d.principles = d.principles || [];
+          d.principles.push({ title: 'New Principle', description: '' });
+        } else if (kind === 'about_skill_cat') {
+          d.skill_categories = d.skill_categories || [];
+          d.skill_categories.push({ icon: 'code', tag: 'Discipline', title: 'New Skill Category', description: '', skills: [] });
+        } else if (kind === 'stat_item') {
+          d.stats = d.stats || [];
+          d.stats.push({ value: '100%', label: 'New Metric' });
+        } else if (kind === 'sec_tool') {
+          d.tools = d.tools || [];
+          d.tools.push({ anchor: '', icon: 'shield', tag: 'AppSec Tool', title: 'New Security Tool', description: '', chips: [], status: 'Active OSS Project', repo_url: 'https://github.com/JRoetscyber' });
+        } else if (kind === 'sec_writeup') {
+          d.writeups = d.writeups || [];
+          d.writeups.push({ tag: 'Case Study', title: 'New Security Write-up', description: '', chips: [], link_text: 'Read Write-up', link_url: '/blog' });
+        } else if (kind === 'eng_build') {
+          d.builds = d.builds || [];
+          d.builds.push({ anchor: '', tag: 'Systems Build', badge: 'Production', title: 'New System Build', description: '', chips: [], highlights_title: 'Architecture Highlights', highlights: [] });
+        }
+        markDirty();
+        renderCurrent();
+      });
+    });
+
+    // Avatar Upload binding (About tab)
+    var uploadBtn = document.getElementById('cmsUploadAvatarBtn');
+    var fileInput = document.getElementById('cmsAvatarFile');
+    var clearBtn = document.getElementById('cmsClearAvatarBtn');
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', function () { fileInput.click(); });
+      fileInput.addEventListener('change', function () {
+        if (!fileInput.files || !fileInput.files[0]) return;
+        var fd = new FormData();
+        fd.append('avatar', fileInput.files[0]);
+        uploadBtn.textContent = 'Uploading...';
+        fetch('/admin/content/upload-avatar', { method: 'POST', body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (res.status === 'success' && res.url) {
+              state.about.avatar_image = res.url;
+              markDirty();
+              renderCurrent();
+              showToast('Photo uploaded! Click "Save Changes" to publish it live.');
+            } else {
+              showToast(res.message || 'Upload failed', true);
+              uploadBtn.textContent = 'Upload Photo';
+            }
+          })
+          .catch(function () {
+            showToast('Network error during upload', true);
+            uploadBtn.textContent = 'Upload Photo';
+          });
+      });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        state.about.avatar_image = '';
+        markDirty();
+        renderCurrent();
+      });
+    }
+  }
+
+  document.querySelectorAll('.cms-tab-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      currentTab = btn.dataset.tab;
+      try {
+        var u = new URL(window.location);
+        u.searchParams.set('tab', currentTab);
+        window.history.replaceState({}, '', u);
+      } catch (e) {}
+      renderCurrent();
+    });
+  });
+
+  saveBtn.addEventListener('click', function () {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    fetch('/admin/content/' + currentTab, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state[currentTab])
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (res) {
+      if (res.status === 'success') {
+        clearDirty();
+        showToast(res.message || 'Saved successfully!');
+      } else {
+        showToast(res.message || 'Failed to save', true);
+      }
+    })
+    .catch(function () {
+      showToast('Network error saving page content', true);
+    })
+    .finally(function () {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
+    });
+  });
+
+  resetBtn.addEventListener('click', function () {
+    if (!confirm('Reset "' + currentTab + '" page back to default content?')) return;
+    fetch('/admin/content/' + currentTab + '/reset', { method: 'POST' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res.status === 'success' && res.data) {
+          state[currentTab] = res.data;
+          clearDirty();
+          renderCurrent();
+          showToast(res.message || 'Reset to defaults.');
+        } else {
+          showToast(res.message || 'Reset failed', true);
+        }
+      })
+      .catch(function () { showToast('Network error resetting content', true); });
+  });
+
+  renderCurrent();
+}());
+</script>
+{% endblock %}

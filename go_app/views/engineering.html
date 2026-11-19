@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ content.MetaTitle|default:"Systems Engineering & Builds | Jonathan Roets — Software Engineer" }}{% endblock %}
+
+{% block meta_description %}{{ content.MetaDescription|default:"High-throughput Go Fiber microservices, enterprise ERP systems, computer vision automated quoting, and IoT telemetry engineered by Jonathan Roets." }}{% endblock %}
+
+{% block meta_keywords %}Systems Engineering, Go Fiber Microservices, High Concurrency, Computer Vision OpenCV, PMD Online ERP, IoT Telemetry, Jonathan Roets Software Engineer{% endblock %}
+
+{% block og_title %}{{ content.MetaTitle|default:"Systems Engineering & Builds | Jonathan Roets — Software Engineer" }}{% endblock %}
+{% block og_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block twitter_title %}{{ content.MetaTitle|default:"Systems Engineering & Builds | Jonathan Roets — Software Engineer" }}{% endblock %}
+{% block twitter_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     ENGINEERING HERO
+============================================================ -->
+<header class="page-hero">
+  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:20px;">
+    <span class="neu-pill-badge">{{ content.HeroEyebrow }}</span>
+  </div>
+  <h1>{{ content.HeroTitle }}</h1>
+  <p class="lead-text">
+    {{ content.HeroLead }}
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============================================================
+     ENGINEERING STATS BAR
+============================================================ -->
+{% if content.Stats %}
+<section style="background:var(--surface-1); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:24px 0;">
+  <div class="wd-trust-inner">
+    {% for st in content.Stats %}
+    <div class="wd-trust-item">
+      <strong>{{ st.Value }}</strong>
+      <span>{{ st.Label }}</span>
+    </div>
+    {% if not forloop.Last %}<div class="wd-trust-divider" aria-hidden="true"></div>{% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ============================================================
+     SYSTEM BUILDS SHOWCASE
+============================================================ -->
+<section class="section" aria-labelledby="systems-showcase-heading">
+  <div class="section-header" data-aos="fade-up">
+    <span class="neu-pill-badge" style="margin-bottom:20px;">{{ content.BuildsEyebrow }}</span>
+    <h2 class="display-section" id="systems-showcase-heading">
+      {{ content.BuildsTitle }}
+    </h2>
+    <p class="lead-text" style="margin-top:16px;">
+      {{ content.BuildsLead }}
+    </p>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:36px;">
+
+    {% for build in content.Builds %}
+    <div class="widget-card"{% if build.Anchor %} id="{{ build.Anchor }}"{% endif %} data-aos="fade-up">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+            <span class="mini-card-tag">{{ build.Tag }}</span>
+            {% if build.Badge %}<span class="neu-chip" style="font-size:0.7rem;">{{ build.Badge }}</span>{% endif %}
+          </div>
+          <h3 style="font-size:1.5rem; font-weight:800; color:var(--text-primary); margin-bottom:12px;">
+            {{ build.Title }}
+          </h3>
+          <p style="font-size:0.95rem; color:var(--text-secondary); line-height:1.75; margin-bottom:18px;">
+            {{ build.Description }}
+          </p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for chip in build.Chips %}
+            {% if chip %}<span class="neu-chip">{{ chip }}</span>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div style="background:var(--surface-1); border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow:var(--neu-pressed-sm);">
+            <h4 style="font-size:0.9rem; font-family:var(--font-mono); text-transform:uppercase; color:var(--text-muted); margin-bottom:14px;">{{ build.HighlightsTitle|default:"Highlights" }}</h4>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; font-size:0.85rem; color:var(--text-secondary);">
+              {% for hl in build.Highlights %}
+              {% if hl %}<li style="display:flex; align-items:center; gap:8px;"><span style="color:var(--accent); font-weight:bold;">&#10003;</span> {{ hl }}</li>{% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BANNER
+============================================================ -->
+<section class="cta-band" aria-label="Engage Systems Engineering">
+  <div class="cta-band-card" data-aos="fade-up">
+    <span class="neu-pill-badge" style="justify-content:center; margin-bottom:24px;">
+      {{ content.CTAEyebrow }}
+    </span>
+    <h2 class="display-section" style="max-width:760px; margin:0 auto 20px;">
+      {{ content.CTATitleLine1 }}<br>
+      {{ content.CTATitleLine2 }}
+    </h2>
+    <p class="lead-text" style="margin:0 auto 36px; text-align:center;">
+      {{ content.CTALead }}
+    </p>
+    <div class="cta-band-actions">
+      <a href="{{ content.CTAPrimaryURL|default:'/contact' }}" class="btn-primary-custom neu-btn-primary">
+        {{ content.CTAPrimaryLabel|default:"Get In Touch" }}
+      </a>
+      <a href="/security" class="btn-ghost-custom neu-btn-secondary">
+        Explore Security Track <span class="arrow">&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -150,8 +150,8 @@ func TestIndexTemplate_Render(t *testing.T) {
 		t.Fatalf("failed to render index.html: %v", err)
 	}
 
-	if !strings.Contains(out, "Inlined Critical CSS") {
-		t.Errorf("rendered output missing inlined critical CSS comment: %s", out)
+	if !strings.Contains(out, "core.css") {
+		t.Errorf("rendered output missing core.css stylesheet link: %s", out)
 	}
 	if !strings.Contains(out, "display-hero") {
 		t.Errorf("rendered output missing display-hero class: %s", out)

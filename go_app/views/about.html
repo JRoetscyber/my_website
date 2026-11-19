@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ content.MetaTitle|default:"About Jonathan Roets | Software & Security Engineer" }}{% endblock %}
+
+{% block meta_description %}{{ content.MetaDescription|default:"Meet Jonathan Roets — Software Engineer, AppSec Engineer & Security Researcher." }}{% endblock %}
+
+{% block meta_keywords %}About Jonathan Roets, Software Engineer Pretoria, AppSec Engineer South Africa, Junior Penetration Tester Gauteng, Go Developer Bio, Cybersecurity Resume{% endblock %}
+
+{% block og_title %}{{ content.MetaTitle|default:"About Jonathan Roets | Software & Security Engineer" }}{% endblock %}
+{% block og_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block twitter_title %}{{ content.MetaTitle|default:"About Jonathan Roets | Software & Security Engineer" }}{% endblock %}
+{% block twitter_description %}{{ content.MetaDescription }}{% endblock %}
+
+{% block content %}
+<!-- ============================================================
+     HERO & PROFILE SECTION
+============================================================ -->
+<header class="page-hero">
+  <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:20px;">
+    <span class="neu-pill-badge">{{ content.HeroEyebrow }}</span>
+  </div>
+  <h1>{{ content.HeroTitle }}</h1>
+  <p class="lead-text">
+    {{ content.HeroLead }}
+  </p>
+</header>
+
+<div class="divider"></div>
+
+<!-- ============================================================
+     BIO STORY & HEADSHOT CONTAINER
+============================================================ -->
+<section class="section" aria-label="Biography">
+  <div class="row align-items-center g-5">
+
+    <!-- Profile Avatar & Status Pill -->
+    <div class="col-lg-5" data-aos="fade-up">
+      <div class="widget-card" style="text-align:center; padding:clamp(36px, 5vw, 48px); position:relative;">
+
+        <!-- Status Indicator Pill -->
+        {% if content.StatusBadge %}
+        <div style="margin-bottom:28px;">
+          <span class="neu-pill-badge" style="background:#ebecf0; border-color:rgba(16,185,129,0.4); color:#065f46; font-size:0.75rem;">
+            {{ content.StatusBadge }}
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- Headshot / Avatar Container -->
+        <div style="width:180px; height:180px; margin:0 auto 28px; border-radius:50%; background:var(--surface-1); box-shadow:var(--neu-flat); border:3px solid rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+          {% if content.AvatarImage %}
+          <img src="{{ content.AvatarImage }}" alt="{{ content.FullName }}" style="width:100%; height:100%; object-fit:cover; display:block;">
+          {% else %}
+          <div style="text-align:center;">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--text-primary); margin-top:6px; letter-spacing:0.05em;">{{ content.FullName|upper }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <h3 style="font-family:var(--font-display); font-size:1.4rem; font-weight:800; margin-bottom:6px; color:var(--text-primary);">{{ content.FullName }}</h3>
+        <p style="font-family:var(--font-mono); font-size:0.82rem; color:var(--accent); font-weight:700; margin-bottom:20px; text-transform:uppercase; letter-spacing:0.08em;">
+          {{ content.RoleTitle }}
+        </p>
+
+        <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.6; margin-bottom:28px;">
+          {{ content.Location }}<br>
+          <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">{{ content.Email }}</span>
+        </p>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:280px; margin:0 auto;">
+          <a href="{{ content.CVUrl|default:'/Jonathan_Roets_CV.pdf' }}" target="_blank" class="btn-primary-custom neu-btn-primary" style="width:100%;">
+            Download CV (PDF)
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 2v9M4 7l4 4 4-4M2 13h12"/>
+            </svg>
+          </a>
+          <a href="/contact" class="btn-ghost-custom neu-btn-secondary" style="width:100%;">
+            Connect with Me <span class="arrow">&rarr;</span>
+          </a>
+        </div>
+
+        <!-- Social Icons / Links -->
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:28px; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap;">
+          {% if content.GitHubURL %}<a href="{{ content.GitHubURL }}" target="_blank" rel="noopener" class="neu-chip" style="font-size:0.75rem;">GitHub</a>{% endif %}
+          {% if content.LinkedInURL %}<a href="{{ content.LinkedInURL }}" target="_blank" rel="noopener" class="neu-chip" style="font-size:0.75rem;">LinkedIn</a>{% endif %}
+          {% if content.LeetCodeURL %}<a href="{{ content.LeetCodeURL }}" target="_blank" rel="noopener" class="neu-chip" style="font-size:0.75rem;">LeetCode</a>{% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bio Narrative -->
+    <div class="col-lg-7" data-aos="fade-up" data-aos-delay="100">
+      <span class="neu-pill-badge" style="margin-bottom:16px;">{{ content.BioEyebrow }}</span>
+      <h2 class="display-section" style="margin-bottom:24px;">
+        {{ content.BioTitleLine1 }}<br>
+        <span class="text-accent">{{ content.BioTitleAccent }}</span>
+      </h2>
+
+      <div style="color:var(--text-secondary); line-height:1.8; font-size:1rem; display:flex; flex-direction:column; gap:18px;">
+        {% for para in content.BioParagraphs %}
+        {% if para %}<p>{{ para }}</p>{% endif %}
+        {% endfor %}
+      </div>
+
+      <!-- Quick Principles -->
+      {% if content.Principles %}
+      <div style="margin-top:28px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+        {% for item in content.Principles %}
+        <div class="widget-card" style="padding:20px;">
+          <h4 style="font-size:1rem; margin-bottom:6px; color:var(--text-primary);">{{ item.Title }}</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin:0;">{{ item.Description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     INTERACTIVE SKILLS MATRIX
+============================================================ -->
+<section class="section" aria-labelledby="skills-matrix-heading" style="padding-top:0;">
+  <div class="section-header" data-aos="fade-up">
+    <span class="neu-pill-badge" style="margin-bottom:20px;">{{ content.SkillsEyebrow }}</span>
+    <h2 class="display-section" id="skills-matrix-heading">
+      {{ content.SkillsTitle }}
+    </h2>
+    <p class="lead-text" style="margin-top:16px;">
+      {{ content.SkillsLead }}
+    </p>
+  </div>
+
+  <div class="services-grid" style="grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr));">
+
+    {% for cat in content.SkillCategories %}
+    <div class="service-card-v2" data-aos="fade-up">
+      <div class="service-card-v2-inner">
+        <div class="service-icon-v2" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="svc-icon-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            {% if cat.Icon == 'shield' %}
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            {% elif cat.Icon == 'zap' %}
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            {% elif cat.Icon == 'database' %}
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            {% elif cat.Icon == 'radio' %}
+            <path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82"></path>
+            <circle cx="12" cy="12" r="1"></circle>
+            {% elif cat.Icon == 'monitor' %}
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            {% else %}
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+            {% endif %}
+          </svg>
+        </div>
+        <span class="mini-card-tag" style="margin-bottom:10px;">{{ cat.Tag }}</span>
+        <h3>{{ cat.Title }}</h3>
+        <p style="font-size:0.9rem; line-height:1.7; margin-bottom:20px;">
+          {{ cat.Description }}
+        </p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          {% for skill in cat.Skills %}
+          {% if skill %}<span class="neu-chip">{{ skill }}</span>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BANNER
+============================================================ -->
+<section class="cta-band" aria-label="Connect CTA">
+  <div class="cta-band-card" data-aos="fade-up">
+    <span class="neu-pill-badge" style="justify-content:center; margin-bottom:24px;">
+      {{ content.CTAEyebrow }}
+    </span>
+    <h2 class="display-section" style="max-width:760px; margin:0 auto 20px;">
+      {{ content.CTATitleLine1 }}<br>
+      {{ content.CTATitleLine2 }}
+    </h2>
+    <p class="lead-text" style="margin:0 auto 36px; text-align:center;">
+      {{ content.CTALead }}
+    </p>
+    <div class="cta-band-actions">
+      <a href="/contact" class="btn-primary-custom neu-btn-primary">
+        Get In Touch
+      </a>
+      <a href="{{ content.CVUrl|default:'/Jonathan_Roets_CV.pdf' }}" target="_blank" class="btn-ghost-custom neu-btn-secondary">
+        Download CV (PDF) <span class="arrow">&darr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
