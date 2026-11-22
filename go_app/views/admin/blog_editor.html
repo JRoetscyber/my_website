@@ -217,7 +217,7 @@
       <div class="mb-4">
         <label class="admin-form-label" for="blogTitle">Article Headline</label>
         <input class="editor-headline-input" id="blogTitle" name="title" type="text" required
-               placeholder="Enter an authoritative, click-worthy headline..." value="{{ post.Title }}">
+               placeholder="Enter an authoritative, click-worthy headline..." value="{{ post.CleanTitle }}">
         <div class="editor-slug-row">
           <span>Public URL preview:</span>
           <span class="editor-slug-badge" id="slugPreview">/blog/{% if post.Slug %}{{ post.Slug }}{% else %}your-article-slug{% endif %}</span>
@@ -371,15 +371,16 @@
             <span id="summaryCharCount" style="font-size: 0.72rem; color: var(--color-text-muted);">0 / 160</span>
           </div>
           <textarea class="admin-form-input" id="blogSummary" name="summary" rows="4"
-                    placeholder="Briefly describe what this article delivers for Google snippet and social share cards...">{{ post.Summary }}</textarea>
+                    placeholder="Briefly describe what this article delivers for Google snippet and social share cards...">{{ post.CleanSummary }}</textarea>
         </div>
 
         <!-- Cover Image -->
         <div class="mb-3">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <label class="admin-form-label" style="margin-bottom: 0;">Cover Hero Image</label>
-            <a href="/webp-converter" target="_blank" style="font-size: 0.78rem; color: var(--accent); text-decoration: none; font-weight: 600;">
-              WebP Optimizer ↗
+            <a href="/webp-converter" target="_blank" style="font-size: 0.78rem; color: var(--accent); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              WebP Optimizer
             </a>
           </div>
           <div class="file-drop-zone" id="coverMediaDropzone" role="button" tabindex="0">
@@ -392,6 +393,11 @@
           <div id="coverFilePreview" class="file-drop-filename" style="{% if post.MediaPath %}display:block;{% endif %}">
             {% if post.MediaPath %}Current: {{ post.MediaPath }}{% endif %}
           </div>
+          {% if post.DisplayMediaPath %}
+          <div class="mt-2" id="currentCoverThumb" style="border-radius: 8px; overflow: hidden; max-height: 140px; border: 1px solid var(--border-subtle, rgba(0,0,0,0.1));">
+            <img src="{{ post.DisplayMediaPath }}" alt="Cover Preview" style="width: 100%; height: 140px; object-fit: cover;">
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>

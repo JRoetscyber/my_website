@@ -33,14 +33,14 @@
       <span class="eyebrow" style="margin-bottom: 24px; display: inline-flex;">
         Published {{ post.CreatedAt|date:"January 02, 2006" }}
       </span>
-      <h1 class="display-hero">{{ post.Title }}</h1>
-      <p class="lead-text">{{ post.Summary }}</p>
+      <h1 class="display-hero">{{ post.CleanTitle }}</h1>
+      <p class="lead-text">{{ post.CleanSummary }}</p>
     </div>
   </header>
 
-  {% if post.MediaPath %}
+  {% if post.DisplayMediaPath %}
   <div class="blog-post-hero-image">
-    <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="1200" height="630">
+    <img src="{{ post.DisplayMediaPath }}" alt="{{ post.CleanTitle }}" loading="lazy" width="1200" height="630">
   </div>
   {% endif %}
 

@@ -47,11 +47,11 @@
         </div>
 
         <h2 class="blog-featured-title">
-          <a href="/blog/{{ first_post.Slug }}">{{ first_post.Title }}</a>
+          <a href="/blog/{{ first_post.Slug }}">{{ first_post.CleanTitle }}</a>
         </h2>
 
         <p class="blog-featured-summary">
-          {{ first_post.Summary }}
+          {{ first_post.CleanSummary }}
         </p>
 
         <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
@@ -79,8 +79,15 @@
       <article class="blog-card" data-aos="fade-up" data-aos-delay="{{ (forloop.Counter0 % 3) * 80 }}">
         <a href="/blog/{{ post.Slug }}" class="blog-card-link">
           <div class="blog-card-image">
-            {% if post.MediaPath %}
-            <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="600" height="338">
+            {% if post.DisplayMediaPath %}
+            <img src="{{ post.DisplayMediaPath }}" alt="{{ post.CleanTitle }}" loading="lazy" width="600" height="338" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+            <div class="blog-placeholder" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+              <span style="font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;">Engineering Write-Up</span>
+            </div>
             {% else %}
             <div class="blog-placeholder">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -96,8 +103,8 @@
               <time datetime="{{ post.CreatedAt|date:"2006-01-02" }}">{{ post.CreatedAt|date:"02 Jan 2006" }}</time>
               <span class="blog-read-time">{{ post.Views }} views</span>
             </div>
-            <h3 class="blog-card-title">{{ post.Title }}</h3>
-            <p class="blog-card-summary">{{ post.Summary }}</p>
+            <h3 class="blog-card-title">{{ post.CleanTitle }}</h3>
+            <p class="blog-card-summary">{{ post.CleanSummary }}</p>
             <span class="blog-more">
               Read Article
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
