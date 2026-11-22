@@ -36,6 +36,9 @@ import (
 	fiberRedisStorage "github.com/gofiber/storage/redis/v2"
 	"github.com/gofiber/template/django/v3"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 
@@ -47,6 +50,26 @@ var mdBufferPool = sync.Pool{
 		return new(bytes.Buffer)
 	},
 }
+
+// Configured Goldmark Markdown parser with GitHub Flavored Markdown (GFM),
+// auto-heading IDs, footnotes, task lists, and tables.
+// html.WithUnsafe() is intentionally excluded so malicious scripts, iframes,
+// and javascript: pseudo-protocols cannot be injected.
+var mdParser = goldmark.New(
+	goldmark.WithExtensions(
+		extension.GFM,
+		extension.DefinitionList,
+		extension.Footnote,
+		extension.Typographer,
+	),
+	goldmark.WithParserOptions(
+		parser.WithAutoHeadingID(),
+		parser.WithAttribute(),
+	),
+	goldmark.WithRendererOptions(
+		html.WithHardWraps(),
+	),
+)
 
 var routeMap = map[string]string{
 	"home":                         "/",
@@ -87,7 +110,7 @@ var routeMap = map[string]string{
 }
 
 // AssetVersion is appended to static asset URLs for deterministic cache-busting
-const AssetVersion = "20260929v2"
+const AssetVersion = "20261122v1"
 
 func registerFilter(name string, fn pongo2.FilterFunction) {
 	if err := pongo2.RegisterFilter(name, fn); err != nil {
@@ -96,13 +119,13 @@ func registerFilter(name string, fn pongo2.FilterFunction) {
 }
 
 func initPongo2Filters() {
-	// Register markdown filter using sync.Pool
+	// Register markdown filter using sync.Pool and GFM parser
 	registerFilter("markdown", func(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
 		buf := mdBufferPool.Get().(*bytes.Buffer)
 		buf.Reset()
 		defer mdBufferPool.Put(buf)
 
-		if err := goldmark.Convert([]byte(in.String()), buf); err != nil {
+		if err := mdParser.Convert([]byte(in.String()), buf); err != nil {
 			return pongo2.AsSafeValue(in.String()), nil
 		}
 		return pongo2.AsSafeValue(buf.String()), nil

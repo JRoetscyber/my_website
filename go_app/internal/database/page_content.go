@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+	"strings"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/goccy/go-json"
@@ -18,7 +19,9 @@ func loadPageContent[T any](db *gorm.DB, key string, fallback T) T {
 		return fallback
 	}
 	result := fallback
-	if err := json.Unmarshal([]byte(rec.DataJSON), &result); err != nil {
+	sanitizedJSON := strings.ReplaceAll(rec.DataJSON, "🟢 ", "")
+	sanitizedJSON = strings.ReplaceAll(sanitizedJSON, "🟢", "")
+	if err := json.Unmarshal([]byte(sanitizedJSON), &result); err != nil {
 		log.Printf("[CMS] Failed to unmarshal page_content '%s': %v", key, err)
 		return fallback
 	}
