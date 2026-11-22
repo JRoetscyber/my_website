@@ -1,6 +1,8 @@
 package models
 
 import (
+	"html"
+	"regexp"
 	"strings"
 	"time"
 
@@ -82,6 +84,49 @@ func (b *BlogPost) BeforeCreate(tx *gorm.DB) error {
 		b.Status = "published"
 	}
 	return nil
+}
+
+var firstBlogImgRegex = regexp.MustCompile(`(?i)(?:!\[[^\]]*\]\(([^)]+)\)|<img[^>]+src=["']([^"']+)["'])`)
+
+// DisplayMediaPath returns the cover image path, or automatically falls back
+// to the first image extracted from markdown/HTML content if MediaPath is empty.
+func (b BlogPost) DisplayMediaPath() string {
+	val := strings.TrimSpace(b.MediaPath)
+	if val == "" {
+		m := firstBlogImgRegex.FindStringSubmatch(b.Content)
+		if len(m) > 1 && m[1] != "" {
+			val = strings.TrimSpace(m[1])
+		} else if len(m) > 2 && m[2] != "" {
+			val = strings.TrimSpace(m[2])
+		}
+	}
+	if val != "" && !strings.HasPrefix(val, "/") && !strings.HasPrefix(val, "http://") && !strings.HasPrefix(val, "https://") && !strings.HasPrefix(val, "data:") {
+		val = "/" + val
+	}
+	return val
+}
+
+// CleanSummary returns the summary with HTML entities properly unescaped
+// so that double-escaped entities like &amp;#39; don't appear in templates.
+func (b BlogPost) CleanSummary() string {
+	s := strings.TrimSpace(b.Summary)
+	if s == "" {
+		return ""
+	}
+	s = html.UnescapeString(s)
+	s = html.UnescapeString(s)
+	return s
+}
+
+// CleanTitle returns the title with HTML entities unescaped.
+func (b BlogPost) CleanTitle() string {
+	s := strings.TrimSpace(b.Title)
+	if s == "" {
+		return ""
+	}
+	s = html.UnescapeString(s)
+	s = html.UnescapeString(s)
+	return s
 }
 
 type FAQ struct {
