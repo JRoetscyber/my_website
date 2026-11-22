@@ -274,7 +274,7 @@
 .blog-post-hero-image img {
   width: 100%;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   box-shadow: var(--neu-flat-lg);
 }
 
@@ -508,7 +508,9 @@
 .blog-post-content blockquote {
   border-left: 4px solid var(--accent);
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   box-shadow: var(--neu-pressed-sm);
   border-radius: 0 16px 16px 0;
   padding: 24px 28px;

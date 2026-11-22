@@ -29,10 +29,16 @@
       <div class="blog-post-content">
         {{ faq.Answer|markdown|safe }}
       </div>
-      <div class="blog-post-footer">
+      <div class="blog-post-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
         <a href="/faq" class="btn-ghost-custom">
-          Back to FAQ <span class="arrow">-&gt;</span>
+          &larr; Back to Knowledge Base
         </a>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <a href="/web-design" class="btn-ghost-custom" style="font-size:var(--text-xs);">Web Design</a>
+          <a href="/seo" class="btn-ghost-custom" style="font-size:var(--text-xs);">SEO Services</a>
+          <a href="/appsec" class="btn-ghost-custom" style="font-size:var(--text-xs);">AppSec</a>
+          <a href="/book" class="btn-primary-custom" style="font-size:var(--text-xs);">Book Free Call &rarr;</a>
+        </div>
       </div>
     </div>
   </section>

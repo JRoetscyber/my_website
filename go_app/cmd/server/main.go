@@ -98,6 +98,7 @@ var routeMap = map[string]string{
 	"admin.analytics_page":         "/admin/analytics",
 	"admin.projects_page":          "/admin/projects",
 	"admin.blogs_page":             "/admin/blogs",
+	"admin.blogs_new":              "/admin/blogs/new",
 	"admin.faqs_page":              "/admin/faqs",
 	"admin.services_page":          "/admin/services",
 	"admin.content_page":           "/admin/content",
@@ -110,7 +111,7 @@ var routeMap = map[string]string{
 }
 
 // AssetVersion is appended to static asset URLs for deterministic cache-busting
-const AssetVersion = "20261122v1"
+const AssetVersion = "20261122v2"
 
 func registerFilter(name string, fn pongo2.FilterFunction) {
 	if err := pongo2.RegisterFilter(name, fn); err != nil {
@@ -611,13 +612,17 @@ func main() {
 
 	// Blogs
 	admin.Get("/blogs", adminHandler.BlogsPage)
+	admin.Get("/blogs/new", adminHandler.NewBlogPage)
+	admin.Get("/blogs/edit/:id", adminHandler.EditBlogPage)
 	admin.Post("/blogs", adminHandler.SaveBlogPost)
 	admin.Post("/blogs/new", adminHandler.SaveBlogPost)
 	admin.Post("/add_blog", adminHandler.SaveBlogPost)
+	admin.Post("/blogs/:id", adminHandler.UpdateBlog)
 	admin.Post("/update_blog/:id", adminHandler.UpdateBlog)
 	admin.Post("/blogs/:id/delete", adminHandler.DeleteBlogPost)
 	admin.Post("/delete_blog/:id", adminHandler.DeleteBlogPost)
 	admin.Delete("/delete_blog/:id", adminHandler.DeleteBlogPost)
+	admin.Post("/api/upload-image", adminHandler.UploadBlogImage)
 
 	// FAQs
 	admin.Get("/faqs", adminHandler.FAQsPage)
@@ -669,7 +674,7 @@ func main() {
 	// Graceful Shutdown
 	go func() {
 		addr := fmt.Sprintf(":%s", cfg.Port)
-		log.Printf("🚀 JO4 Dev Go Fiber Server listening on http://localhost%s", addr)
+		log.Printf("[SERVER] JO4 Dev Go Fiber Server listening on http://localhost%s", addr)
 		if err := app.Listen(addr); err != nil {
 			log.Printf("Server listen error: %v", err)
 		}

@@ -7,7 +7,7 @@
 
 .service-card {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 20px;
   padding: clamp(28px, 3.5vw, 44px);
   height: 100%;
@@ -28,7 +28,7 @@
   transform-origin: left;
   transition: transform var(--ease-slow);
 }
-.service-card:hover { transform: translateY(-5px); box-shadow: var(--neu-flat-lg); border-color: rgba(255, 255, 255, 1); }
+.service-card:hover { transform: translateY(-5px); box-shadow: var(--neu-flat-lg); border-color: var(--accent-mid); }
 .service-card:hover::before { transform: scaleX(1); }
 
 .service-icon {
@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: center;
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   box-shadow: var(--neu-flat-sm);
   border-radius: 14px;
   flex-shrink: 0;
@@ -390,7 +390,7 @@
 }
 .svc-faq-item {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 18px;
   box-shadow: var(--neu-flat-sm);
   padding: clamp(24px, 3vw, 36px);

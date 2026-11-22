@@ -1500,4 +1500,29 @@
       }
     });
   }());
+
+  (function () {
+    var toggleBtn = document.getElementById('adminThemeToggle');
+    var labelText = document.getElementById('themeLabelText');
+
+    function updateLabel() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (labelText) {
+        labelText.textContent = isDark ? 'Day Mode' : 'Night Mode';
+      }
+    }
+
+    if (toggleBtn) {
+      updateLabel();
+      toggleBtn.addEventListener('click', function () {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        var next = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('theme', next);
+        } catch (e) {}
+        updateLabel();
+      });
+    }
+  }());
 }());

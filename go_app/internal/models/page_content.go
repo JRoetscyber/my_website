@@ -108,7 +108,7 @@ type HomeContent struct {
 func DefaultHomeContent() HomeContent {
 	return HomeContent{
 		MetaTitle:          "JO4 Dev • Software Engineer, AppSec Researcher & Freelance Systems Builder",
-		MetaDescription:    "JO4 Dev — High-performance Go Fiber backends, enterprise full-stack web builds, hardware IoT telemetry, and offensive application security tooling by Jonathan Roets.",
+		MetaDescription:    "JO4 Dev by Jonathan Roets: High-performance Go Fiber backends, bespoke web apps, IoT telemetry, and offensive application security testing in South Africa.",
 		HeroEyebrow:        "JO4 DEV • SOFTWARE ENGINEER • APPSEC • FREELANCE BUILDS",
 		HeroTitleLine1:     "Software Engineer & Security Researcher.",
 		HeroTitleAccent:    "Building & Breaking Systems.",
@@ -246,7 +246,7 @@ func DefaultHomeContent() HomeContent {
 				Description: "Docker containerized environments, zero-downtime Blue/Green deployments, Nginx reverse proxy routing, and encrypted Cloudflare Tunnels for tamper-proof infrastructure.",
 			},
 		},
-		CTABadge:       "🟢 Available for Freelance Builds, Security Audits & Engineering Roles",
+		CTABadge:       "Available for Freelance Builds, Security Audits & Engineering Roles",
 		CTATitleLine1:  "Looking for a Full-Stack Freelancer,",
 		CTATitleLine2:  "AppSec Researcher, or",
 		CTATitleAccent: "Backend Systems Engineer?",
@@ -305,11 +305,11 @@ type AboutContent struct {
 func DefaultAboutContent() AboutContent {
 	return AboutContent{
 		MetaTitle:       "About Jonathan Roets | Software & Security Engineer",
-		MetaDescription: "Meet Jonathan Roets — Software Engineer, AppSec Engineer & Security Researcher. Experience spanning high-concurrency Go microservices, Python CV, and offensive penetration testing.",
+		MetaDescription: "Meet Jonathan Roets: Software Engineer & AppSec Researcher in South Africa specializing in high-concurrency Go backends and offensive penetration testing.",
 		HeroEyebrow:     "PROFILE • BIOGRAPHY",
 		HeroTitle:       "Building Systems. Breaking Flaws.",
 		HeroLead:        "Software Engineer, AppSec Researcher, and Junior Penetration Tester based in Pretoria, South Africa.",
-		StatusBadge:     "🟢 Available for AppSec, Pentesting & Backend Engineering Roles",
+		StatusBadge:     "Available for AppSec, Pentesting & Backend Engineering Roles",
 		AvatarImage:     "",
 		FullName:        "Jonathan Roets",
 		RoleTitle:       "Software & AppSec Engineer",

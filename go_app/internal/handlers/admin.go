@@ -3,8 +3,11 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/csv"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"math"
 	"net/http"
 	"os"
@@ -687,6 +690,129 @@ func (h *AdminHandler) BlogsPage(c *fiber.Ctx) error {
 	}))
 }
 
+// NewBlogPage renders the dedicated full-page blog composer
+func (h *AdminHandler) NewBlogPage(c *fiber.Ctx) error {
+	return c.Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+		"is_edit": false,
+		"post":    models.BlogPost{Status: "published"},
+	}))
+}
+
+// EditBlogPage renders the dedicated full-page blog editor
+func (h *AdminHandler) EditBlogPage(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var post models.BlogPost
+	if err := h.DB.First(&post, id).Error; err != nil {
+		return c.Redirect("/admin/blogs")
+	}
+
+	return c.Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+		"is_edit": true,
+		"post":    post,
+	}))
+}
+
+// saveUploadedImage validates and securely saves uploaded images.
+// Hardened against IDOR, path traversal (CWE-22), malicious file extensions (CWE-434),
+// and MIME sniffing polyglots by validating extensions, magic bytes, and generating unguessable random filenames.
+func saveUploadedImage(c *fiber.Ctx, formKey, prefix string) (string, error) {
+	file, err := c.FormFile(formKey)
+	if err != nil || file == nil {
+		return "", err
+	}
+
+	// 1. Max size enforcement (10MB)
+	if file.Size > 10*1024*1024 {
+		return "", fmt.Errorf("file size exceeds 10MB limit")
+	}
+
+	// 2. Strict file extension whitelist (strictly no SVG, HTML, or executable scripts)
+	ext := strings.ToLower(filepath.Ext(filepath.Base(file.Filename)))
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".webp", ".gif":
+	default:
+		return "", fmt.Errorf("only JPG, JPEG, PNG, WEBP, or GIF images are permitted")
+	}
+
+	// 3. Inspect magic bytes for true MIME type validation (prevent content sniffing polyglots)
+	src, err := file.Open()
+	if err != nil {
+		return "", fmt.Errorf("failed to open file stream: %w", err)
+	}
+	defer func() {
+		_ = src.Close()
+	}()
+
+	buf := make([]byte, 512)
+	n, readErr := src.Read(buf)
+	if readErr != nil && readErr != io.EOF {
+		return "", fmt.Errorf("failed to read file header: %w", readErr)
+	}
+
+	mimeType := http.DetectContentType(buf[:n])
+	switch mimeType {
+	case "image/jpeg", "image/png", "image/webp", "image/gif":
+	default:
+		return "", fmt.Errorf("invalid image content type: %s", mimeType)
+	}
+
+	// 4. Cryptographically unguessable filename (prevent IDOR, predictability, and overwrites)
+	token := make([]byte, 16)
+	if _, err := rand.Read(token); err != nil {
+		return "", fmt.Errorf("failed to generate secure random token: %w", err)
+	}
+	safeName := fmt.Sprintf("%s_%s%s", prefix, hex.EncodeToString(token), ext)
+
+	uploadDir := resolveUploadsDir()
+	if err := os.MkdirAll(uploadDir, 0750); err != nil {
+		return "", fmt.Errorf("failed to create upload dir: %w", err)
+	}
+
+	cleanDir := filepath.Clean(uploadDir)
+	dest := filepath.Clean(filepath.Join(cleanDir, safeName))
+	if !strings.HasPrefix(dest, cleanDir) {
+		return "", fmt.Errorf("invalid destination path traversal detected")
+	}
+
+	if err := c.SaveFile(file, dest); err != nil {
+		return "", fmt.Errorf("failed to persist uploaded file: %w", err)
+	}
+
+	return "/static/uploads/" + safeName, nil
+}
+
+// UploadBlogImage handles secure asynchronous image uploads for insertion into blog markdown.
+func (h *AdminHandler) UploadBlogImage(c *fiber.Ctx) error {
+	mediaPath, err := saveUploadedImage(c, "image", "blog_img")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
+		})
+	}
+	if mediaPath == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "No image file provided in upload request",
+		})
+	}
+
+	altText := "Image"
+	if file, fileErr := c.FormFile("image"); fileErr == nil && file != nil {
+		baseName := strings.TrimSuffix(filepath.Base(file.Filename), filepath.Ext(filepath.Base(file.Filename)))
+		if baseName != "" {
+			altText = baseName
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"status":   "success",
+		"url":      mediaPath,
+		"markdown": fmt.Sprintf("![%s](%s)", altText, mediaPath),
+		"filename": filepath.Base(mediaPath),
+	})
+}
+
 func parsePublishInfo(statusInput, dateInput string) (string, time.Time) {
 	status := strings.ToLower(strings.TrimSpace(statusInput))
 	if status == "" {
@@ -742,18 +868,11 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 
 	slug := utils.MakeSlug(title)
 
-	file, err := c.FormFile("media")
-	if err != nil {
-		file, err = c.FormFile("media_file")
-	}
-	if err == nil && file != nil {
-		uploadDir := resolveUploadsDir()
-		_ = os.MkdirAll(uploadDir, 0750)
-		safeName := filepath.Base(file.Filename)
-		dest := filepath.Join(uploadDir, safeName)
-		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/uploads/" + safeName
-		}
+	// Secure Cover Image upload handling
+	if path, err := saveUploadedImage(c, "media", "cover"); err == nil && path != "" {
+		mediaPath = path
+	} else if path, err := saveUploadedImage(c, "media_file", "cover"); err == nil && path != "" {
+		mediaPath = path
 	}
 
 	post := models.BlogPost{
@@ -772,8 +891,11 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
 	}
 
-	// Trigger automated search engine indexing notification if immediately published
-	if status == "published" {
+	// Trigger automated search engine indexing notification if published and user consented
+	notifySearchVal := strings.ToLower(strings.TrimSpace(c.FormValue("notify_search_engines")))
+	notifySearch := notifySearchVal == "on" || notifySearchVal == "true" || notifySearchVal == "1"
+
+	if status == "published" && notifySearch {
 		fullURL := fmt.Sprintf("%s/blog/%s", strings.TrimRight(h.Cfg.BaseURL, "/"), post.Slug)
 		sitemapURL := fmt.Sprintf("%s/sitemap.xml", strings.TrimRight(h.Cfg.BaseURL, "/"))
 		if h.Worker != nil {
@@ -785,6 +907,15 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
 			}()
 		}
+	}
+
+	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+		return c.JSON(fiber.Map{
+			"status":   "success",
+			"message":  "Blog article created successfully",
+			"redirect": "/admin/blogs",
+			"id":       post.ID,
+		})
 	}
 
 	return c.Redirect("/admin/blogs")
@@ -807,18 +938,13 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 	post.Status = status
 	post.PublishedAt = publishedAt
 
-	file, err := c.FormFile("media")
-	if err != nil {
-		file, err = c.FormFile("media_file")
-	}
-	if err == nil && file != nil {
-		uploadDir := resolveUploadsDir()
-		_ = os.MkdirAll(uploadDir, 0750)
-		safeName := filepath.Base(file.Filename)
-		dest := filepath.Join(uploadDir, safeName)
-		if err := c.SaveFile(file, dest); err == nil {
-			post.MediaPath = "/static/uploads/" + safeName
-		}
+	// Secure Cover Image upload handling
+	if path, err := saveUploadedImage(c, "media", "cover"); err == nil && path != "" {
+		post.MediaPath = path
+	} else if path, err := saveUploadedImage(c, "media_file", "cover"); err == nil && path != "" {
+		post.MediaPath = path
+	} else if rawPath := strings.TrimSpace(c.FormValue("media_path")); rawPath != "" {
+		post.MediaPath = rawPath
 	}
 
 	h.DB.Save(&post)
@@ -827,8 +953,11 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
 	}
 
-	// Trigger automated search engine indexing notification if published
-	if status == "published" {
+	// Trigger automated search engine indexing notification if published and user consented
+	notifySearchVal := strings.ToLower(strings.TrimSpace(c.FormValue("notify_search_engines")))
+	notifySearch := notifySearchVal == "on" || notifySearchVal == "true" || notifySearchVal == "1"
+
+	if status == "published" && notifySearch {
 		fullURL := fmt.Sprintf("%s/blog/%s", strings.TrimRight(h.Cfg.BaseURL, "/"), post.Slug)
 		sitemapURL := fmt.Sprintf("%s/sitemap.xml", strings.TrimRight(h.Cfg.BaseURL, "/"))
 		if h.Worker != nil {
@@ -840,6 +969,15 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 				_ = services.NotifySearchEngines(h.Cfg, []string{fullURL, sitemapURL})
 			}()
 		}
+	}
+
+	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+		return c.JSON(fiber.Map{
+			"status":   "success",
+			"message":  "Blog article updated successfully",
+			"redirect": "/admin/blogs",
+			"id":       post.ID,
+		})
 	}
 
 	return c.Redirect("/admin/blogs")

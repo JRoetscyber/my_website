@@ -202,28 +202,30 @@
     },
   ];
 
-  /* ── DOM refs ── */
-  const form           = document.getElementById('scorerForm');
-  const idle           = document.getElementById('scorerIdle');
-  const processing     = document.getElementById('scorerProcessing');
-  const procLabel      = document.getElementById('processingLabel');
-  const resultPanel    = document.getElementById('scorerResult');
-  const arc            = document.getElementById('scoreArc');
-  const scoreNum       = document.getElementById('scoreNumber');
-  const badge          = document.getElementById('priorityBadge');
-  const routingLine    = document.getElementById('routingLine');
-  const confidenceLine = document.getElementById('confidenceLine');
-  const signalsWrap    = document.getElementById('detectedSignalsWrap');
-  const signalsRow     = document.getElementById('detectedSignals');
-  const rChannel       = document.getElementById('routingChannel');
-  const rAgent         = document.getElementById('routingAgent');
-  const rSLA           = document.getElementById('routingSLA');
-  const advisoriesEl   = document.getElementById('routingAdvisories');
-  const btnLabel       = document.getElementById('scoreBtnLabel');
+  /* ── Scorer Initialization (Runs on first load and on HTMX page swaps) ── */
+  function initScorer() {
+    var form = document.getElementById('scorerForm');
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
 
-  if (!form) return; // guard: only run on projects page
+    var idle           = document.getElementById('scorerIdle');
+    var processing     = document.getElementById('scorerProcessing');
+    var procLabel      = document.getElementById('processingLabel');
+    var resultPanel    = document.getElementById('scorerResult');
+    var arc            = document.getElementById('scoreArc');
+    var scoreNum       = document.getElementById('scoreNumber');
+    var badge          = document.getElementById('priorityBadge');
+    var routingLine    = document.getElementById('routingLine');
+    var confidenceLine = document.getElementById('confidenceLine');
+    var signalsWrap    = document.getElementById('detectedSignalsWrap');
+    var signalsRow     = document.getElementById('detectedSignals');
+    var rChannel       = document.getElementById('routingChannel');
+    var rAgent         = document.getElementById('routingAgent');
+    var rSLA           = document.getElementById('routingSLA');
+    var advisoriesEl   = document.getElementById('routingAdvisories');
+    var btnLabel       = document.getElementById('scoreBtnLabel');
 
-  const CIRC = 2 * Math.PI * 54; // r=54 → 339.292
+    var CIRC = 2 * Math.PI * 54; // r=54 → 339.292
 
   /* ── Helpers ── */
   function cap(n, max) { return Math.min(n, max); }
@@ -437,49 +439,54 @@
 
     }, 1600);
   });
+  }
+
+  // Hook into DOM load and HTMX navigation
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScorer);
+  } else {
+    initScorer();
+  }
+  document.addEventListener('htmx:afterSwap', initScorer);
 
 }());
 
 
 /* ----------------------------------------------------------------
-   2. CODE BLOCK — COPY BUTTON
+   2. CODE BLOCK — COPY BUTTON (Delegated Listener for HTMX)
 ---------------------------------------------------------------- */
-(function () {
-
-  var btn     = document.getElementById('copyCodeBtn');
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('#copyCodeBtn');
+  if (!btn) return;
   var snippet = document.getElementById('codeSnippet');
+  if (!snippet) return;
 
-  if (!btn || !snippet) return;
-
-  btn.addEventListener('click', function () {
-    navigator.clipboard.writeText(snippet.innerText).then(function () {
-      btn.textContent = 'Copied!';
-      btn.style.color = 'var(--accent)';
-      setTimeout(function () {
-        btn.textContent = 'Copy';
-        btn.style.color = '';
-      }, 2000);
-    });
+  navigator.clipboard.writeText(snippet.innerText).then(function () {
+    btn.textContent = 'Copied!';
+    btn.style.color = 'var(--accent)';
+    setTimeout(function () {
+      btn.textContent = 'Copy';
+      btn.style.color = '';
+    }, 2000);
   });
-}());
+});
 
 
 /* ----------------------------------------------------------------
-   3. FLIP CARDS
+   3. FLIP CARDS (Delegated Listener for HTMX)
 ---------------------------------------------------------------- */
-(function () {
-  document.querySelectorAll('.flip-card').forEach(function (card) {
-    function toggle(e) {
-      if (e.target.closest('a')) return;
-      var flipped = card.classList.toggle('flipped');
-      card.setAttribute('aria-pressed', flipped);
-    }
-    card.addEventListener('click', toggle);
-    card.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggle(e);
-      }
-    });
-  });
-}());
+document.addEventListener('click', function (e) {
+  var card = e.target.closest('.flip-card');
+  if (!card || e.target.closest('a')) return;
+  var flipped = card.classList.toggle('flipped');
+  card.setAttribute('aria-pressed', String(flipped));
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  var card = e.target.closest('.flip-card');
+  if (!card || e.target.closest('a')) return;
+  e.preventDefault();
+  var flipped = card.classList.toggle('flipped');
+  card.setAttribute('aria-pressed', String(flipped));
+});

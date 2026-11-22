@@ -50,9 +50,17 @@
 
   {% block head_styles %}
   <!-- Core Stylesheet (Pure CSS tokens, layout, nav, footer, and grid) -->
-  <link rel="stylesheet" href="/static/css/core.css?v=20261122v1">
-  <link rel="stylesheet" href="/static/css/grid.css?v=20261122v1">
-  <link rel="stylesheet" href="/static/css/responsive.css?v=20261122v1">
+  <link rel="stylesheet" href="/static/css/core.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/grid.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20261122v2">
+
+  <!-- Section Stylesheets (Preloaded so HTMX boosted navigation is instant and fully styled) -->
+  <link rel="stylesheet" href="/static/css/services.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/projects.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/blog.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/booking.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/faq.css?v=20261122v2">
+  <link rel="stylesheet" href="/static/css/landing.css?v=20261122v2">
   {% endblock %}
 
   <!-- HTMX for Instant Sub-Millisecond Navigation & Partial DOM Swaps -->
@@ -147,6 +155,7 @@
         <li><a href="/engineering" class="nav-link-pill {% if current_path == '/engineering' %}active{% endif %}">Engineering</a></li>
         <li><a href="/about" class="nav-link-pill {% if current_path == '/about' %}active{% endif %}">About</a></li>
         <li><a href="/blog" class="nav-link-pill {% if current_path == '/blog' %}active{% endif %}">Blog</a></li>
+        <li><a href="/faq" class="nav-link-pill {% if current_path == '/faq' %}active{% endif %}">FAQ</a></li>
         <li>
           <a href="/contact" class="nav-cta">Get in Touch</a>
         </li>
@@ -207,6 +216,7 @@
               <li><a href="/engineering">Systems Engineering</a></li>
               <li><a href="/about">About &amp; Skills</a></li>
               <li><a href="/blog">Write-ups &amp; Blog</a></li>
+              <li><a href="/faq">FAQ &amp; Knowledge Base</a></li>
               <li><a href="/contact">Contact &amp; Inquiries</a></li>
               <li><a href="/contact#book" style="color:var(--accent); font-weight:700;">Book 15-Min Call ↗</a></li>
             </ul>
@@ -222,13 +232,13 @@
             </ul>
           </div>
           <div class="footer-col">
-            <h5>Technical Domains</h5>
+            <h5>Core Services</h5>
             <ul>
-              <li><a href="/services">Freelance Web &amp; ERP Builds</a></li>
-              <li><a href="/security">Web Pentesting &amp; OWASP Top 10</a></li>
-              <li><a href="/engineering">Go Fiber &amp; Microservices</a></li>
-              <li><a href="/engineering">Computer Vision (OpenCV)</a></li>
-              <li><a href="/engineering">IoT &amp; LoRa RF Telemetry</a></li>
+              <li><a href="/web-design">Custom Web Design</a></li>
+              <li><a href="/seo">SEO Services South Africa</a></li>
+              <li><a href="/appsec">Application Security Testing</a></li>
+              <li><a href="/mobile-apps">Native Mobile App Dev</a></li>
+              <li><a href="/automation">Workflow Automation Software</a></li>
             </ul>
           </div>
         </nav>
@@ -243,7 +253,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="/static/js/main.js?v=20261113v1" defer></script>
+  <script src="/static/js/main.js?v=20261122v2" defer></script>
 
   <!-- Theme Switcher Interaction Handler -->
   <script>
@@ -260,8 +270,11 @@
         try { localStorage.setItem('theme', next); } catch (e) {}
       }
 
-      document.querySelectorAll('.theme-toggle-btn').forEach(function(btn) {
-        btn.addEventListener('click', toggleTheme);
+      // Delegated click listener persists seamlessly across HTMX page swaps
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.theme-toggle-btn')) {
+          toggleTheme();
+        }
       });
 
       if (window.matchMedia) {

@@ -53,7 +53,7 @@ You will see `jo4-nginx` running alongside only **one** active web container:
 Running `./deploy.sh` immediately prints the active and target environments:
 ```text
 ==========================================================
-🚀 JO4 Dev Zero-Downtime Deployment
+   JO4 Dev Zero-Downtime Deployment
    Current Live Service       : BLUE (web-blue)
    Deploying New Release To   : GREEN (web-green on port 5002)
 ==========================================================

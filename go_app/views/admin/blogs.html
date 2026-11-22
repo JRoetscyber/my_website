@@ -4,90 +4,7 @@
 {% block admin_heading %}The Dev Log{% endblock %}
 
 {% block admin_head %}
-<link rel="stylesheet" href="/static/css/blog.css?v=20261122v1">
-<style>
-  .md-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
-    padding: 8px 10px;
-    background: var(--surface-1, #f0f2f5);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.12));
-    border-radius: 8px;
-    margin-bottom: 8px;
-  }
-  .md-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 30px;
-    padding: 0 8px;
-    background: var(--surface-0, #ffffff);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
-    border-radius: 6px;
-    color: var(--text-primary, #2d303a);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .md-btn:hover {
-    background: var(--accent, #0d9488);
-    color: #fff;
-    border-color: var(--accent, #0d9488);
-  }
-  .md-btn code {
-    font-family: var(--font-mono, monospace);
-    font-size: 0.82rem;
-    color: inherit;
-    background: transparent;
-    padding: 0;
-  }
-  .md-separator {
-    display: inline-block;
-    width: 1px;
-    height: 18px;
-    background: var(--border, rgba(0, 0, 0, 0.15));
-    margin: 0 4px;
-  }
-  .editor-tab-btn {
-    font-size: 0.78rem;
-    padding: 4px 14px;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.15s ease;
-  }
-  .editor-tab-btn.active {
-    background: var(--accent, #0d9488) !important;
-    color: #fff !important;
-    border-color: var(--accent, #0d9488) !important;
-  }
-  .syntax-pill {
-    cursor: pointer;
-    font-size: 0.72rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-    border: 1px dashed var(--border, rgba(0,0,0,0.15));
-    user-select: none;
-  }
-  .syntax-pill:hover {
-    background: var(--accent, #0d9488) !important;
-    color: #fff !important;
-    border-style: solid;
-  }
-  .neu-preview-box {
-    background: var(--surface-0, #ffffff);
-    border: 1px solid var(--border, rgba(0,0,0,0.12));
-    border-radius: 12px;
-    padding: 24px 28px;
-    min-height: 380px;
-    max-height: 520px;
-    overflow-y: auto;
-  }
-</style>
+<link rel="stylesheet" href="/static/css/blog.css?v=20261122v2">
 {% endblock %}
 
 {% block admin_content %}
@@ -97,11 +14,11 @@
     <h2 class="studio-board-title">Blog Management</h2>
     <p class="studio-board-sub">Engineering and strategy articles for JO4 Dev.</p>
   </div>
-  <button class="btn-admin-primary add-blog-btn" type="button" data-bs-toggle="modal" data-bs-target="#blogModal">
+  <a class="btn-admin-primary add-blog-btn" href="/admin/blogs/new">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
     New Article
-  </button>
+  </a>
 </div>
 
 <!-- Stats / Quick Insights -->
@@ -119,8 +36,6 @@
     <div class="stat-card">
       <div class="stat-card-label">Lifetime Views</div>
       <div class="stat-card-value">
-        
-        
         {{ total_views }}
       </div>
       <div class="stat-card-icon">
@@ -151,8 +66,8 @@
   <div class="col">
     <div class="widget-card h-100 d-flex flex-column">
       <div class="blog-card-admin-media">
-        {% if post.media_path %}
-        <img src="{{ post.media_path }}" alt="{{ post.title }}" loading="lazy" width="600" height="338">
+        {% if post.MediaPath %}
+        <img src="{{ post.MediaPath }}" alt="{{ post.Title }}" loading="lazy" width="600" height="338">
         {% else %}
         <div class="blog-admin-placeholder">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
@@ -198,16 +113,9 @@
             <a href="/blog/{{ post.Slug }}" target="_blank" class="btn-admin-outline btn-admin-sm">
               View
             </a>
-            <button class="btn-admin-outline btn-admin-sm edit-blog-btn" 
-                    data-id="{{ post.ID }}"
-                    data-title="{{ post.Title|escape }}"
-                    data-summary="{{ post.Summary|escape }}"
-                    data-content="{{ post.Content|escape }}"
-                    data-status="{{ post.Status }}"
-                    data-published-at="{% if post.PublishedAt %}{{ post.PublishedAt|date:"2006-01-02T15:04" }}{% endif %}"
-                    data-media-path="{{ post.MediaPath or '' }}">
+            <a href="/admin/blogs/edit/{{ post.ID }}" class="btn-admin-outline btn-admin-sm">
               Edit
-            </button>
+            </a>
             <button class="btn-admin-outline btn-admin-sm btn-admin-danger btn-delete-blog" data-id="{{ post.ID }}">
               Delete
             </button>
@@ -222,474 +130,17 @@
       <div class="py-4">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1" class="mb-3" style="opacity: 0.3;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         <p class="text-muted">No blog posts found.</p>
-        <button class="btn-admin-primary add-blog-btn mt-3" type="button" data-bs-toggle="modal" data-bs-target="#blogModal">Write Your First Article</button>
+        <a class="btn-admin-primary add-blog-btn mt-3" href="/admin/blogs/new">Write Your First Article</a>
       </div>
     </div>
   </div>
   {% endfor %}
-</div>
-
-{% endblock %}
-
-{% block admin_modals %}
-<div class="modal fade" id="blogModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="blogModalLabel">Compose Article</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="blogForm" method="POST" action="/admin/blogs" enctype="multipart/form-data">
-        <div class="modal-body">
-          <div class="row g-4">
-            <div class="col-lg-8">
-              <div class="mb-4">
-                <label class="admin-form-label" for="blogTitle">Headline</label>
-                <input class="admin-form-input" id="blogTitle" name="title" type="text" required placeholder="Enter a click-worthy title...">
-              </div>
-              <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <label class="admin-form-label mb-0" for="blogContent">Article Content (GFM Markdown supported)</label>
-                  <div class="btn-group btn-group-sm" role="group" aria-label="Editor View">
-                    <button type="button" class="btn btn-outline-secondary active editor-tab-btn" id="btnWriteTab">Write</button>
-                    <button type="button" class="btn btn-outline-secondary editor-tab-btn" id="btnPreviewTab">Preview</button>
-                  </div>
-                </div>
-
-                <!-- Markdown Formatting Toolbar -->
-                <div class="md-toolbar" id="mdToolbar">
-                  <button type="button" class="md-btn" data-format="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-                  <button type="button" class="md-btn" data-format="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-                  <span class="md-separator"></span>
-                  <button type="button" class="md-btn" data-format="h2" title="Subheading (H2)">H2</button>
-                  <button type="button" class="md-btn" data-format="h3" title="Section (H3)">H3</button>
-                  <span class="md-separator"></span>
-                  <button type="button" class="md-btn" data-format="code" title="Inline Code"><code>&lt;&gt;</code></button>
-                  <button type="button" class="md-btn" data-format="codeblock" title="Fenced Code Block"><code>{}</code></button>
-                  <button type="button" class="md-btn" data-format="link" title="Hyperlink">Link</button>
-                  <button type="button" class="md-btn" data-format="table" title="GFM Table">Table</button>
-                  <button type="button" class="md-btn" data-format="quote" title="Blockquote">&gt; Quote</button>
-                  <button type="button" class="md-btn" data-format="list" title="Bullet List">• List</button>
-                  <button type="button" class="md-btn" data-format="task" title="Task List Checkbox">☑ Task</button>
-                  <button type="button" class="md-btn" data-format="hr" title="Horizontal Rule">— Rule</button>
-                </div>
-
-                <!-- Editor Containers -->
-                <div id="editorWriteContainer">
-                  <textarea class="admin-form-input font-monospace" id="blogContent" name="content" rows="16" required placeholder="Start writing in GitHub Flavored Markdown (headings, tables, code blocks, task lists)..." style="line-height: 1.6; font-size: 0.95rem;"></textarea>
-                </div>
-                <div id="editorPreviewContainer" class="blog-post-content neu-preview-box" style="display: none;"></div>
-
-                <!-- Quick Syntax Shortcuts / Helper Pills -->
-                <div class="mt-2 d-flex flex-wrap gap-2 align-items-center" id="syntaxPills">
-                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">GFM Shortcuts:</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="**Bold Text**">**bold**</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="*Italic Text*">*italic*</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="## Subheading">## Heading</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="`inline_code()`">`code`</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="```go&#10;func main() {}&#10;```">```code block```</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="| Column 1 | Column 2 |&#10;|---|---|&#10;| Item A | Item B |">| Table |</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="- [ ] High-priority task">- [ ] Task</span>
-                  <span class="badge bg-secondary-subtle text-secondary-emphasis font-monospace syntax-pill" role="button" data-syntax="> Engineering insights.">&gt; Quote</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-4">
-              <div class="mb-4">
-                <label class="admin-form-label" for="blogStatus">Publication Status</label>
-                <select class="admin-form-input" id="blogStatus" name="status">
-                  <option value="published">Publish Immediately</option>
-                  <option value="scheduled">Schedule for Future</option>
-                  <option value="draft">Save as Draft</option>
-                </select>
-              </div>
-              <div class="mb-4" id="publishedAtGroup">
-                <label class="admin-form-label" for="blogPublishedAt">Publish Date & Time</label>
-                <input class="admin-form-input" id="blogPublishedAt" name="published_at" type="datetime-local">
-                <small class="text-secondary d-block mt-1" style="font-size: 0.72rem;">Set when this article goes live. Leave empty to publish now.</small>
-              </div>
-              <div class="neu-card-flat p-3 mb-4" style="border-radius: 12px; background: rgba(13, 148, 136, 0.05); border: 1px solid rgba(13, 148, 136, 0.15);">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <strong style="font-size: 0.75rem; color: #0d9488;">Search Engine Auto-Index</strong>
-                </div>
-                <p class="mb-0 text-secondary" style="font-size: 0.7rem; line-height: 1.4;">
-                  Live articles are pushed immediately to <strong>IndexNow (Bing/Yandex)</strong> and auto-updated in <strong>sitemap.xml</strong> for Googlebot crawling.
-                </p>
-              </div>
-              <div class="mb-4">
-                <label class="admin-form-label" for="blogSummary">SEO Summary</label>
-                <textarea class="admin-form-input" id="blogSummary" name="summary" rows="4" placeholder="Briefly describe what this post is about for search engines and social cards."></textarea>
-              </div>
-              <div class="mb-4">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <label class="admin-form-label" style="margin-bottom: 0;">Cover Image</label>
-                  <a href="/webp-converter" target="_blank" style="font-size: 0.8rem; color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    WebP Optimizer &nearr;
-                  </a>
-                </div>
-                <div class="file-drop-zone" id="blogMediaDropzone" role="button" tabindex="0">
-                  <svg viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
-                  <div class="file-drop-label"><strong>Click to upload</strong> or drag image</div>
-                  <div class="file-drop-sub">JPG, PNG or WEBP (Max 2MB)</div>
-                  <input type="file" id="blogMedia" name="media" hidden accept="image/*">
-                </div>
-                <div id="filePreview" class="file-drop-filename"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="tbl-action-btn" data-bs-dismiss="modal">Discard</button>
-          <button type="submit" class="deploy-btn" style="width: auto;">Publish Article</button>
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
 {% endblock %}
 
 {% block admin_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const blogModal = new bootstrap.Modal(document.getElementById('blogModal'));
-  const blogForm = document.getElementById('blogForm');
-  const blogModalLabel = document.getElementById('blogModalLabel');
-  const fileInput = document.getElementById('blogMedia');
-  const filePreview = document.getElementById('filePreview');
-  const fileDropzone = document.getElementById('blogMediaDropzone');
-  const submitBtn = blogForm.querySelector('button[type="submit"]');
-  const blogStatus = document.getElementById('blogStatus');
-  const blogPublishedAt = document.getElementById('blogPublishedAt');
-
-  fileDropzone.addEventListener('click', function() {
-    fileInput.click();
-  });
-
-  fileDropzone.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      fileInput.click();
-    }
-  });
-
-  fileInput.addEventListener('change', function() {
-    if (this.files && this.files[0]) {
-      filePreview.textContent = this.files[0].name;
-      filePreview.style.display = 'block';
-    }
-  });
-
-  if (blogStatus && blogPublishedAt) {
-    blogStatus.addEventListener('change', function() {
-      if (this.value === 'scheduled' && !blogPublishedAt.value) {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
-        blogPublishedAt.value = tomorrow.toISOString().slice(0, 16);
-      }
-    });
-  }
-
-  // --- MARKDOWN COMPOSER & LIVE PREVIEW ENGINE ---
-  const blogContent = document.getElementById('blogContent');
-  const btnWriteTab = document.getElementById('btnWriteTab');
-  const btnPreviewTab = document.getElementById('btnPreviewTab');
-  const editorWriteContainer = document.getElementById('editorWriteContainer');
-  const editorPreviewContainer = document.getElementById('editorPreviewContainer');
-  const mdToolbar = document.getElementById('mdToolbar');
-
-  function insertMarkdown(prefix, suffix, defaultText) {
-    if (!blogContent) return;
-    const start = blogContent.selectionStart;
-    const end = blogContent.selectionEnd;
-    const selected = blogContent.value.substring(start, end);
-    const textToInsert = selected || defaultText || '';
-    const replacement = prefix + textToInsert + (suffix || '');
-
-    blogContent.setRangeText(replacement, start, end, 'select');
-    blogContent.focus();
-
-    if (!selected && defaultText) {
-      blogContent.setSelectionRange(start + prefix.length, start + prefix.length + defaultText.length);
-    }
-    blogContent.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-
-  const formatMap = {
-    bold: () => insertMarkdown('**', '**', 'bold text'),
-    italic: () => insertMarkdown('*', '*', 'italic text'),
-    h2: () => insertMarkdown('## ', '\n', 'Subheading'),
-    h3: () => insertMarkdown('### ', '\n', 'Section Header'),
-    code: () => insertMarkdown('`', '`', 'inline_code()'),
-    codeblock: () => insertMarkdown('```go\n', '\n```\n', 'func main() {}'),
-    link: () => insertMarkdown('[', '](https://example.com)', 'Link Title'),
-    table: () => insertMarkdown('\n| Column 1 | Column 2 |\n| :--- | :--- |\n| Value A | Value B |\n| Value C | Value D |\n\n', '', ''),
-    quote: () => insertMarkdown('> ', '\n', 'Engineering insight quote'),
-    list: () => insertMarkdown('- ', '\n', 'List item'),
-    task: () => insertMarkdown('- [ ] ', '\n', 'High-priority task'),
-    hr: () => insertMarkdown('\n---\n\n', '', '')
-  };
-
-  document.querySelectorAll('.md-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const fmt = this.dataset.format;
-      if (formatMap[fmt]) {
-        formatMap[fmt]();
-      }
-    });
-  });
-
-  document.querySelectorAll('.syntax-pill').forEach(pill => {
-    pill.addEventListener('click', function() {
-      const syntax = this.dataset.syntax;
-      if (!syntax || !blogContent) return;
-      const start = blogContent.selectionStart;
-      const end = blogContent.selectionEnd;
-      blogContent.setRangeText(syntax, start, end, 'end');
-      blogContent.focus();
-      blogContent.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-  });
-
-  function renderMarkdownPreview(md) {
-    if (!md || !md.trim()) {
-      return '<p class="text-secondary" style="font-style: italic;">No content written yet. Switch to the Write tab to start composing your article in Markdown.</p>';
-    }
-
-    let src = md.replace(/\r\n/g, '\n');
-
-    // Protect code blocks
-    const codeBlocks = [];
-    src = src.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(_, lang, code) {
-      const placeholder = `@@@CB${codeBlocks.length}@@@`;
-      const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const langClass = lang ? ` class="language-${lang}"` : '';
-      codeBlocks.push(`<pre><code${langClass}>${escaped}</code></pre>`);
-      return placeholder;
-    });
-
-    // Protect inline code
-    const inlineCodes = [];
-    src = src.replace(/`([^`\n]+)`/g, function(_, code) {
-      const placeholder = `@@@IC${inlineCodes.length}@@@`;
-      const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      inlineCodes.push(`<code>${escaped}</code>`);
-      return placeholder;
-    });
-
-    // Process GFM tables
-    const lines = src.split('\n');
-    const outputLines = [];
-    let inTable = false;
-    let tableLines = [];
-
-    function flushTable() {
-      if (tableLines.length >= 2) {
-        const parseRow = l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
-        const headers = parseRow(tableLines[0]);
-        const aligns = parseRow(tableLines[1]).map(a => {
-          if (a.startsWith(':') && a.endsWith(':')) return 'center';
-          if (a.endsWith(':')) return 'right';
-          return 'left';
-        });
-
-        let thtml = '<table>\n<thead>\n<tr>\n';
-        headers.forEach((h, i) => {
-          const align = aligns[i] ? ` style="text-align: ${aligns[i]}"` : '';
-          thtml += `  <th${align}>${h}</th>\n`;
-        });
-        thtml += '</tr>\n</thead>\n<tbody>\n';
-
-        for (let i = 2; i < tableLines.length; i++) {
-          if (!tableLines[i].trim()) continue;
-          const cells = parseRow(tableLines[i]);
-          thtml += '<tr>\n';
-          cells.forEach((c, idx) => {
-            const align = aligns[idx] ? ` style="text-align: ${aligns[idx]}"` : '';
-            thtml += `  <td${align}>${c}</td>\n`;
-          });
-          thtml += '</tr>\n';
-        }
-        thtml += '</tbody>\n</table>';
-        outputLines.push(thtml);
-      } else {
-        outputLines.push(...tableLines);
-      }
-      tableLines = [];
-      inTable = false;
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
-        inTable = true;
-        tableLines.push(line);
-      } else {
-        if (inTable) flushTable();
-        outputLines.push(line);
-      }
-    }
-    if (inTable) flushTable();
-
-    src = outputLines.join('\n');
-
-    // Headings
-    src = src.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
-    src = src.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
-    src = src.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
-    src = src.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    src = src.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    src = src.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-
-    // Blockquotes
-    src = src.replace(/^\> (.*$)/gim, '<blockquote><p>$1</p></blockquote>');
-
-    // Horizontal Rules
-    src = src.replace(/^(?:---|\*\*\*|___)\s*$/gim, '<hr>');
-
-    // Task lists
-    src = src.replace(/^- \[x\] (.*$)/gim, '<ul class="task-list"><li><input type="checkbox" checked disabled> $1</li></ul>');
-    src = src.replace(/^- \[ \] (.*$)/gim, '<ul class="task-list"><li><input type="checkbox" disabled> $1</li></ul>');
-
-    // Unordered lists
-    src = src.replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>');
-    src = src.replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>');
-    src = src.replace(/<\/ul>\s*<ul(?: class="task-list")?>/g, '');
-
-    // Bold, Italic, Strikethrough
-    src = src.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    src = src.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-    src = src.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    src = src.replace(/_([^_]+)_/g, '<em>$1</em>');
-    src = src.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-
-    // Links & Images
-    src = src.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-    src = src.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-    // Paragraphs
-    const blocks = src.split(/\n{2,}/);
-    const processed = blocks.map(b => {
-      b = b.trim();
-      if (!b) return '';
-      if (/^<(?:h[1-6]|table|thead|tbody|tr|th|td|ul|ol|li|blockquote|pre|hr|div)/i.test(b) || b.startsWith('@@@CB')) {
-        return b;
-      }
-      return `<p>${b.replace(/\n/g, '<br>')}</p>`;
-    });
-
-    let out = processed.filter(Boolean).join('\n\n');
-
-    // Restore code blocks & inline code
-    codeBlocks.forEach((block, idx) => {
-      out = out.replace(`@@@CB${idx}@@@`, block);
-    });
-    inlineCodes.forEach((code, idx) => {
-      out = out.replace(`@@@IC${idx}@@@`, code);
-    });
-
-    return out;
-  }
-
-  function switchToWrite() {
-    if (btnWriteTab && btnPreviewTab) {
-      btnWriteTab.classList.add('active');
-      btnPreviewTab.classList.remove('active');
-    }
-    if (editorWriteContainer) editorWriteContainer.style.display = 'block';
-    if (mdToolbar) mdToolbar.style.display = 'flex';
-    if (editorPreviewContainer) editorPreviewContainer.style.display = 'none';
-    if (blogContent) blogContent.focus();
-  }
-
-  function switchToPreview() {
-    if (btnWriteTab && btnPreviewTab) {
-      btnPreviewTab.classList.add('active');
-      btnWriteTab.classList.remove('active');
-    }
-    if (editorWriteContainer) editorWriteContainer.style.display = 'none';
-    if (mdToolbar) mdToolbar.style.display = 'none';
-    if (editorPreviewContainer) {
-      editorPreviewContainer.style.display = 'block';
-      editorPreviewContainer.innerHTML = renderMarkdownPreview(blogContent ? blogContent.value : '');
-    }
-  }
-
-  if (btnWriteTab && btnPreviewTab) {
-    btnWriteTab.addEventListener('click', switchToWrite);
-    btnPreviewTab.addEventListener('click', switchToPreview);
-  }
-
-  if (blogContent) {
-    blogContent.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
-        e.preventDefault();
-        insertMarkdown('**', '**', 'bold text');
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
-        e.preventDefault();
-        insertMarkdown('*', '*', 'italic text');
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        insertMarkdown('  ', '', '');
-      }
-    });
-  }
-  
-  // Handle Edit
-  document.querySelectorAll('.edit-blog-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      switchToWrite();
-      const id = this.dataset.id;
-      blogModalLabel.textContent = 'Edit Article';
-      blogForm.action = `/admin/update_blog/${id}`;
-      submitBtn.textContent = 'Update Article';
-      
-      document.getElementById('blogTitle').value = this.dataset.title;
-      document.getElementById('blogSummary').value = this.dataset.summary;
-      document.getElementById('blogContent').value = this.dataset.content;
-      if (blogStatus) {
-        blogStatus.value = this.dataset.status || 'published';
-      }
-      if (blogPublishedAt) {
-        blogPublishedAt.value = this.dataset.publishedAt || '';
-      }
-      fileInput.value = '';
-      if (this.dataset.mediaPath) {
-        filePreview.textContent = `Current image: ${this.dataset.mediaPath.split('/').pop()}`;
-        filePreview.style.display = 'block';
-      } else {
-        filePreview.textContent = '';
-        filePreview.style.display = 'none';
-      }
-      
-      blogModal.show();
-    });
-  });
-  
-  // Handle New Post button (already handled by data-bs-toggle, but reset form)
-  document.querySelectorAll('.add-blog-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      switchToWrite();
-      blogModalLabel.textContent = 'Compose Article';
-      blogForm.action = "/admin/blogs";
-      submitBtn.textContent = 'Publish Article';
-      blogForm.reset();
-      if (blogStatus) {
-        blogStatus.value = 'published';
-      }
-      if (blogPublishedAt) {
-        blogPublishedAt.value = '';
-      }
-      fileInput.value = '';
-      filePreview.textContent = '';
-      filePreview.style.display = 'none';
-    });
-  });
-
   // Handle Delete
   document.querySelectorAll('.btn-delete-blog').forEach(btn => {
     btn.addEventListener('click', async function() {
@@ -714,16 +165,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-

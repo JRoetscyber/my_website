@@ -386,7 +386,7 @@ textarea,
 /* ── Subpage Cards & Panels Polish ───────────────────────────── */
 .widget-card {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(1.5rem, 3.5vw, 2.5rem);
@@ -395,7 +395,7 @@ textarea,
 
 .service-card-v2 {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   box-sizing: border-box;
@@ -423,7 +423,7 @@ textarea,
 
 .svc-panel-card {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(1.5rem, 3vw, 2.5rem);

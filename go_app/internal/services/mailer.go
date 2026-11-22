@@ -79,7 +79,7 @@ body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-c
 <p>Hi <strong>%s</strong>,</p>
 <p>Your 30-minute discovery call is successfully booked!</p>
 <div class="highlight">
-<p>📅 <strong>Action Required:</strong> Please open the attached calendar invitation (<code>invite.ics</code>) to automatically add this meeting to your schedule.</p>
+<p><strong>Action Required:</strong> Please open the attached calendar invitation (<code>invite.ics</code>) to automatically add this meeting to your schedule.</p>
 </div>
 <p>If you need to reschedule or share any extra notes with me before our call, simply reply to <a href="mailto:info@jo4.co.za" style="color: #d32f2f; text-decoration: none; font-weight: bold;">info@jo4.co.za</a>.</p>
 <p>Looking forward to chatting about your project!</p>
@@ -150,7 +150,7 @@ func SendLeadNotification(cfg *config.Config, lead models.Lead) error {
 		return nil
 	}
 
-	subject := fmt.Sprintf("🔥 New Lead Received: %s (Score: %d)", lead.ClientName, lead.Score)
+	subject := fmt.Sprintf("[Priority] New Lead Received: %s (Score: %d)", lead.ClientName, lead.Score)
 	body := fmt.Sprintf("From: JO4 Dev System <%s>\r\n"+
 		"To: %s\r\n"+
 		"Subject: %s\r\n"+

@@ -67,7 +67,7 @@
 }
 .wd-pillar-card {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(28px, 4vw, 44px);
@@ -130,12 +130,15 @@
   position: relative;
 }
 .wd-pillar-list li::before {
-  content: '✓';
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.8rem;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 /* Why section */
@@ -220,9 +223,15 @@
   color: var(--dark-text-muted);
 }
 .wd-compare-card--good .wd-compare-list li::before {
-  content: '✓';
-  color: var(--accent-light);
-  font-weight: 700;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232dd4bf' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 /* Pricing section */
@@ -243,7 +252,7 @@
 }
 .wd-pricing-card {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(28px, 3.5vw, 40px);
@@ -346,15 +355,20 @@
   line-height: 1.5;
 }
 .wd-pricing-list li::before {
-  content: '✓';
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.8rem;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 .wd-pricing-card--featured .wd-pricing-list li { color: var(--dark-text-muted); }
-.wd-pricing-card--featured .wd-pricing-list li::before { color: var(--accent-light); }
+.wd-pricing-card--featured .wd-pricing-list li::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232dd4bf' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
 .wd-pricing-btn {
   width: 100%;
   justify-content: center;
@@ -407,7 +421,7 @@
 }
 .seo-stat-block {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 36px);
@@ -585,7 +599,7 @@
 }
 .appsec-step {
   background: var(--surface-0);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--neu-flat);
   padding: clamp(28px, 3.5vw, 40px);
@@ -655,12 +669,15 @@
   line-height: 1.5;
 }
 .appsec-step-list li::before {
-  content: '✓';
+  content: '';
   position: absolute;
   left: 0;
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.78rem;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 /* ============================================================

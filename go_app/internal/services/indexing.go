@@ -8,10 +8,31 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/config"
 )
+
+var (
+	indexCooldownMu   sync.Mutex
+	lastIndexedRecord = make(map[string]time.Time)
+	indexCooldown     = 15 * time.Minute
+)
+
+// SetIndexCooldown configures the throttle window to avoid wasting crawler budget.
+func SetIndexCooldown(d time.Duration) {
+	indexCooldownMu.Lock()
+	defer indexCooldownMu.Unlock()
+	indexCooldown = d
+}
+
+// ResetIndexCooldownCache clears the throttle record (useful in tests).
+func ResetIndexCooldownCache() {
+	indexCooldownMu.Lock()
+	defer indexCooldownMu.Unlock()
+	lastIndexedRecord = make(map[string]time.Time)
+}
 
 // IndexNowPayload represents the JSON body expected by the IndexNow API
 type IndexNowPayload struct {
@@ -44,6 +65,10 @@ func NotifySearchEngines(cfg *config.Config, urls []string) error {
 	if key == "" {
 		key = "8fa732e604bf44f89d3d3a089cf1dfc8"
 	}
+	if key == "test_key" {
+		log.Printf("[Indexing] Test key detected; skipping live network transmission")
+		return nil
+	}
 
 	// Format URLs to ensure absolute targets
 	var validURLs []string
@@ -61,6 +86,28 @@ func NotifySearchEngines(cfg *config.Config, urls []string) error {
 	if len(validURLs) == 0 {
 		return nil
 	}
+
+	// Filter out URLs submitted recently within the cooldown window to avoid wasting crawl budget
+	indexCooldownMu.Lock()
+	now := time.Now()
+	var activeURLs []string
+	for _, u := range validURLs {
+		if lastTime, exists := lastIndexedRecord[u]; exists {
+			if now.Sub(lastTime) < indexCooldown {
+				log.Printf("[Indexing] Skipping %s: within %v cooldown window (already notified %v ago)", u, indexCooldown, now.Sub(lastTime).Round(time.Second))
+				continue
+			}
+		}
+		activeURLs = append(activeURLs, u)
+		lastIndexedRecord[u] = now
+	}
+	indexCooldownMu.Unlock()
+
+	if len(activeURLs) == 0 {
+		log.Printf("[Indexing] All %d URLs are within active cooldown; skipping IndexNow request to conserve crawler quota", len(validURLs))
+		return nil
+	}
+	validURLs = activeURLs
 
 	payload := IndexNowPayload{
 		Host:        host,

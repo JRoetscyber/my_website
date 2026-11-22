@@ -1,0 +1,939 @@
+{% extends "admin/admin.html" %}
+
+{% block admin_title %}{% if is_edit %}Edit: {{ post.Title }} — Admin{% else %}New Article — Admin{% endif %}{% endblock %}
+{% block admin_heading %}{% if is_edit %}Edit Article{% else %}Compose Article{% endif %}{% endblock %}
+
+{% block admin_head %}
+<link rel="stylesheet" href="/static/css/blog.css?v=20261122v2">
+<style>
+  .editor-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    box-shadow: var(--neu-flat-sm);
+    margin-bottom: 24px;
+  }
+  .btn-night-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--neu-flat-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-night-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .md-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 12px;
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .md-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    background: var(--color-surface-0, #ffffff);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .md-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  [data-theme="dark"] .md-btn {
+    background: #1a1d24;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+  [data-theme="dark"] .md-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .md-separator {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background: var(--color-border);
+    margin: 0 4px;
+  }
+  .editor-tab-btn {
+    font-size: 0.8rem;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-2);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+  }
+  .editor-tab-btn.active {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-color: var(--accent) !important;
+  }
+  .syntax-pill {
+    cursor: pointer;
+    font-size: 0.74rem;
+    padding: 4px 9px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    border: 1px dashed var(--color-border);
+    user-select: none;
+    background: var(--color-surface-2);
+    color: var(--color-text-secondary);
+  }
+  .syntax-pill:hover {
+    background: var(--accent) !important;
+    color: #ffffff !important;
+    border-style: solid;
+  }
+  .neu-preview-box {
+    background: var(--color-surface-0, #ffffff);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    min-height: 520px;
+    max-height: 750px;
+    overflow-y: auto;
+  }
+  [data-theme="dark"] .neu-preview-box {
+    background: #14161b;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+  }
+  .image-hub-box {
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-top: 20px;
+  }
+  .uploaded-item-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    margin-top: 10px;
+  }
+  .uploaded-thumb {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+  }
+  .crawl-info-card {
+    border-radius: 12px;
+    background: rgba(13, 148, 136, 0.06);
+    border: 1px solid rgba(13, 148, 136, 0.2);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  [data-theme="dark"] .crawl-info-card {
+    background: rgba(20, 184, 166, 0.08);
+    border-color: rgba(20, 184, 166, 0.25);
+  }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<form id="blogForm" method="POST" action="{% if is_edit %}/admin/update_blog/{{ post.ID }}{% else %}/admin/blogs{% endif %}" enctype="multipart/form-data">
+  <!-- Top Action & Navigation Bar -->
+  <div class="editor-action-bar">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/admin/blogs" class="editor-back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        All Articles
+      </a>
+      <button type="button" class="btn-night-toggle" id="editorNightModeToggle" title="Toggle Night / Day Mode">
+        <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span id="editorThemeText">Night Mode</span>
+      </button>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <a href="/admin/blogs" class="tbl-action-btn" style="text-decoration:none;">Discard</a>
+      <button type="button" class="btn-admin-outline" id="btnSaveDraft">Save Draft</button>
+      <button type="submit" class="deploy-btn" style="width:auto; padding: 8px 24px;" id="btnSubmitForm">
+        {% if is_edit %}Save Changes{% else %}Publish Article{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Main Writing Column -->
+    <div class="col-xl-8">
+      <!-- Title & Auto-slug -->
+      <div class="mb-4">
+        <label class="admin-form-label" for="blogTitle">Article Headline</label>
+        <input class="editor-headline-input" id="blogTitle" name="title" type="text" required
+               placeholder="Enter an authoritative, click-worthy headline..." value="{{ post.Title }}">
+        <div class="editor-slug-row">
+          <span>Public URL preview:</span>
+          <span class="editor-slug-badge" id="slugPreview">/blog/{% if post.Slug %}{{ post.Slug }}{% else %}your-article-slug{% endif %}</span>
+        </div>
+      </div>
+
+      <!-- Markdown Writing & Preview Engine -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+          <label class="admin-form-label mb-0" for="blogContent">Article Content (GitHub Flavored Markdown)</label>
+          <div class="d-flex gap-2">
+            <button type="button" class="editor-tab-btn active" id="btnTabWrite">Write</button>
+            <button type="button" class="editor-tab-btn" id="btnTabSplit">Split View</button>
+            <button type="button" class="editor-tab-btn" id="btnTabPreview">Full Preview</button>
+          </div>
+        </div>
+
+        <!-- Markdown Toolbar -->
+        <div class="md-toolbar" id="mdToolbar">
+          <button type="button" class="md-btn" data-format="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+          <button type="button" class="md-btn" data-format="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+          <button type="button" class="md-btn" data-format="strike" title="Strikethrough"><s>S</s></button>
+          <span class="md-separator"></span>
+          <button type="button" class="md-btn" data-format="h2" title="Subheading (H2)">H2</button>
+          <button type="button" class="md-btn" data-format="h3" title="Section (H3)">H3</button>
+          <span class="md-separator"></span>
+          <button type="button" class="md-btn" data-format="code" title="Inline Code"><code>&lt;&gt;</code></button>
+          <button type="button" class="md-btn" data-format="codeblock" title="Fenced Code Block"><code>{}</code></button>
+          <button type="button" class="md-btn" data-format="link" title="Hyperlink">Link</button>
+          <button type="button" class="md-btn" data-format="table" title="GFM Table">Table</button>
+          <button type="button" class="md-btn" data-format="quote" title="Blockquote">&gt; Quote</button>
+          <button type="button" class="md-btn" data-format="list" title="Bullet List">• List</button>
+          <button type="button" class="md-btn" data-format="task" title="Task List Checkbox"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Task</button>
+          <button type="button" class="md-btn" data-format="hr" title="Horizontal Rule">— Rule</button>
+          <span class="md-separator"></span>
+          <button type="button" class="md-btn" id="btnScrollToImageUpload" title="Insert & Upload Image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Upload Image
+          </button>
+        </div>
+
+        <!-- Editor Modes -->
+        <div id="editorSingleWriteContainer">
+          <textarea class="editor-textarea-full" id="blogContent" name="content" required
+                    placeholder="Compose with GitHub Flavored Markdown (headings, code blocks, tables, task lists, and images)...">{{ post.Content }}</textarea>
+        </div>
+
+        <div id="editorSplitContainer" class="split-editor-grid" style="display: none;">
+          <div>
+            <textarea class="editor-textarea-full" id="splitBlogContent" placeholder="Start writing here..."></textarea>
+          </div>
+          <div class="blog-post-content editor-preview-full" id="splitPreviewContainer"></div>
+        </div>
+
+        <div id="editorFullPreviewContainer" class="blog-post-content neu-preview-box" style="display: none;"></div>
+
+        <!-- Syntax Helper Pills -->
+        <div class="mt-2 d-flex flex-wrap gap-2 align-items-center" id="syntaxPills">
+          <span style="font-size: 0.72rem; color: var(--color-text-muted); font-weight: 600;">GFM Shortcuts:</span>
+          <span class="syntax-pill" role="button" data-syntax="**Bold Text**">**bold**</span>
+          <span class="syntax-pill" role="button" data-syntax="*Italic Text*">*italic*</span>
+          <span class="syntax-pill" role="button" data-syntax="## Subheading">## Heading</span>
+          <span class="syntax-pill" role="button" data-syntax="`inline_code()`">`code`</span>
+          <span class="syntax-pill" role="button" data-syntax="```go&#10;func main() {}&#10;```">```code block```</span>
+          <span class="syntax-pill" role="button" data-syntax="| Column 1 | Column 2 |&#10;|---|---|&#10;| Item A | Item B |">| Table |</span>
+          <span class="syntax-pill" role="button" data-syntax="- [ ] Action Item">- [ ] Task</span>
+          <span class="syntax-pill" role="button" data-syntax="> Engineering insights.">&gt; Quote</span>
+        </div>
+      </div>
+
+      <!-- INLINE IMAGE UPLOAD & DROP HUB -->
+      <div class="image-hub-box" id="imageHubBox">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <strong style="font-size: 0.9rem;">Inline Blog Image Upload</strong>
+          </div>
+          <span class="badge bg-secondary-subtle text-secondary-emphasis" style="font-size: 0.7rem;">Injection & IDOR Protected</span>
+        </div>
+        <p class="text-secondary mb-3" style="font-size: 0.78rem; line-height: 1.5;">
+          Drop any image here to securely upload and generate a Markdown tag (e.g. <code>![alt](/static/uploads/...)</code>).
+          Files are validated by content magic bytes, scrubbed of script injection, and assigned secure non-enumerable UUIDs.
+        </p>
+
+        <div class="image-drop-area" id="inlineImageDropzone">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.8" class="mb-2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
+          <div style="font-weight: 600; font-size: 0.88rem;">Drag & drop image here or <span class="text-accent" style="text-decoration: underline;">browse</span></div>
+          <small class="text-secondary" style="font-size: 0.72rem;">Supports PNG, JPG, JPEG, WEBP, GIF (Max 10MB)</small>
+          <input type="file" id="inlineImageInput" hidden accept="image/png,image/jpeg,image/webp,image/gif">
+        </div>
+
+        <div id="uploadStatusMsg" class="mt-2" style="font-size: 0.8rem; display: none;"></div>
+
+        <!-- Uploaded Images List for Session -->
+        <div id="uploadedGalleryContainer" class="mt-3" style="display: none;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 8px;">
+            Uploaded for this article:
+          </div>
+          <div id="uploadedGalleryList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Publishing & SEO Settings Sidebar -->
+    <div class="col-xl-4">
+      <div class="widget-card mb-4">
+        <h4 class="mb-3" style="font-size: 1rem; font-weight: 700;">Publication Controls</h4>
+
+        <!-- Status -->
+        <div class="mb-3">
+          <label class="admin-form-label" for="blogStatus">Status</label>
+          <select class="admin-form-input" id="blogStatus" name="status">
+            <option value="published"{% if post.Status == "published" %} selected{% endif %}>Publish Immediately</option>
+            <option value="scheduled"{% if post.Status == "scheduled" %} selected{% endif %}>Schedule for Future</option>
+            <option value="draft"{% if post.Status == "draft" %} selected{% endif %}>Save as Draft</option>
+          </select>
+        </div>
+
+        <!-- Publish Date & Time -->
+        <div class="mb-3" id="publishedAtGroup">
+          <label class="admin-form-label" for="blogPublishedAt">Publish Date & Time</label>
+          <input class="admin-form-input" id="blogPublishedAt" name="published_at" type="datetime-local"
+                 value="{% if post.PublishedAt %}{{ post.PublishedAt|date:"2006-01-02T15:04" }}{% endif %}">
+          <small class="text-secondary d-block mt-1" style="font-size: 0.72rem;">Set when this article goes live. Leave empty to publish now.</small>
+        </div>
+
+        <!-- Crawl & Auto-Indexing Management -->
+        <div class="crawl-info-card">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <strong style="font-size: 0.82rem; color: var(--accent);">Search Auto-Index Control</strong>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" role="switch" id="notifySearchEngines" name="notify_search_engines"
+                     {% if not is_edit or post.Status != "published" %}checked{% endif %}>
+            </div>
+          </div>
+          <p class="mb-0 text-secondary" style="font-size: 0.72rem; line-height: 1.45;">
+            Broadcasts to <strong>IndexNow (Bing/Yandex)</strong> and pings Google.
+            <br>
+            <span style="color: var(--color-text-primary); font-weight: 600;">Crawl Budget Protection:</span>
+            Keep toggle OFF while making draft saves or typo tweaks so bots don't waste crawling quota. Turn ON when saving the final release!
+          </p>
+        </div>
+
+        <!-- SEO Summary -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="admin-form-label mb-0" for="blogSummary">SEO Summary</label>
+            <span id="summaryCharCount" style="font-size: 0.72rem; color: var(--color-text-muted);">0 / 160</span>
+          </div>
+          <textarea class="admin-form-input" id="blogSummary" name="summary" rows="4"
+                    placeholder="Briefly describe what this article delivers for Google snippet and social share cards...">{{ post.Summary }}</textarea>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="mb-3">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="admin-form-label" style="margin-bottom: 0;">Cover Hero Image</label>
+            <a href="/webp-converter" target="_blank" style="font-size: 0.78rem; color: var(--accent); text-decoration: none; font-weight: 600;">
+              WebP Optimizer ↗
+            </a>
+          </div>
+          <div class="file-drop-zone" id="coverMediaDropzone" role="button" tabindex="0">
+            <svg viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
+            <div class="file-drop-label"><strong>Click to select</strong> or drag cover</div>
+            <div class="file-drop-sub">JPG, PNG or WEBP (Max 10MB)</div>
+            <input type="file" id="coverMedia" name="media" hidden accept="image/*">
+          </div>
+          <input type="hidden" id="mediaPathHidden" name="media_path" value="{{ post.MediaPath }}">
+          <div id="coverFilePreview" class="file-drop-filename" style="{% if post.MediaPath %}display:block;{% endif %}">
+            {% if post.MediaPath %}Current: {{ post.MediaPath }}{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block admin_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const blogForm = document.getElementById('blogForm');
+  const blogTitle = document.getElementById('blogTitle');
+  const slugPreview = document.getElementById('slugPreview');
+  const blogContent = document.getElementById('blogContent');
+  const splitBlogContent = document.getElementById('splitBlogContent');
+  const blogSummary = document.getElementById('blogSummary');
+  const summaryCharCount = document.getElementById('summaryCharCount');
+  const blogStatus = document.getElementById('blogStatus');
+  const blogPublishedAt = document.getElementById('blogPublishedAt');
+  const btnSaveDraft = document.getElementById('btnSaveDraft');
+
+  // Night Mode Toggle for Editor
+  const nightToggleBtn = document.getElementById('editorNightModeToggle');
+  const editorThemeText = document.getElementById('editorThemeText');
+
+  function updateNightToggleText() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (editorThemeText) {
+      editorThemeText.textContent = isDark ? 'Day Mode' : 'Night Mode';
+    }
+  }
+  updateNightToggleText();
+
+  if (nightToggleBtn) {
+    nightToggleBtn.addEventListener('click', function() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {}
+      updateNightToggleText();
+    });
+  }
+
+  // Auto-slug Generation Preview
+  function makeSlug(text) {
+    return text.toString().toLowerCase()
+      .trim()
+      .replace(/[\s\W-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  if (blogTitle && slugPreview) {
+    blogTitle.addEventListener('input', function() {
+      const slug = makeSlug(this.value) || 'your-article-slug';
+      slugPreview.textContent = '/blog/' + slug;
+    });
+  }
+
+  // Summary Character Counter
+  if (blogSummary && summaryCharCount) {
+    function updateCharCount() {
+      summaryCharCount.textContent = `${blogSummary.value.length} / 160`;
+    }
+    blogSummary.addEventListener('input', updateCharCount);
+    updateCharCount();
+  }
+
+  // Status & Scheduling Logic
+  if (blogStatus && blogPublishedAt) {
+    blogStatus.addEventListener('change', function() {
+      if (this.value === 'scheduled' && !blogPublishedAt.value) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+        blogPublishedAt.value = tomorrow.toISOString().slice(0, 16);
+      }
+    });
+  }
+
+  // Save as Draft quick button
+  if (btnSaveDraft) {
+    btnSaveDraft.addEventListener('click', function() {
+      if (blogStatus) blogStatus.value = 'draft';
+      const notifyCheck = document.getElementById('notifySearchEngines');
+      if (notifyCheck) notifyCheck.checked = false;
+      blogForm.submit();
+    });
+  }
+
+  // Cover Image Dropzone
+  const coverDropzone = document.getElementById('coverMediaDropzone');
+  const coverInput = document.getElementById('coverMedia');
+  const coverPreview = document.getElementById('coverFilePreview');
+
+  if (coverDropzone && coverInput) {
+    coverDropzone.addEventListener('click', () => coverInput.click());
+    coverDropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        coverInput.click();
+      }
+    });
+    coverInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        coverPreview.textContent = 'Selected: ' + this.files[0].name;
+        coverPreview.style.display = 'block';
+      }
+    });
+  }
+
+  // --- TAB & VIEW SWITCHING (WRITE / SPLIT / FULL PREVIEW) ---
+  const btnTabWrite = document.getElementById('btnTabWrite');
+  const btnTabSplit = document.getElementById('btnTabSplit');
+  const btnTabPreview = document.getElementById('btnTabPreview');
+  const singleWriteContainer = document.getElementById('editorSingleWriteContainer');
+  const splitContainer = document.getElementById('editorSplitContainer');
+  const fullPreviewContainer = document.getElementById('editorFullPreviewContainer');
+  const splitPreviewContainer = document.getElementById('splitPreviewContainer');
+  const mdToolbar = document.getElementById('mdToolbar');
+
+  let currentView = 'write';
+
+  function setView(view) {
+    currentView = view;
+    btnTabWrite.classList.toggle('active', view === 'write');
+    btnTabSplit.classList.toggle('active', view === 'split');
+    btnTabPreview.classList.toggle('active', view === 'preview');
+
+    if (view === 'write') {
+      singleWriteContainer.style.display = 'block';
+      splitContainer.style.display = 'none';
+      fullPreviewContainer.style.display = 'none';
+      mdToolbar.style.display = 'flex';
+      blogContent.focus();
+    } else if (view === 'split') {
+      splitBlogContent.value = blogContent.value;
+      singleWriteContainer.style.display = 'none';
+      splitContainer.style.display = 'grid';
+      fullPreviewContainer.style.display = 'none';
+      mdToolbar.style.display = 'flex';
+      splitPreviewContainer.innerHTML = renderMarkdownPreview(splitBlogContent.value);
+      splitBlogContent.focus();
+    } else if (view === 'preview') {
+      singleWriteContainer.style.display = 'none';
+      splitContainer.style.display = 'none';
+      fullPreviewContainer.style.display = 'block';
+      mdToolbar.style.display = 'none';
+      fullPreviewContainer.innerHTML = renderMarkdownPreview(getActiveContent());
+    }
+  }
+
+  btnTabWrite.addEventListener('click', () => setView('write'));
+  btnTabSplit.addEventListener('click', () => setView('split'));
+  btnTabPreview.addEventListener('click', () => setView('preview'));
+
+  function getActiveContent() {
+    return currentView === 'split' ? splitBlogContent.value : blogContent.value;
+  }
+
+  function setActiveContent(val) {
+    blogContent.value = val;
+    if (splitBlogContent) splitBlogContent.value = val;
+  }
+
+  // Keep contents in sync when in split view
+  if (splitBlogContent) {
+    splitBlogContent.addEventListener('input', function() {
+      blogContent.value = this.value;
+      splitPreviewContainer.innerHTML = renderMarkdownPreview(this.value);
+    });
+  }
+  if (blogContent) {
+    blogContent.addEventListener('input', function() {
+      if (splitBlogContent) splitBlogContent.value = this.value;
+    });
+  }
+
+  // --- MARKDOWN INSERTION & TOOLBAR ---
+  function insertMarkdown(prefix, suffix, defaultText) {
+    const target = currentView === 'split' ? splitBlogContent : blogContent;
+    if (!target) return;
+
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+    const selected = target.value.substring(start, end);
+    const textToInsert = selected || defaultText || '';
+    const replacement = prefix + textToInsert + (suffix || '');
+
+    target.setRangeText(replacement, start, end, 'select');
+    target.focus();
+
+    if (!selected && defaultText) {
+      target.setSelectionRange(start + prefix.length, start + prefix.length + defaultText.length);
+    }
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  const formatMap = {
+    bold: () => insertMarkdown('**', '**', 'bold text'),
+    italic: () => insertMarkdown('*', '*', 'italic text'),
+    strike: () => insertMarkdown('~~', '~~', 'strikethrough text'),
+    h2: () => insertMarkdown('## ', '\n', 'Subheading'),
+    h3: () => insertMarkdown('### ', '\n', 'Section Header'),
+    code: () => insertMarkdown('`', '`', 'inline_code()'),
+    codeblock: () => insertMarkdown('```go\n', '\n```\n', 'func main() {}'),
+    link: () => insertMarkdown('[', '](https://example.com)', 'Link Title'),
+    table: () => insertMarkdown('\n| Column 1 | Column 2 |\n| :--- | :--- |\n| Value A | Value B |\n| Value C | Value D |\n\n', '', ''),
+    quote: () => insertMarkdown('> ', '\n', 'Engineering insight quote'),
+    list: () => insertMarkdown('- ', '\n', 'List item'),
+    task: () => insertMarkdown('- [ ] ', '\n', 'High-priority task'),
+    hr: () => insertMarkdown('\n---\n\n', '', '')
+  };
+
+  document.querySelectorAll('.md-btn[data-format]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const fmt = this.dataset.format;
+      if (formatMap[fmt]) formatMap[fmt]();
+    });
+  });
+
+  document.querySelectorAll('.syntax-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      const syntax = this.dataset.syntax;
+      if (!syntax) return;
+      const target = currentView === 'split' ? splitBlogContent : blogContent;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      target.setRangeText(syntax, start, end, 'end');
+      target.focus();
+      target.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  });
+
+  const btnScrollToImageUpload = document.getElementById('btnScrollToImageUpload');
+  if (btnScrollToImageUpload) {
+    btnScrollToImageUpload.addEventListener('click', function() {
+      const hub = document.getElementById('imageHubBox');
+      if (hub) {
+        hub.scrollIntoView({ behavior: 'smooth' });
+        hub.style.boxShadow = '0 0 0 3px var(--accent)';
+        setTimeout(() => hub.style.boxShadow = '', 1500);
+      }
+    });
+  }
+
+  // --- GFM LIVE PREVIEW RENDERER ---
+  function renderMarkdownPreview(md) {
+    if (!md || !md.trim()) {
+      return '<p class="text-secondary" style="font-style: italic;">No content composed yet. Type in Markdown on the Write or Split tab.</p>';
+    }
+
+    let src = md.replace(/\r\n/g, '\n');
+
+    // Code blocks
+    const codeBlocks = [];
+    src = src.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(_, lang, code) {
+      const placeholder = `@@@CB${codeBlocks.length}@@@`;
+      const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const langClass = lang ? ` class="language-${lang}"` : '';
+      codeBlocks.push(`<pre><code${langClass}>${escaped}</code></pre>`);
+      return placeholder;
+    });
+
+    // Inline code
+    const inlineCodes = [];
+    src = src.replace(/`([^`\n]+)`/g, function(_, code) {
+      const placeholder = `@@@IC${inlineCodes.length}@@@`;
+      const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      inlineCodes.push(`<code>${escaped}</code>`);
+      return placeholder;
+    });
+
+    // Tables
+    const lines = src.split('\n');
+    const outputLines = [];
+    let inTable = false;
+    let tableLines = [];
+
+    function flushTable() {
+      if (tableLines.length >= 2) {
+        const parseRow = l => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+        const headers = parseRow(tableLines[0]);
+        const aligns = parseRow(tableLines[1]).map(a => {
+          if (a.startsWith(':') && a.endsWith(':')) return 'center';
+          if (a.endsWith(':')) return 'right';
+          return 'left';
+        });
+
+        let thtml = '<table>\n<thead>\n<tr>\n';
+        headers.forEach((h, i) => {
+          const align = aligns[i] ? ` style="text-align: ${aligns[i]}"` : '';
+          thtml += `  <th${align}>${h}</th>\n`;
+        });
+        thtml += '</tr>\n</thead>\n<tbody>\n';
+
+        for (let i = 2; i < tableLines.length; i++) {
+          if (!tableLines[i].trim()) continue;
+          const cells = parseRow(tableLines[i]);
+          thtml += '<tr>\n';
+          cells.forEach((c, idx) => {
+            const align = aligns[idx] ? ` style="text-align: ${aligns[idx]}"` : '';
+            thtml += `  <td${align}>${c}</td>\n`;
+          });
+          thtml += '</tr>\n';
+        }
+        thtml += '</tbody>\n</table>';
+        outputLines.push(thtml);
+      } else {
+        outputLines.push(...tableLines);
+      }
+      tableLines = [];
+      inTable = false;
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+        inTable = true;
+        tableLines.push(line);
+      } else {
+        if (inTable) flushTable();
+        outputLines.push(line);
+      }
+    }
+    if (inTable) flushTable();
+
+    src = outputLines.join('\n');
+
+    // Headings
+    src = src.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
+    src = src.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
+    src = src.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+    src = src.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    src = src.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    src = src.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+    // Blockquotes
+    src = src.replace(/^\> (.*$)/gim, '<blockquote><p>$1</p></blockquote>');
+
+    // Horizontal Rules
+    src = src.replace(/^(?:---|\*\*\*|___)\s*$/gim, '<hr>');
+
+    // Task lists
+    src = src.replace(/^- \[x\] (.*$)/gim, '<ul class="task-list"><li><input type="checkbox" checked disabled> $1</li></ul>');
+    src = src.replace(/^- \[ \] (.*$)/gim, '<ul class="task-list"><li><input type="checkbox" disabled> $1</li></ul>');
+
+    // Lists
+    src = src.replace(/^\* (.*$)/gim, '<ul><li>$1</li></ul>');
+    src = src.replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>');
+    src = src.replace(/<\/ul>\s*<ul(?: class="task-list")?>/g, '');
+
+    // Formats
+    src = src.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    src = src.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    src = src.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    src = src.replace(/_([^_]+)_/g, '<em>$1</em>');
+    src = src.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+    // Embedded Images & Links
+    src = src.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">');
+    src = src.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    // Paragraphs
+    const blocks = src.split(/\n{2,}/);
+    const processed = blocks.map(b => {
+      b = b.trim();
+      if (!b) return '';
+      if (/^<(?:h[1-6]|table|thead|tbody|tr|th|td|ul|ol|li|blockquote|pre|hr|div|img)/i.test(b) || b.startsWith('@@@CB')) {
+        return b;
+      }
+      return `<p>${b.replace(/\n/g, '<br>')}</p>`;
+    });
+
+    let out = processed.filter(Boolean).join('\n\n');
+
+    // Restore code blocks
+    codeBlocks.forEach((block, idx) => {
+      out = out.replace(`@@@CB${idx}@@@`, block);
+    });
+    inlineCodes.forEach((code, idx) => {
+      out = out.replace(`@@@IC${idx}@@@`, code);
+    });
+
+    return out;
+  }
+
+  // Keyboard Shortcuts (Ctrl+B, Ctrl+I, Tab)
+  [blogContent, splitBlogContent].forEach(ta => {
+    if (!ta) return;
+    ta.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        insertMarkdown('**', '**', 'bold text');
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        insertMarkdown('*', '*', 'italic text');
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        insertMarkdown('  ', '', '');
+      }
+    });
+  });
+
+  // --- SECURE ASYNC INLINE IMAGE UPLOAD ENGINE ---
+  const inlineDropzone = document.getElementById('inlineImageDropzone');
+  const inlineInput = document.getElementById('inlineImageInput');
+  const uploadStatusMsg = document.getElementById('uploadStatusMsg');
+  const galleryContainer = document.getElementById('uploadedGalleryContainer');
+  const galleryList = document.getElementById('uploadedGalleryList');
+
+  if (inlineDropzone && inlineInput) {
+    inlineDropzone.addEventListener('click', () => inlineInput.click());
+
+    // Drag-and-drop events
+    ['dragenter', 'dragover'].forEach(eventName => {
+      inlineDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        inlineDropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      inlineDropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        inlineDropzone.classList.remove('dragover');
+      });
+    });
+
+    inlineDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files.length) {
+        handleImageUpload(e.dataTransfer.files[0]);
+      }
+    });
+
+    inlineInput.addEventListener('change', function() {
+      if (this.files && this.files.length) {
+        handleImageUpload(this.files[0]);
+      }
+    });
+  }
+
+  async function handleImageUpload(file) {
+    if (!file) return;
+
+    // Client-side quick check
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      showStatus('Error: Only PNG, JPG, JPEG, WEBP, or GIF images are allowed (SVG and scripts rejected).', 'danger');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showStatus('Error: Image file exceeds 10MB limit.', 'danger');
+      return;
+    }
+
+    showStatus('Uploading and inspecting image security headers...', 'info');
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const resp = await fetch('/admin/api/upload-image', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || data.status !== 'success') {
+        showStatus('Upload failed: ' + (data.message || 'Unknown server error'), 'danger');
+        return;
+      }
+
+      showStatus(`Image uploaded safely! Route: <code>${data.url}</code>`, 'success');
+
+      // Add to session gallery
+      galleryContainer.style.display = 'block';
+      const itemEl = document.createElement('div');
+      itemEl.className = 'uploaded-item-card';
+      itemEl.innerHTML = `
+        <div class="d-flex align-items-center gap-3">
+          <img src="${data.url}" class="uploaded-thumb" alt="Uploaded image thumbnail">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 600;">${data.filename}</div>
+            <code style="font-size: 0.72rem; color: var(--color-text-muted);">${data.url}</code>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn-insert-md btn-copy-md" data-markdown="${encodeURIComponent(data.markdown)}">Copy Tag</button>
+          <button type="button" class="btn-insert-md btn-insert-direct" data-markdown="${encodeURIComponent(data.markdown)}">Insert at Cursor</button>
+        </div>
+      `;
+      galleryList.prepend(itemEl);
+
+      // Auto-insert at cursor position directly into markdown!
+      insertImageSnippet(data.markdown);
+
+      // Wire buttons
+      itemEl.querySelector('.btn-insert-direct').addEventListener('click', function() {
+        const mdSnippet = decodeURIComponent(this.dataset.markdown);
+        insertImageSnippet(mdSnippet);
+      });
+
+      itemEl.querySelector('.btn-copy-md').addEventListener('click', function() {
+        const mdSnippet = decodeURIComponent(this.dataset.markdown);
+        navigator.clipboard.writeText(mdSnippet).then(() => {
+          this.textContent = 'Copied!';
+          setTimeout(() => this.textContent = 'Copy Tag', 1500);
+        });
+      });
+
+    } catch (err) {
+      console.error(err);
+      showStatus('Network error occurred during image upload.', 'danger');
+    }
+  }
+
+  function insertImageSnippet(snippet) {
+    const target = currentView === 'split' ? splitBlogContent : blogContent;
+    if (!target) return;
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+    const textToInsert = '\n\n' + snippet + '\n\n';
+    target.setRangeText(textToInsert, start, end, 'end');
+    target.focus();
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function showStatus(msg, type) {
+    if (!uploadStatusMsg) return;
+    uploadStatusMsg.style.display = 'block';
+    uploadStatusMsg.className = `alert alert-${type === 'danger' ? 'danger' : (type === 'success' ? 'success' : 'info')} py-2 px-3 mt-2 mb-0`;
+    uploadStatusMsg.innerHTML = msg;
+  }
+});
+</script>
+{% endblock %}

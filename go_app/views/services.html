@@ -96,7 +96,21 @@
 
         
         <div style="margin-top:36px; display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
+          {% if service.Slug == 'web-design' %}
+          <a href="/web-design" class="btn-ghost-custom">View Web Design Details &rarr;</a>
+          {% elif service.Slug == 'seo' %}
+          <a href="/seo" class="btn-ghost-custom">View SEO Services &rarr;</a>
+          {% elif service.Slug == 'appsec' %}
+          <a href="/appsec" class="btn-ghost-custom">View AppSec &amp; Testing &rarr;</a>
+          {% elif service.Slug == 'mobile-apps' %}
+          <a href="/mobile-apps" class="btn-ghost-custom">View Mobile Apps &rarr;</a>
+          {% elif service.Slug == 'automation' %}
+          <a href="/automation" class="btn-ghost-custom">View Automation Solutions &rarr;</a>
+          {% elif service.HasDedicatedPage %}
+          <a href="/{{ service.Slug }}" class="btn-ghost-custom">Learn More &rarr;</a>
+          {% else %}
           <a href="/services#{{ service.Slug }}" class="btn-ghost-custom">Learn More</a>
+          {% endif %}
           <a href="/book" class="btn-primary-custom">
             Discuss Your Project
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
@@ -211,6 +225,9 @@
         <div class="svc-faq-item">
           <h3>{{ faq.Question }}</h3>
           <p>{{ faq.Answer }}</p>
+          {% if faq.Slug %}
+          <a href="/faq/{{ faq.Slug }}" style="display:inline-block; margin-top:8px; font-weight:600; color:var(--accent);">Read full answer &rarr;</a>
+          {% endif %}
         </div>
         {% endfor %}
       {% else %}
@@ -240,6 +257,10 @@
         </div>
       {% endif %}
 
+    </div>
+
+    <div style="text-align:center; margin-top:36px;" data-aos="fade-up">
+      <a href="/faq" class="btn-ghost-custom">View All Frequently Asked Questions &rarr;</a>
     </div>
   </div>
 </section>
