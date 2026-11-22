@@ -60,6 +60,18 @@ func setupTestAdminHandler(t *testing.T) (*fiber.App, *AdminHandler, string) {
 	return app, handler, tempDir
 }
 
+func TestDetectContentTypeOnWebP(t *testing.T) {
+	data, err := os.ReadFile("../../../static/assets/logo.webp")
+	if err != nil {
+		data, err = os.ReadFile("../../static/assets/logo.webp")
+	}
+	if err != nil {
+		t.Fatalf("failed to read logo.webp: %v", err)
+	}
+	sniffed := http.DetectContentType(data[:512])
+	t.Logf("Sniffed MIME for real WebP logo: %s", sniffed)
+}
+
 func TestUploadBlogImage_ValidImage(t *testing.T) {
 	app, _, tempDir := setupTestAdminHandler(t)
 	defer os.RemoveAll(tempDir)

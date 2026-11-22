@@ -729,12 +729,12 @@ func saveUploadedImage(c *fiber.Ctx, formKey, prefix string) (string, error) {
 	// 2. Strict file extension whitelist (strictly no SVG, HTML, or executable scripts)
 	ext := strings.ToLower(filepath.Ext(filepath.Base(file.Filename)))
 	switch ext {
-	case ".jpg", ".jpeg", ".png", ".webp", ".gif":
+	case ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".gif":
 	default:
-		return "", fmt.Errorf("only JPG, JPEG, PNG, WEBP, or GIF images are permitted")
+		return "", fmt.Errorf("only JPG, JPEG, JFIF, PNG, WEBP, or GIF images are permitted")
 	}
 
-	// 3. Inspect magic bytes for true MIME type validation (prevent content sniffing polyglots)
+	// 3. Inspect magic bytes for true image content validation (prevent content sniffing polyglots and script injection)
 	src, err := file.Open()
 	if err != nil {
 		return "", fmt.Errorf("failed to open file stream: %w", err)
@@ -750,10 +750,35 @@ func saveUploadedImage(c *fiber.Ctx, formKey, prefix string) (string, error) {
 	}
 
 	mimeType := http.DetectContentType(buf[:n])
+	isValidImage := false
 	switch mimeType {
 	case "image/jpeg", "image/png", "image/webp", "image/gif":
+		isValidImage = true
 	default:
-		return "", fmt.Errorf("invalid image content type: %s", mimeType)
+		// Fallback check standard binary magic byte signatures in case DetectContentType returned application/octet-stream
+		if n >= 3 && buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
+			isValidImage = true // JPEG / JFIF
+		} else if n >= 8 && string(buf[:8]) == "\x89PNG\r\n\x1a\n" {
+			isValidImage = true // PNG
+		} else if n >= 4 && string(buf[:4]) == "GIF8" {
+			isValidImage = true // GIF
+		} else if n >= 12 && string(buf[:4]) == "RIFF" && string(buf[8:12]) == "WEBP" {
+			isValidImage = true // WebP
+		}
+	}
+
+	// Strictly reject SVG, XML, HTML, PHP, or scripts disguised as images
+	headerStr := strings.ToLower(string(buf[:n]))
+	if strings.Contains(headerStr, "<svg") ||
+		strings.Contains(headerStr, "<?xml") ||
+		strings.Contains(headerStr, "<html") ||
+		strings.Contains(headerStr, "<script") ||
+		strings.Contains(headerStr, "<?php") {
+		isValidImage = false
+	}
+
+	if !isValidImage {
+		return "", fmt.Errorf("invalid image content or unsupported format")
 	}
 
 	// 4. Cryptographically unguessable filename (prevent IDOR, predictability, and overwrites)
