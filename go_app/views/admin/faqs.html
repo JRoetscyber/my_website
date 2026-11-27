@@ -68,9 +68,9 @@
                 {% endif %}
                 <button class="btn-admin-outline btn-admin-sm edit-faq-btn"
                         data-id="{{ faq.ID }}"
-                        data-question="{{ faq.Question|escape }}"
-                        data-slug="{{ faq.Slug|escape }}"
-                        data-answer="{{ faq.Answer|escape }}"
+                        data-question="{{ faq.Question }}"
+                        data-slug="{{ faq.Slug }}"
+                        data-answer="{{ faq.Answer }}"
                         data-display-order="{{ faq.DisplayOrder }}"
                         data-is-published="{% if faq.IsPublished %}true{% else %}false{% endif %}">
                   Edit

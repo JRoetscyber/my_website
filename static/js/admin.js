@@ -360,8 +360,20 @@
       if (labelEl) labelEl.textContent = isEdit ? 'Saving...' : 'Uploading...';
       deployBtn.disabled = true;
 
-      fetch(url, { method: 'POST', body: new FormData(form) })
-      .then(function (r) { return r.json(); })
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form)
+      })
+      .then(function (r) {
+        return r.text().then(function (txt) {
+          try {
+            return JSON.parse(txt);
+          } catch (_) {
+            throw new Error('HTTP ' + r.status + ': unexpected server response');
+          }
+        });
+      })
       .then(function (data) {
         if (data.status === 'success') {
           if (labelEl) labelEl.textContent = isEdit ? 'Saved!' : 'Uploaded!';
@@ -370,7 +382,7 @@
         } else {
           if (labelEl) labelEl.textContent = 'Error';
           deployBtn.style.background = 'var(--badge-new)';
-          alert((isEdit ? 'Update' : 'Upload') + ' failed: ' + data.message);
+          alert((isEdit ? 'Update' : 'Upload') + ' failed: ' + (data.message || 'Unknown error'));
           setTimeout(function () {
             if (labelEl) labelEl.textContent = isEdit ? 'Save Changes' : 'Upload Project';
             deployBtn.disabled = false;
@@ -381,6 +393,7 @@
       .catch(function (err) {
         console.error(err);
         if (labelEl) labelEl.textContent = 'Error';
+        alert((isEdit ? 'Update' : 'Upload') + ' failed: ' + err.message);
         setTimeout(function () {
           if (labelEl) labelEl.textContent = isEdit ? 'Save Changes' : 'Upload Project';
           deployBtn.disabled = false;
@@ -396,7 +409,10 @@
         var id = btn.getAttribute('data-id');
         if (!confirm('Are you sure you want to delete this project?')) return;
 
-        fetch('/admin/delete_project/' + id, { method: 'POST' })
+        fetch('/admin/delete_project/' + id, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' }
+        })
           .then(function (response) { return response.json(); })
           .then(function (data) {
             if (data.status === 'success') {

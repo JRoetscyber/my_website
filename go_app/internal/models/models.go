@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/JRoetscyber/my_website/go_app/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -113,7 +114,7 @@ func (b BlogPost) CleanSummary() string {
 	if s == "" {
 		return ""
 	}
-	s = html.UnescapeString(s)
+	s = utils.CleanEscapedText(s)
 	s = html.UnescapeString(s)
 	return s
 }
@@ -124,9 +125,18 @@ func (b BlogPost) CleanTitle() string {
 	if s == "" {
 		return ""
 	}
-	s = html.UnescapeString(s)
+	s = utils.CleanEscapedText(s)
 	s = html.UnescapeString(s)
 	return s
+}
+
+// CleanContent returns Markdown content with corrupted quote/apostrophe entities
+// (such as I&#39;m or I&amp;#39;m) repaired while keeping raw angle brackets safe.
+func (b BlogPost) CleanContent() string {
+	if b.Content == "" {
+		return ""
+	}
+	return utils.CleanEscapedText(b.Content)
 }
 
 type FAQ struct {

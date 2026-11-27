@@ -33,7 +33,16 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 		dbPath = "jo4dev.db"
 	}
 
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	dsn := dbPath
+	if dbPath != ":memory:" && !strings.Contains(dbPath, "mode=memory") {
+		sep := "?"
+		if strings.Contains(dsn, "?") {
+			sep = "&"
+		}
+		dsn += sep + "_pragma=busy_timeout(10000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)"
+	}
+
+	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
@@ -103,11 +112,67 @@ func InitDB(cfg *config.Config) (*gorm.DB, error) {
 	// ALTER TABLE ADD COLUMN is idempotent and never rebuilds; it is safe on legacy data.
 	ensureSchemaColumns(db)
 
+	// Repair any historical HTML-entity corruption (e.g. "I&#39;m" / "I&amp;#39;m") in existing rows
+	healCorruptedEntities(db)
+
 	DB = db
 	SeedDefaults(db, cfg)
 
 	log.Printf("[DB] Database connected and migrated successfully (%s)", dbPath)
 	return db, nil
+}
+
+func healCorruptedEntities(db *gorm.DB) {
+	var posts []models.BlogPost
+	if err := db.Find(&posts).Error; err == nil {
+		for _, p := range posts {
+			cleanTitle := utils.CleanEscapedText(p.Title)
+			cleanSummary := utils.CleanEscapedText(p.Summary)
+			cleanContent := utils.CleanEscapedText(p.Content)
+			if cleanTitle != p.Title || cleanSummary != p.Summary || cleanContent != p.Content {
+				db.Model(&models.BlogPost{}).Where("id = ?", p.ID).Updates(map[string]interface{}{
+					"title":   cleanTitle,
+					"summary": cleanSummary,
+					"content": cleanContent,
+				})
+				log.Printf("[DB] Healed escaped character entities in blog post ID %d (%s)", p.ID, cleanTitle)
+			}
+		}
+	}
+
+	var projects []models.Project
+	if err := db.Find(&projects).Error; err == nil {
+		for _, pr := range projects {
+			cleanTitle := utils.CleanEscapedText(pr.Title)
+			cleanCat := utils.CleanEscapedText(pr.Category)
+			cleanDesc := utils.CleanEscapedText(pr.Description)
+			cleanTech := utils.CleanEscapedText(pr.TechStack)
+			if cleanTitle != pr.Title || cleanCat != pr.Category || cleanDesc != pr.Description || cleanTech != pr.TechStack {
+				db.Model(&models.Project{}).Where("id = ?", pr.ID).Updates(map[string]interface{}{
+					"title":       cleanTitle,
+					"category":    cleanCat,
+					"description": cleanDesc,
+					"tech_stack":  cleanTech,
+				})
+				log.Printf("[DB] Healed escaped character entities in project ID %d (%s)", pr.ID, cleanTitle)
+			}
+		}
+	}
+
+	var faqs []models.FAQ
+	if err := db.Find(&faqs).Error; err == nil {
+		for _, f := range faqs {
+			cleanQ := utils.CleanEscapedText(f.Question)
+			cleanA := utils.CleanEscapedText(f.Answer)
+			if cleanQ != f.Question || cleanA != f.Answer {
+				db.Model(&models.FAQ{}).Where("id = ?", f.ID).Updates(map[string]interface{}{
+					"question": cleanQ,
+					"answer":   cleanA,
+				})
+				log.Printf("[DB] Healed escaped character entities in FAQ ID %d", f.ID)
+			}
+		}
+	}
 }
 
 

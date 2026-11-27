@@ -165,7 +165,7 @@ double computeSSIM(const unsigned char* a, const unsigned char* b, int w, int h)
     return windows > 0 ? ssimTotal / windows : 0.0;
 }
 
-bool encodeWebP(const unsigned char* pixels, int w, int h,
+bool encodeWebP(const unsigned char* pixels, int w, int h, int ch,
                 float quality, int method, WebPMemoryWriter& writer) {
     WebPConfig config;
     if (!WebPConfigInit(&config)) return false;
@@ -181,6 +181,7 @@ bool encodeWebP(const unsigned char* pixels, int w, int h,
     config.filter_strength    = 35;       
     config.filter_type        = 1;
     config.thread_level       = 1;        
+    config.alpha_quality      = 90;
 
     if (!WebPValidateConfig(&config)) return false;
 
@@ -191,7 +192,10 @@ bool encodeWebP(const unsigned char* pixels, int w, int h,
     picture.height     = h;
     picture.use_argb   = 1;
 
-    if (!WebPPictureImportRGB(&picture, pixels, w * 3)) {
+    bool imported = (ch == 4)
+        ? (WebPPictureImportRGBA(&picture, pixels, w * 4) != 0)
+        : (WebPPictureImportRGB(&picture, pixels, w * 3) != 0);
+    if (!imported) {
         WebPPictureFree(&picture);
         return false;
     }
@@ -220,40 +224,49 @@ int main(int argc, char* argv[]) {
     }
     if (argc >= 5) method = std::max(0, std::min(6, atoi(argv[4])));
 
-    int width, height, channels;
-    unsigned char* raw = stbi_load(inputFile.c_str(), &width, &height, &channels, 3);
+    int width, height, origChannels;
+    if (!stbi_info(inputFile.c_str(), &width, &height, &origChannels)) return 1;
+    int targetCh = (origChannels == 4 || origChannels == 2) ? 4 : 3;
+
+    unsigned char* raw = stbi_load(inputFile.c_str(), &width, &height, &origChannels, targetCh);
     if (!raw) return 1; // Fails silently if image is broken
 
-    float complexity = analyseComplexity(raw, width, height, 3);
+    float complexity = analyseComplexity(raw, width, height, targetCh);
     if (autoQual) quality = smartQuality(complexity);
 
-    denoiseLight(raw, width, height, 3);
-
-    float sharpAmount = clamp(0.40f - (complexity / 8000.0f), 0.10f, 0.40f);
-    unsharpMask(raw, width, height, 3, sharpAmount);
+    if (targetCh == 3) {
+        denoiseLight(raw, width, height, 3);
+        float sharpAmount = clamp(0.40f - (complexity / 8000.0f), 0.10f, 0.40f);
+        unsharpMask(raw, width, height, 3, sharpAmount);
+    }
 
     WebPMemoryWriter writer;
-    if (!encodeWebP(raw, width, height, quality, method, writer)) return 1;
+    if (!encodeWebP(raw, width, height, targetCh, quality, method, writer)) {
+        stbi_image_free(raw);
+        return 1;
+    }
 
-    int decW, decH;
-    unsigned char* decoded = WebPDecodeRGB(writer.mem, writer.size, &decW, &decH);
+    if (targetCh == 3) {
+        int decW, decH;
+        unsigned char* decoded = WebPDecodeRGB(writer.mem, writer.size, &decW, &decH);
 
-    if (decoded) {
-        double ssim = computeSSIM(raw, decoded, width, height);
-        WebPFree(decoded);
+        if (decoded) {
+            double ssim = computeSSIM(raw, decoded, width, height);
+            WebPFree(decoded);
 
-        int retries = 0;
-        while (ssim < 0.945 && quality < 85 && retries < 4) {
-            WebPMemoryWriterClear(&writer);
-            quality += 4; 
-            encodeWebP(raw, width, height, quality, method, writer);
-            
-            decoded = WebPDecodeRGB(writer.mem, writer.size, &decW, &decH);
-            if (decoded) {
-                ssim = computeSSIM(raw, decoded, width, height);
-                WebPFree(decoded);
+            int retries = 0;
+            while (ssim < 0.945 && quality < 85 && retries < 4) {
+                WebPMemoryWriterClear(&writer);
+                quality += 4; 
+                encodeWebP(raw, width, height, targetCh, quality, method, writer);
+                
+                decoded = WebPDecodeRGB(writer.mem, writer.size, &decW, &decH);
+                if (decoded) {
+                    ssim = computeSSIM(raw, decoded, width, height);
+                    WebPFree(decoded);
+                }
+                retries++;
             }
-            retries++;
         }
     }
 
@@ -262,6 +275,8 @@ int main(int argc, char* argv[]) {
         fwrite(writer.mem, 1, writer.size, outFile);
         fclose(outFile);
     } else {
+        WebPMemoryWriterClear(&writer);
+        stbi_image_free(raw);
         return 1;
     }
 

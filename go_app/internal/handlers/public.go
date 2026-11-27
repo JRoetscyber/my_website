@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -412,7 +414,7 @@ func (h *PublicHandler) FAQList(c *fiber.Ctx) error {
 func (h *PublicHandler) FAQDetail(c *fiber.Ctx) error {
 	slug := c.Params("slug")
 	var faq models.FAQ
-	if err := h.DB.Where("slug = ?", slug).First(&faq).Error; err != nil {
+	if err := h.DB.Where("slug = ? AND is_published = ?", slug, true).First(&faq).Error; err != nil {
 		return c.Status(http.StatusNotFound).SendString("FAQ not found")
 	}
 
@@ -774,7 +776,7 @@ func (h *PublicHandler) WebPConverterPage(c *fiber.Ctx) error {
 // ConvertWebP API
 func (h *PublicHandler) ConvertWebP(c *fiber.Ctx) error {
 	file, err := c.FormFile("image")
-	if err != nil {
+	if err != nil || file == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No image file provided"})
 	}
 
@@ -787,30 +789,33 @@ func (h *PublicHandler) ConvertWebP(c *fiber.Ctx) error {
 		method = "6"
 	}
 
-	ext := strings.ToLower(filepath.Ext(file.Filename))
-	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".bmp" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Only JPG, PNG, and BMP formats are supported"})
+	ext := strings.ToLower(filepath.Ext(filepath.Base(file.Filename)))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".jfif" && ext != ".png" && ext != ".bmp" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Only JPG, JPEG, PNG, and BMP formats are supported"})
 	}
 
-	// Create upload folder
-	uploadDir := filepath.Join("static", "uploads", "webp")
-	if _, err := os.Stat("static"); os.IsNotExist(err) {
-		uploadDir = filepath.Join("../static", "uploads", "webp")
+	uploadDir := filepath.Join(resolveUploadsDir(), "webp")
+	if err := os.MkdirAll(uploadDir, 0750); err != nil {
+		log.Printf("[WEBP] Failed to create upload dir %s: %v", uploadDir, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to prepare WebP upload directory"})
 	}
-	_ = os.MkdirAll(uploadDir, 0750)
 
-	randSuffix := fmt.Sprintf("%d", time.Now().UnixNano()%100000)
-	baseName := strings.TrimSuffix(filepath.Base(file.Filename), ext)
-	inputFilename := fmt.Sprintf("%s_%s%s", baseName, randSuffix, ext)
-	outputFilename := fmt.Sprintf("%s_%s.webp", baseName, randSuffix)
+	token := make([]byte, 12)
+	_, _ = rand.Read(token)
+	randHex := hex.EncodeToString(token)
+	inputFilename := fmt.Sprintf("in_%s%s", randHex, ext)
+	outputFilename := fmt.Sprintf("webp_%s.webp", randHex)
 
 	inputPath := filepath.Join(uploadDir, inputFilename)
 	outputPath := filepath.Join(uploadDir, outputFilename)
 
 	if err := c.SaveFile(file, inputPath); err != nil {
+		log.Printf("[WEBP] Failed to save temp input %s: %v", inputPath, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save uploaded image"})
 	}
-	defer os.Remove(inputPath)
+	defer func() {
+		_ = os.Remove(inputPath)
+	}()
 
 	res, err := services.ConvertToWebP(inputPath, outputPath, quality, method)
 	if err != nil {

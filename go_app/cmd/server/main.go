@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/JRoetscyber/my_website/go_app/internal/middleware"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
 	"github.com/JRoetscyber/my_website/go_app/internal/services"
+	"github.com/JRoetscyber/my_website/go_app/internal/utils"
 	"github.com/JRoetscyber/my_website/go_app/internal/worker"
 	"github.com/flosch/pongo2/v6"
 	"github.com/goccy/go-json"
@@ -111,7 +113,7 @@ var routeMap = map[string]string{
 }
 
 // AssetVersion is appended to static asset URLs for deterministic cache-busting
-const AssetVersion = "20261122v2"
+const AssetVersion = "20261127v1"
 
 func registerFilter(name string, fn pongo2.FilterFunction) {
 	if err := pongo2.RegisterFilter(name, fn); err != nil {
@@ -126,8 +128,9 @@ func initPongo2Filters() {
 		buf.Reset()
 		defer mdBufferPool.Put(buf)
 
-		if err := mdParser.Convert([]byte(in.String()), buf); err != nil {
-			return pongo2.AsSafeValue(in.String()), nil
+		cleanedInput := utils.CleanEscapedText(in.String())
+		if err := mdParser.Convert([]byte(cleanedInput), buf); err != nil {
+			return pongo2.AsSafeValue(cleanedInput), nil
 		}
 		return pongo2.AsSafeValue(buf.String()), nil
 	})
@@ -337,8 +340,8 @@ func main() {
 		Views:        engine,
 		AppName:      "JO4 Dev High-Performance Go Fiber Server",
 		BodyLimit:    32 * 1024 * 1024, // 32MB max upload
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  60 * time.Second, // Allow multi-MB image uploads over residential connections
+		WriteTimeout: 60 * time.Second,
 		ProxyHeader:  fiber.HeaderXForwardedFor,
 		JSONEncoder:  json.Marshal,
 		JSONDecoder:  json.Unmarshal,
@@ -386,13 +389,24 @@ func main() {
 	// Page cache for lightning-fast Core Web Vitals (<1ms TTFB, zero DB load for crawlers).
 	// Uses Redis as the storage backend when available — avoids Go-level sync.Map mutex contention
 	// that degrades performance under high concurrency (>100 concurrent requests).
+	// Atomic generation counter allows O(1) instant busting of the Fiber full-page cache
+	// whenever admin publishes/edits blogs, projects, FAQs, services, or page content.
+	var pageCacheGen atomic.Uint64
+	pageCacheGen.Store(1)
+
 	pageCacheConfig := fiberCache.Config{
 		Next: func(c *fiber.Ctx) bool {
 			if c.Method() != fiber.MethodGet {
 				return true
 			}
+			// Never cache responses for authenticated admin sessions (prevents caching unpublished draft previews)
+			if c.Cookies("jo4_session") != "" {
+				return true
+			}
 			path := c.Path()
 			if strings.HasPrefix(path, "/admin") ||
+				strings.HasPrefix(path, "/static") ||
+				strings.HasPrefix(path, "/fonts") ||
 				strings.HasPrefix(path, "/login") ||
 				strings.HasPrefix(path, "/logout") ||
 				strings.HasPrefix(path, "/api") ||
@@ -402,6 +416,9 @@ func main() {
 				return true
 			}
 			return false
+		},
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return fmt.Sprintf("pgen%d:%s", pageCacheGen.Load(), c.Path())
 		},
 		Expiration:   10 * time.Minute,
 		CacheControl: true,
@@ -465,19 +482,29 @@ func main() {
 			staticDir = "./static"
 		}
 	}
+	// Ensure upload directories exist and verify write permissions at startup using os.Root containment
+	if staticRoot, rootErr := os.OpenRoot(filepath.Clean(staticDir)); rootErr == nil {
+		if mkErr := staticRoot.MkdirAll("uploads/webp", 0750); mkErr != nil {
+			log.Printf("[STORAGE] WARNING: Uploads directory is not writable (%v) — check volume ownership!", mkErr)
+		}
+		_ = staticRoot.Close()
+	}
+
 	app.Static("/static", staticDir, fiber.Static{
-		Compress:      true,
+		Compress:      false,
 		ByteRange:     true,
 		Browse:        false,
-		CacheDuration: 7 * 24 * time.Hour,
+		CacheDuration: 10 * time.Second,
+		MaxAge:        7 * 24 * 3600,
 	})
 
 	// Self-hosted fonts route (1 year immutable cache)
 	app.Static("/fonts", filepath.Join(staticDir, "fonts"), fiber.Static{
-		Compress:      true,
+		Compress:      false,
 		ByteRange:     true,
 		Browse:        false,
-		CacheDuration: 365 * 24 * time.Hour,
+		CacheDuration: 30 * time.Second,
+		MaxAge:        365 * 24 * 3600,
 	})
 
 	// Favicon and root assets
@@ -505,6 +532,9 @@ func main() {
 	publicHandler := handlers.NewPublicHandler(db, cfg, cacheManager, workerPool)
 	authHandler := handlers.NewAuthHandler(db, cfg)
 	adminHandler := handlers.NewAdminHandler(db, cfg, cacheManager, workerPool)
+	adminHandler.PageCacheFlush = func() {
+		pageCacheGen.Add(1)
+	}
 	orderHandler := handlers.NewOrderHandler(db, cfg, adminHandler)
 	progressiveHandler := handlers.NewProgressiveHandler(db, cacheManager)
 
@@ -706,6 +736,7 @@ func main() {
 					urls = append(urls, fmt.Sprintf("%s/sitemap.xml", baseURL))
 
 					cacheManager.Invalidate(context.Background(), "blog:*", "page:home:*")
+					pageCacheGen.Add(1)
 
 					if workerPool != nil {
 						workerPool.Enqueue(func(ctx context.Context) {

@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/JRoetscyber/my_website/go_app/internal/database"
 	"github.com/JRoetscyber/my_website/go_app/internal/models"
@@ -89,9 +88,7 @@ func (h *AdminHandler) SaveContent(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to save content: " + err.Error()})
 	}
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "pagecontent:*", "page:home:*")
-	}
+	h.flushCaches(c.Context(), "pagecontent:*", "page:home:*")
 
 	return c.JSON(fiber.Map{
 		"status":  "success",
@@ -107,9 +104,7 @@ func (h *AdminHandler) ResetContent(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Failed to reset page content"})
 	}
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "pagecontent:*", "page:home:*")
-	}
+	h.flushCaches(c.Context(), "pagecontent:*", "page:home:*")
 
 	return c.JSON(fiber.Map{
 		"status":  "success",
@@ -118,33 +113,18 @@ func (h *AdminHandler) ResetContent(c *fiber.Ctx) error {
 	})
 }
 
-// UploadAvatar handles profile headshot uploads for the About page.
+// UploadAvatar handles profile headshot uploads for the About page (strips all EXIF/GPS/XMP metadata).
 func (h *AdminHandler) UploadAvatar(c *fiber.Ctx) error {
-	file, err := c.FormFile("avatar")
-	if err != nil || file == nil {
+	mediaPath, uploaded, err := saveUploadedImage(c, "avatar", "avatar")
+	if !uploaded {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "No image file provided"})
 	}
-
-	ext := strings.ToLower(filepath.Ext(filepath.Base(file.Filename)))
-	switch ext {
-	case ".png", ".jpg", ".jpeg", ".webp":
-	default:
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Only PNG, JPG, JPEG, or WEBP images are allowed"})
-	}
-
-	uploadDir := resolveUploadsDir()
-	if err := os.MkdirAll(uploadDir, 0750); err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to create uploads directory"})
-	}
-
-	safeName := fmt.Sprintf("avatar_%d%s", time.Now().Unix(), ext)
-	dest := filepath.Join(uploadDir, safeName)
-	if err := c.SaveFile(file, dest); err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to save avatar file"})
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{
 		"status": "success",
-		"url":    "/static/uploads/" + safeName,
+		"url":    mediaPath,
 	})
 }

@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/JRoetscyber/my_website/go_app/internal/utils"
 )
 
 type WebPConversionResult struct {
@@ -51,9 +53,9 @@ func ConvertToWebP(inputPath, outputPath, quality, method string) (*WebPConversi
 		// #nosec G204 -- converterBin is resolved from fixed allow-listed paths and args/paths are strictly validated above
 		cmd = exec.Command(converterBin, cleanIn, cleanOut, q, m)
 	} else if strings.Contains(converterBin, "cwebp") {
-		// Google cwebp fallback: cwebp -q <quality> -m <method> <input> -o <output>
+		// Google cwebp fallback: cwebp -metadata none -q <quality> -m <method> <input> -o <output>
 		// #nosec G204 -- binary is fixed literal "cwebp" and q/m/paths are strictly validated above
-		cmd = exec.Command("cwebp", "-q", q, "-m", m, cleanIn, "-o", cleanOut)
+		cmd = exec.Command("cwebp", "-metadata", "none", "-q", q, "-m", m, cleanIn, "-o", cleanOut)
 	} else {
 		return nil, errors.New("no WebP encoder found (neither custom converter nor cwebp is available on host)")
 	}
@@ -63,8 +65,19 @@ func ConvertToWebP(inputPath, outputPath, quality, method string) (*WebPConversi
 		return nil, fmt.Errorf("webp conversion failed: %v (output: %s)", err, string(output))
 	}
 
+	// Guarantee 100% of EXIF/XMP/ICCP chunks are stripped from the output WebP container using os.Root containment
+	if outRoot, rootErr := os.OpenRoot(filepath.Dir(cleanOut)); rootErr == nil {
+		outName := filepath.Base(cleanOut)
+		if rawOut, readErr := outRoot.ReadFile(outName); readErr == nil {
+			if strippedOut, stripErr := utils.StripWebPMetadata(rawOut); stripErr == nil {
+				_ = outRoot.WriteFile(outName, strippedOut, 0600)
+			}
+		}
+		_ = outRoot.Close()
+	}
+
 	// Verify output exists
-	outInfo, err := os.Stat(outputPath)
+	outInfo, err := os.Stat(cleanOut)
 	if err != nil || outInfo.Size() == 0 {
 		return nil, errors.New("converted webp file is missing or 0 bytes")
 	}

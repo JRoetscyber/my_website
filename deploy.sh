@@ -102,6 +102,12 @@ docker compose build "$TARGET_SERVICE"
 echo "🚀 Step 2/5: Launching redis & $TARGET_SERVICE..."
 docker compose up -d redis "$TARGET_SERVICE"
 
+# Guarantee persistent Docker volumes (/app/data and /app/static/uploads) are owned by non-root appuser
+echo "🔐 Ensuring volume write permissions for appuser on /app/data & /app/static/uploads..."
+docker compose exec -u 0 -T "$TARGET_SERVICE" mkdir -p /app/data /app/static/uploads /app/static/uploads/webp
+docker compose exec -u 0 -T "$TARGET_SERVICE" chown -R appuser:appgroup /app/data /app/static/uploads
+docker compose exec -u 0 -T "$TARGET_SERVICE" chmod -R u+rwX,g+rX /app/data /app/static/uploads
+
 # Auto-restore existing database if container has 0 blog posts and backup is available
 BLOG_COUNT=$(docker compose exec -T "$TARGET_SERVICE" sqlite3 /app/data/jo4dev.db "SELECT count(*) FROM blog_posts;" 2>/dev/null || echo "0")
 if [ "$BLOG_COUNT" -eq 0 ]; then

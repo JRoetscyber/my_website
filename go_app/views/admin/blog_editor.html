@@ -1,6 +1,6 @@
 {% extends "admin/admin.html" %}
 
-{% block admin_title %}{% if is_edit %}Edit: {{ post.Title }} — Admin{% else %}New Article — Admin{% endif %}{% endblock %}
+{% block admin_title %}{% if is_edit %}Edit: {{ post.CleanTitle }} — Admin{% else %}New Article — Admin{% endif %}{% endblock %}
 {% block admin_heading %}{% if is_edit %}Edit Article{% else %}Compose Article{% endif %}{% endblock %}
 
 {% block admin_head %}
@@ -261,8 +261,8 @@
 
         <!-- Editor Modes -->
         <div id="editorSingleWriteContainer">
-          <textarea class="editor-textarea-full" id="blogContent" name="content" required
-                    placeholder="Compose with GitHub Flavored Markdown (headings, code blocks, tables, task lists, and images)...">{{ post.Content }}</textarea>
+          <textarea class="editor-textarea-full" id="blogContent" name="content"
+                    placeholder="Compose with GitHub Flavored Markdown (headings, code blocks, tables, task lists, and images)...">{{ post.CleanContent }}</textarea>
         </div>
 
         <div id="editorSplitContainer" class="split-editor-grid" style="display: none;">
@@ -297,13 +297,13 @@
           </div>
         </div>
         <p class="text-secondary mb-3" style="font-size: 0.78rem; line-height: 1.5;">
-          Drop images here or click to browse. Easily insert them anywhere in your markdown.
+          Drop images here, click to browse, or paste screenshots directly into the editor (metadata is stripped automatically).
         </p>
 
         <div class="image-drop-area" id="inlineImageDropzone">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.8" class="mb-2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
           <div style="font-weight: 600; font-size: 0.88rem;">Drag & drop image here or <span class="text-accent" style="text-decoration: underline;">browse</span></div>
-          <small class="text-secondary" style="font-size: 0.72rem;">Supports PNG, JPG, JPEG, WEBP, GIF (Max 10MB)</small>
+          <small class="text-secondary" style="font-size: 0.72rem;">Supports PNG, JPG, JPEG, WEBP, GIF (Max 25MB · EXIF/GPS stripped)</small>
           <input type="file" id="inlineImageInput" hidden accept="image/*">
         </div>
 
@@ -385,18 +385,16 @@
             <div class="file-drop-zone" id="coverMediaDropzone" role="button" tabindex="0">
               <svg viewBox="0 0 24 24"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><polyline points="16 5 21 10 16 15"/><line x1="21" y1="10" x2="9" y2="10"/></svg>
               <div class="file-drop-label"><strong>Click to select</strong> or drag cover</div>
-              <div class="file-drop-sub">JPG, PNG or WEBP (Max 10MB)</div>
+              <div class="file-drop-sub">JPG, PNG, WEBP or GIF (Max 25MB · Metadata stripped)</div>
               <input type="file" id="coverMedia" name="media" hidden accept="image/*">
             </div>
             <input type="hidden" id="mediaPathHidden" name="media_path" value="{{ post.MediaPath }}">
             <div id="coverFilePreview" class="file-drop-filename" style="{% if post.MediaPath %}display:block;{% endif %}">
               {% if post.MediaPath %}Current: {{ post.MediaPath }}{% endif %}
             </div>
-            {% if post.DisplayMediaPath %}
-            <div class="mt-2" id="currentCoverThumb" style="border-radius: 8px; overflow: hidden; max-height: 140px; border: 1px solid var(--border-subtle, rgba(0,0,0,0.1));">
-              <img src="{{ post.DisplayMediaPath }}" alt="Cover Preview" style="width: 100%; height: 140px; object-fit: cover;">
+            <div class="mt-2" id="currentCoverThumb" style="border-radius: 8px; overflow: hidden; max-height: 140px; border: 1px solid var(--border-subtle, rgba(0,0,0,0.1)); {% if not post.DisplayMediaPath %}display: none;{% endif %}">
+              <img id="currentCoverImg" src="{% if post.DisplayMediaPath %}{{ post.DisplayMediaPath }}{% endif %}" alt="Cover Preview" style="width: 100%; height: 140px; object-fit: cover;">
             </div>
-            {% endif %}
           </div>
         </div>
       </div>
@@ -479,33 +477,121 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Save as Draft quick button
-  if (btnSaveDraft) {
-    btnSaveDraft.addEventListener('click', function() {
-      if (blogStatus) blogStatus.value = 'draft';
-      const notifyCheck = document.getElementById('notifySearchEngines');
-      if (notifyCheck) notifyCheck.checked = false;
-      blogForm.submit();
+  // Ensure split view content is synced and non-empty before form submission
+  if (blogForm) {
+    blogForm.addEventListener('submit', function(e) {
+      if (currentView === 'split' && splitBlogContent) {
+        blogContent.value = splitBlogContent.value;
+      }
+      if (!blogContent.value.trim()) {
+        e.preventDefault();
+        setView('write');
+        blogContent.focus();
+        alert('Please write some article content before saving.');
+      }
     });
   }
 
-  // Cover Image Dropzone
+  // Save as Draft quick button
+  if (btnSaveDraft) {
+    btnSaveDraft.addEventListener('click', function() {
+      if (currentView === 'split' && splitBlogContent) {
+        blogContent.value = splitBlogContent.value;
+      }
+      if (blogStatus) blogStatus.value = 'draft';
+      const notifyCheck = document.getElementById('notifySearchEngines');
+      if (notifyCheck) notifyCheck.checked = false;
+      blogForm.requestSubmit ? blogForm.requestSubmit() : blogForm.submit();
+    });
+  }
+
+  // Cover Image Dropzone (click + drag-and-drop + immediate sanitized upload)
   const coverDropzone = document.getElementById('coverMediaDropzone');
   const coverInput = document.getElementById('coverMedia');
   const coverPreview = document.getElementById('coverFilePreview');
+  const mediaPathHidden = document.getElementById('mediaPathHidden');
+  const currentCoverThumb = document.getElementById('currentCoverThumb');
+  const currentCoverImg = document.getElementById('currentCoverImg');
+
+  async function uploadCoverFile(file) {
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      coverPreview.textContent = 'Error: Cover image exceeds 25MB limit.';
+      coverPreview.style.display = 'block';
+      return;
+    }
+    coverPreview.textContent = 'Uploading & stripping metadata...';
+    coverPreview.style.display = 'block';
+
+    const fd = new FormData();
+    fd.append('image', file);
+    try {
+      const resp = await fetch('/admin/api/upload-image', {
+        method: 'POST',
+        body: fd,
+        headers: { 'Accept': 'application/json' }
+      });
+      const rawText = await resp.text();
+      let data = null;
+      try { data = JSON.parse(rawText); } catch (_) {}
+
+      if (resp.status === 401) {
+        coverPreview.textContent = 'Session expired — open /login in a new tab to sign back in.';
+        return;
+      }
+      if (!resp.ok || !data || data.status !== 'success') {
+        coverPreview.textContent = 'Cover upload failed: ' + ((data && data.message) || ('HTTP ' + resp.status));
+        return;
+      }
+      if (mediaPathHidden) mediaPathHidden.value = data.url;
+      coverInput.value = '';
+      coverPreview.textContent = 'Uploaded clean cover: ' + data.filename;
+      if (currentCoverImg && currentCoverThumb) {
+        currentCoverImg.src = data.url;
+        currentCoverThumb.style.display = 'block';
+      }
+    } catch (err) {
+      console.error(err);
+      // Leave file attached to coverInput so standard multipart form submit can still upload it
+      coverPreview.textContent = 'Selected: ' + file.name + ' (will upload on save)';
+    }
+  }
 
   if (coverDropzone && coverInput) {
-    coverDropzone.addEventListener('click', () => coverInput.click());
+    coverInput.addEventListener('click', (e) => e.stopPropagation());
+    coverDropzone.addEventListener('click', (e) => {
+      if (e.target === coverInput) return;
+      coverInput.click();
+    });
     coverDropzone.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         coverInput.click();
       }
     });
+    ['dragenter', 'dragover'].forEach(ev => {
+      coverDropzone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        coverDropzone.classList.add('drag-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+      coverDropzone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        coverDropzone.classList.remove('drag-over');
+      });
+    });
+    coverDropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+        try { coverInput.files = e.dataTransfer.files; } catch (_) {}
+        uploadCoverFile(e.dataTransfer.files[0]);
+      }
+    });
     coverInput.addEventListener('change', function() {
       if (this.files && this.files[0]) {
-        coverPreview.textContent = 'Selected: ' + this.files[0].name;
-        coverPreview.style.display = 'block';
+        uploadCoverFile(this.files[0]);
       }
     });
   }
@@ -652,7 +738,11 @@ document.addEventListener('DOMContentLoaded', function() {
       return '<p class="text-secondary" style="font-style: italic;">No content composed yet. Type in Markdown on the Write or Split tab.</p>';
     }
 
-    let src = md.replace(/\r\n/g, '\n');
+    let src = md.replace(/\r\n/g, '\n')
+      .replace(/&amp;#(0?39|x27);/gi, "'")
+      .replace(/&#(0?39|x27);/gi, "'")
+      .replace(/&amp;quot;/gi, '"')
+      .replace(/&#(0?34|x22);/gi, '"');
 
     // Code blocks
     const codeBlocks = [];
@@ -813,7 +903,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const galleryList = document.getElementById('uploadedGalleryList');
 
   if (inlineDropzone && inlineInput) {
-    inlineDropzone.addEventListener('click', () => inlineInput.click());
+    inlineInput.addEventListener('click', (e) => e.stopPropagation());
+    inlineDropzone.addEventListener('click', (e) => {
+      if (e.target === inlineInput) return;
+      inlineInput.click();
+    });
 
     // Drag-and-drop events
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -840,20 +934,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     inlineInput.addEventListener('change', function() {
       if (this.files && this.files.length) {
-        handleImageUpload(this.files[0]);
+        const chosen = this.files[0];
+        this.value = '';
+        handleImageUpload(chosen);
       }
     });
   }
 
+  // Allow pasting screenshots (Ctrl+V) or dropping image files directly onto the Markdown editor
+  [blogContent, splitBlogContent].forEach(ta => {
+    if (!ta) return;
+    ta.addEventListener('paste', (e) => {
+      if (!e.clipboardData || !e.clipboardData.items) return;
+      for (const item of e.clipboardData.items) {
+        if (item.type && item.type.startsWith('image/')) {
+          const pastedFile = item.getAsFile();
+          if (pastedFile) {
+            e.preventDefault();
+            handleImageUpload(pastedFile);
+            return;
+          }
+        }
+      }
+    });
+    ta.addEventListener('dragover', (e) => {
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        e.preventDefault();
+      }
+    });
+    ta.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+        e.preventDefault();
+        handleImageUpload(e.dataTransfer.files[0]);
+      }
+    });
+  });
+
   async function handleImageUpload(file) {
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      showStatus('Error: Image file exceeds 10MB limit.', 'danger');
+    if (file.size > 25 * 1024 * 1024) {
+      showStatus('Error: Image file exceeds 25MB limit.', 'danger');
       return;
     }
 
-    showStatus('Uploading image...', 'info');
+    showStatus('Uploading & stripping metadata...', 'info');
 
     const formData = new FormData();
     formData.append('image', file);
@@ -867,13 +992,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
 
-      const data = await resp.json();
-      if (!resp.ok || data.status !== 'success') {
-        showStatus('Upload failed: ' + (data.message || 'Unknown server error'), 'danger');
+      const rawText = await resp.text();
+      let data = null;
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {}
+
+      if (resp.status === 401) {
+        showStatus('Session expired — please open <a href="/login" target="_blank">/login</a> in a new tab to sign back in without losing your draft.', 'danger');
+        return;
+      }
+      if (resp.status === 413) {
+        showStatus('Upload failed: Image file exceeds server body size limit.', 'danger');
+        return;
+      }
+      if (!resp.ok || !data || data.status !== 'success') {
+        showStatus('Upload failed: ' + ((data && data.message) || ('HTTP ' + resp.status)), 'danger');
         return;
       }
 
-      showStatus(`Image uploaded! Route: <code>${data.url}</code>`, 'success');
+      showStatus(`Image uploaded (metadata stripped)! Route: <code>${data.url}</code>`, 'success');
 
       // Add to session gallery
       galleryContainer.style.display = 'block';

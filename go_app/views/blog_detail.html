@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ post.Title }} — JO4 Dev Insights{% endblock %}
+{% block title %}{{ post.CleanTitle }} — JO4 Dev Insights{% endblock %}
 
-{% block meta_description %}{{ post.Summary|striptags|truncate:145 }}{% endblock %}
+{% block meta_description %}{{ post.CleanSummary|striptags|truncate:145 }}{% endblock %}
 
 {% block json_ld_schema %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "{{ post.Title }}",
-    "description": "{{ post.Summary|striptags|truncate:145 }}",
+    "headline": "{{ post.CleanTitle }}",
+    "description": "{{ post.CleanSummary|striptags|truncate:145 }}",
     "datePublished": "{{ post.CreatedAt|date:"2006-01-02T15:04:05Z07:00" }}",
     "dateModified": "{{ post.UpdatedAt|date:"2006-01-02T15:04:05Z07:00" }}",
     "author": {
@@ -46,7 +46,7 @@
 
   <div class="container-narrow">
     <div class="blog-post-content">
-      {{ post.Content | markdown | safe }}
+      {{ post.CleanContent | markdown | safe }}
     </div>
 
     <div class="blog-post-footer">
@@ -54,7 +54,7 @@
         <span>Share this article:</span>
         <div class="share-links">
           <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://jo4.co.za/blog/{{ post.Slug }}" target="_blank" rel="noopener">LinkedIn</a>
-          <a href="https://twitter.com/intent/tweet?url=https://jo4.co.za/blog/{{ post.Slug }}&text={{ post.Title }}" target="_blank" rel="noopener">Twitter</a>
+          <a href="https://twitter.com/intent/tweet?url=https://jo4.co.za/blog/{{ post.Slug }}&text={{ post.CleanTitle|urlencode }}" target="_blank" rel="noopener">Twitter</a>
         </div>
       </div>
       

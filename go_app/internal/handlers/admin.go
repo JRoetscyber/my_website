@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -29,10 +30,11 @@ import (
 )
 
 type AdminHandler struct {
-	DB     *gorm.DB
-	Cfg    *config.Config
-	Cache  *cache.Manager
-	Worker *worker.Pool
+	DB             *gorm.DB
+	Cfg            *config.Config
+	Cache          *cache.Manager
+	Worker         *worker.Pool
+	PageCacheFlush func()
 }
 
 func NewAdminHandler(db *gorm.DB, cfg *config.Config, cm *cache.Manager, pool *worker.Pool) *AdminHandler {
@@ -42,6 +44,62 @@ func NewAdminHandler(db *gorm.DB, cfg *config.Config, cm *cache.Manager, pool *w
 		Cache:  cm,
 		Worker: pool,
 	}
+}
+
+func (h *AdminHandler) flushCaches(ctx context.Context, patterns ...string) {
+	if h.Cache != nil {
+		h.Cache.Invalidate(ctx, patterns...)
+	}
+	if h.PageCacheFlush != nil {
+		h.PageCacheFlush()
+	}
+}
+
+func wantsJSONResponse(c *fiber.Ctx) bool {
+	return c.XHR() ||
+		strings.Contains(c.Get("Accept"), "application/json") ||
+		strings.Contains(c.Get("Content-Type"), "application/json") ||
+		c.Method() == fiber.MethodDelete
+}
+
+func ensureUniqueBlogSlug(db *gorm.DB, baseSlug string, excludeID uint) string {
+	if baseSlug == "" {
+		baseSlug = "untitled"
+	}
+	candidate := baseSlug
+	for i := 2; i <= 100; i++ {
+		var count int64
+		q := db.Model(&models.BlogPost{}).Where("slug = ?", candidate)
+		if excludeID > 0 {
+			q = q.Where("id != ?", excludeID)
+		}
+		q.Count(&count)
+		if count == 0 {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s-%d", baseSlug, i)
+	}
+	return fmt.Sprintf("%s-%d", baseSlug, time.Now().Unix())
+}
+
+func ensureUniqueProjectSlug(db *gorm.DB, baseSlug string, excludeID uint) string {
+	if baseSlug == "" {
+		baseSlug = "project"
+	}
+	candidate := baseSlug
+	for i := 2; i <= 100; i++ {
+		var count int64
+		q := db.Model(&models.Project{}).Where("slug = ?", candidate)
+		if excludeID > 0 {
+			q = q.Where("id != ?", excludeID)
+		}
+		q.Count(&count)
+		if count == 0 {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s-%d", baseSlug, i)
+	}
+	return fmt.Sprintf("%s-%d", baseSlug, time.Now().Unix())
 }
 
 // buildAdminContext provides unified context for the admin sidebar badges and system status
@@ -65,11 +123,11 @@ func (h *AdminHandler) buildAdminContext(c *fiber.Ctx, activePage string, extra 
 
 	base := fiber.Map{
 		"active_page":    activePage,
-		"leads":          make([]models.Lead, leadsCount),
-		"projects":       make([]models.Project, projectsCount),
-		"blogs":          make([]models.BlogPost, blogsCount),
-		"faqs":           make([]models.FAQ, faqsCount),
-		"services":       make([]models.Service, servicesCount),
+		"leads":          []models.Lead{},
+		"projects":       []models.Project{},
+		"blogs":          []models.BlogPost{},
+		"faqs":           []models.FAQ{},
+		"services":       []models.Service{},
 		"leads_count":    leadsCount,
 		"projects_count": projectsCount,
 		"blogs_count":    blogsCount,
@@ -538,20 +596,26 @@ func (h *AdminHandler) SaveProject(c *fiber.Ctx) error {
 		}
 	}
 
-	slug := utils.MakeSlug(title)
+	slug := ensureUniqueProjectSlug(h.DB, utils.MakeSlug(title), 0)
 
-	file, err := c.FormFile("media")
-	if err != nil {
-		file, err = c.FormFile("media_file")
-	}
-	if err == nil && file != nil {
-		uploadDir := resolveUploadsDir()
-		_ = os.MkdirAll(uploadDir, 0750)
-		safeName := filepath.Base(file.Filename)
-		dest := filepath.Join(uploadDir, safeName)
-		if err := c.SaveFile(file, dest); err == nil {
-			mediaPath = "/static/uploads/" + safeName
+	if path, uploaded, err := saveUploadedImage(c, "media", "project"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Project image upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": err.Error()})
+			}
+			return c.Redirect("/admin/projects")
 		}
+		mediaPath = path
+	} else if path, uploaded, err := saveUploadedImage(c, "media_file", "project"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Project media_file upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": err.Error()})
+			}
+			return c.Redirect("/admin/projects")
+		}
+		mediaPath = path
 	}
 
 	project := models.Project{
@@ -568,13 +632,17 @@ func (h *AdminHandler) SaveProject(c *fiber.Ctx) error {
 		SEO:         seoPtr,
 	}
 
-	h.DB.Create(&project)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
+	if err := h.DB.Create(&project).Error; err != nil {
+		log.Printf("[DB] Failed to create project: %v", err)
+		if wantsJSONResponse(c) {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to save project: " + err.Error()})
+		}
+		return c.Redirect("/admin/projects")
 	}
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+	h.flushCaches(c.Context(), "project:*", "page:home:*", "dashboard:*")
+
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "Project deployed successfully",
@@ -593,10 +661,10 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 
 	if title := strings.TrimSpace(c.FormValue("project_title")); title != "" {
 		project.Title = title
-		project.Slug = utils.MakeSlug(title)
+		project.Slug = ensureUniqueProjectSlug(h.DB, utils.MakeSlug(title), project.ID)
 	} else if title := strings.TrimSpace(c.FormValue("title")); title != "" {
 		project.Title = title
-		project.Slug = utils.MakeSlug(title)
+		project.Slug = ensureUniqueProjectSlug(h.DB, utils.MakeSlug(title), project.ID)
 	}
 	if cat := strings.TrimSpace(c.FormValue("project_tag")); cat != "" {
 		project.Category = cat
@@ -629,27 +697,37 @@ func (h *AdminHandler) UpdateProject(c *fiber.Ctx) error {
 		}
 	}
 
-	file, err := c.FormFile("media")
-	if err != nil {
-		file, err = c.FormFile("media_file")
-	}
-	if err == nil && file != nil {
-		uploadDir := resolveUploadsDir()
-		_ = os.MkdirAll(uploadDir, 0750)
-		safeName := filepath.Base(file.Filename)
-		dest := filepath.Join(uploadDir, safeName)
-		if err := c.SaveFile(file, dest); err == nil {
-			project.MediaPath = "/static/uploads/" + safeName
+	if path, uploaded, err := saveUploadedImage(c, "media", "project"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Project update image upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": err.Error()})
+			}
+			return c.Redirect("/admin/projects")
 		}
+		project.MediaPath = path
+	} else if path, uploaded, err := saveUploadedImage(c, "media_file", "project"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Project update media_file upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": err.Error()})
+			}
+			return c.Redirect("/admin/projects")
+		}
+		project.MediaPath = path
 	}
 
-	h.DB.Save(&project)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
+	if err := h.DB.Save(&project).Error; err != nil {
+		log.Printf("[DB] Failed to update project %d: %v", project.ID, err)
+		if wantsJSONResponse(c) {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to update project: " + err.Error()})
+		}
+		return c.Redirect("/admin/projects")
 	}
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+	h.flushCaches(c.Context(), "project:*", "page:home:*", "dashboard:*")
+
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "Project updated successfully",
@@ -663,11 +741,9 @@ func (h *AdminHandler) DeleteProject(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.Project{}, id)
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "project:*", "page:home:*", "dashboard:*")
-	}
+	h.flushCaches(c.Context(), "project:*", "page:home:*", "dashboard:*")
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "Project deleted successfully",
@@ -712,119 +788,85 @@ func (h *AdminHandler) EditBlogPage(c *fiber.Ctx) error {
 	}))
 }
 
-// saveUploadedImage validates and securely saves uploaded images.
-// Hardened against IDOR, path traversal (CWE-22), malicious file extensions (CWE-434),
-// and MIME sniffing polyglots by validating extensions, magic bytes, and generating unguessable random filenames.
-func saveUploadedImage(c *fiber.Ctx, formKey, prefix string) (string, error) {
+// saveUploadedImage validates, strips 100% of image metadata (EXIF, GPS, XMP, IPTC, ICC,
+// PNG text chunks, GIF comments, and trailing bytes), and saves a clean file with a random
+// non-enumerable filename. Returns (publicURL, wasFileProvided, error).
+func saveUploadedImage(c *fiber.Ctx, formKey, prefix string) (string, bool, error) {
 	file, err := c.FormFile(formKey)
-	if err != nil || file == nil {
-		return "", err
+	if err != nil || file == nil || file.Size == 0 {
+		return "", false, nil
 	}
 
-	// 1. Max size enforcement (10MB)
-	if file.Size > 10*1024*1024 {
-		return "", fmt.Errorf("file size exceeds 10MB limit")
+	if file.Size > utils.MaxImageBytes {
+		return "", true, fmt.Errorf("image size exceeds %dMB limit", utils.MaxImageBytes/(1024*1024))
 	}
 
-	// 2. Strict file extension whitelist (strictly no SVG, HTML, or executable scripts)
-	ext := strings.ToLower(filepath.Ext(filepath.Base(file.Filename)))
-	switch ext {
-	case ".jpg", ".jpeg", ".jfif", ".png", ".webp", ".gif":
-	default:
-		return "", fmt.Errorf("only JPG, JPEG, JFIF, PNG, WEBP, or GIF images are permitted")
-	}
-
-	// 3. Inspect magic bytes for true image content validation (prevent content sniffing polyglots and script injection)
 	src, err := file.Open()
 	if err != nil {
-		return "", fmt.Errorf("failed to open file stream: %w", err)
+		return "", true, fmt.Errorf("failed to open uploaded file stream: %w", err)
 	}
 	defer func() {
 		_ = src.Close()
 	}()
 
-	buf := make([]byte, 512)
-	n, readErr := src.Read(buf)
-	if readErr != nil && readErr != io.EOF {
-		return "", fmt.Errorf("failed to read file header: %w", readErr)
+	rawBytes, err := io.ReadAll(io.LimitReader(src, utils.MaxImageBytes+1))
+	if err != nil {
+		return "", true, fmt.Errorf("failed to read uploaded image: %w", err)
 	}
 
-	mimeType := http.DetectContentType(buf[:n])
-	isValidImage := false
-	switch mimeType {
-	case "image/jpeg", "image/png", "image/webp", "image/gif":
-		isValidImage = true
-	default:
-		// Fallback check standard binary magic byte signatures in case DetectContentType returned application/octet-stream
-		if n >= 3 && buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
-			isValidImage = true // JPEG / JFIF
-		} else if n >= 8 && string(buf[:8]) == "\x89PNG\r\n\x1a\n" {
-			isValidImage = true // PNG
-		} else if n >= 4 && string(buf[:4]) == "GIF8" {
-			isValidImage = true // GIF
-		} else if n >= 12 && string(buf[:4]) == "RIFF" && string(buf[8:12]) == "WEBP" {
-			isValidImage = true // WebP
-		}
+	cleanBytes, cleanExt, err := utils.SanitizeAndStripMetadata(rawBytes, file.Filename)
+	if err != nil {
+		return "", true, err
 	}
 
-	// Strictly reject SVG, XML, HTML, PHP, or scripts disguised as images
-	headerStr := strings.ToLower(string(buf[:n]))
-	if strings.Contains(headerStr, "<svg") ||
-		strings.Contains(headerStr, "<?xml") ||
-		strings.Contains(headerStr, "<html") ||
-		strings.Contains(headerStr, "<script") ||
-		strings.Contains(headerStr, "<?php") {
-		isValidImage = false
-	}
-
-	if !isValidImage {
-		return "", fmt.Errorf("invalid image content or unsupported format")
-	}
-
-	// 4. Cryptographically unguessable filename (prevent IDOR, predictability, and overwrites)
 	token := make([]byte, 16)
 	if _, err := rand.Read(token); err != nil {
-		return "", fmt.Errorf("failed to generate secure random token: %w", err)
+		return "", true, fmt.Errorf("failed to generate secure random token: %w", err)
 	}
-	safeName := fmt.Sprintf("%s_%s%s", prefix, hex.EncodeToString(token), ext)
+	safeName := fmt.Sprintf("%s_%s%s", prefix, hex.EncodeToString(token), cleanExt)
 
 	uploadDir := resolveUploadsDir()
 	if err := os.MkdirAll(uploadDir, 0750); err != nil {
-		return "", fmt.Errorf("failed to create upload dir: %w", err)
+		return "", true, fmt.Errorf("failed to create upload directory (%s): %w", uploadDir, err)
 	}
 
 	cleanDir := filepath.Clean(uploadDir)
-	dest := filepath.Clean(filepath.Join(cleanDir, safeName))
-	if !strings.HasPrefix(dest, cleanDir) {
-		return "", fmt.Errorf("invalid destination path traversal detected")
+	uploadRoot, err := os.OpenRoot(cleanDir)
+	if err != nil {
+		return "", true, fmt.Errorf("failed to open upload root (%s): %w", cleanDir, err)
+	}
+	defer func() {
+		_ = uploadRoot.Close()
+	}()
+
+	if err := uploadRoot.WriteFile(safeName, cleanBytes, 0600); err != nil {
+		return "", true, fmt.Errorf("failed to write sanitized image to disk: %w", err)
 	}
 
-	if err := c.SaveFile(file, dest); err != nil {
-		return "", fmt.Errorf("failed to persist uploaded file: %w", err)
-	}
-
-	return "/static/uploads/" + safeName, nil
+	return "/static/uploads/" + safeName, true, nil
 }
 
 // UploadBlogImage handles secure asynchronous image uploads for insertion into blog markdown.
 func (h *AdminHandler) UploadBlogImage(c *fiber.Ctx) error {
-	mediaPath, err := saveUploadedImage(c, "image", "blog_img")
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": err.Error(),
-		})
-	}
-	if mediaPath == "" {
+	mediaPath, uploaded, err := saveUploadedImage(c, "image", "blog_img")
+	if !uploaded {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": "No image file provided in upload request",
+		})
+	}
+	if err != nil {
+		log.Printf("[UPLOAD] Inline blog image upload failed: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": err.Error(),
 		})
 	}
 
 	altText := "Image"
 	if file, fileErr := c.FormFile("image"); fileErr == nil && file != nil {
 		baseName := strings.TrimSuffix(filepath.Base(file.Filename), filepath.Ext(filepath.Base(file.Filename)))
+		baseName = strings.NewReplacer("[", "", "]", "", "\r", "", "\n", "").Replace(strings.TrimSpace(baseName))
 		if baseName != "" {
 			altText = baseName
 		}
@@ -885,20 +927,13 @@ func parsePublishInfo(statusInput, dateInput string) (string, time.Time) {
 
 // Save Blog Post
 func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
-	title := strings.TrimSpace(c.FormValue("title"))
-	summary := strings.TrimSpace(c.FormValue("summary"))
-	content := strings.TrimSpace(c.FormValue("content"))
+	title := utils.CleanEscapedText(strings.TrimSpace(c.FormValue("title")))
+	summary := utils.CleanEscapedText(strings.TrimSpace(c.FormValue("summary")))
+	content := utils.CleanEscapedText(strings.TrimSpace(c.FormValue("content")))
 	mediaPath := strings.TrimSpace(c.FormValue("media_path"))
 	status, publishedAt := parsePublishInfo(c.FormValue("status"), c.FormValue("published_at"))
 
-	slug := utils.MakeSlug(title)
-
-	// Secure Cover Image upload handling
-	if path, err := saveUploadedImage(c, "media", "cover"); err == nil && path != "" {
-		mediaPath = path
-	} else if path, err := saveUploadedImage(c, "media_file", "cover"); err == nil && path != "" {
-		mediaPath = path
-	}
+	slug := ensureUniqueBlogSlug(h.DB, utils.MakeSlug(title), 0)
 
 	post := models.BlogPost{
 		Title:       title,
@@ -910,11 +945,48 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 		PublishedAt: publishedAt,
 	}
 
-	h.DB.Create(&post)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	// Secure Cover Image upload handling with metadata stripping
+	if path, uploaded, err := saveUploadedImage(c, "media", "cover"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Blog cover upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Cover image upload failed: " + err.Error()})
+			}
+			return c.Status(fiber.StatusBadRequest).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+				"is_edit":    false,
+				"post":       post,
+				"data_error": "Cover image upload failed: " + err.Error(),
+			}))
+		}
+		post.MediaPath = path
+	} else if path, uploaded, err := saveUploadedImage(c, "media_file", "cover"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Blog cover media_file upload failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Cover image upload failed: " + err.Error()})
+			}
+			return c.Status(fiber.StatusBadRequest).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+				"is_edit":    false,
+				"post":       post,
+				"data_error": "Cover image upload failed: " + err.Error(),
+			}))
+		}
+		post.MediaPath = path
 	}
+
+	if err := h.DB.Create(&post).Error; err != nil {
+		log.Printf("[DB] Failed to create blog post: %v", err)
+		if wantsJSONResponse(c) {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to save blog post: " + err.Error()})
+		}
+		return c.Status(fiber.StatusInternalServerError).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+			"is_edit":    false,
+			"post":       post,
+			"data_error": "Failed to save blog post: " + err.Error(),
+		}))
+	}
+
+	h.flushCaches(c.Context(), "blog:*", "page:home:*", "dashboard:*")
 
 	// Trigger automated search engine indexing notification if published and user consented
 	notifySearchVal := strings.ToLower(strings.TrimSpace(c.FormValue("notify_search_engines")))
@@ -934,7 +1006,7 @@ func (h *AdminHandler) SaveBlogPost(c *fiber.Ctx) error {
 		}
 	}
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":   "success",
 			"message":  "Blog article created successfully",
@@ -954,29 +1026,59 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 		return c.Redirect("/admin/blogs")
 	}
 
-	post.Title = strings.TrimSpace(c.FormValue("title"))
-	post.Summary = strings.TrimSpace(c.FormValue("summary"))
-	post.Content = strings.TrimSpace(c.FormValue("content"))
-	post.Slug = utils.MakeSlug(post.Title)
+	post.Title = utils.CleanEscapedText(strings.TrimSpace(c.FormValue("title")))
+	post.Summary = utils.CleanEscapedText(strings.TrimSpace(c.FormValue("summary")))
+	post.Content = utils.CleanEscapedText(strings.TrimSpace(c.FormValue("content")))
+	post.Slug = ensureUniqueBlogSlug(h.DB, utils.MakeSlug(post.Title), post.ID)
 
 	status, publishedAt := parsePublishInfo(c.FormValue("status"), c.FormValue("published_at"))
 	post.Status = status
 	post.PublishedAt = publishedAt
 
-	// Secure Cover Image upload handling
-	if path, err := saveUploadedImage(c, "media", "cover"); err == nil && path != "" {
+	// Secure Cover Image upload handling with metadata stripping
+	if path, uploaded, err := saveUploadedImage(c, "media", "cover"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Blog cover update failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Cover image upload failed: " + err.Error()})
+			}
+			return c.Status(fiber.StatusBadRequest).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+				"is_edit":    true,
+				"post":       post,
+				"data_error": "Cover image upload failed: " + err.Error(),
+			}))
+		}
 		post.MediaPath = path
-	} else if path, err := saveUploadedImage(c, "media_file", "cover"); err == nil && path != "" {
+	} else if path, uploaded, err := saveUploadedImage(c, "media_file", "cover"); uploaded {
+		if err != nil {
+			log.Printf("[UPLOAD] Blog cover media_file update failed: %v", err)
+			if wantsJSONResponse(c) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Cover image upload failed: " + err.Error()})
+			}
+			return c.Status(fiber.StatusBadRequest).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+				"is_edit":    true,
+				"post":       post,
+				"data_error": "Cover image upload failed: " + err.Error(),
+			}))
+		}
 		post.MediaPath = path
 	} else if rawPath := strings.TrimSpace(c.FormValue("media_path")); rawPath != "" {
 		post.MediaPath = rawPath
 	}
 
-	h.DB.Save(&post)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
+	if err := h.DB.Save(&post).Error; err != nil {
+		log.Printf("[DB] Failed to update blog post %d: %v", post.ID, err)
+		if wantsJSONResponse(c) {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Failed to update blog post: " + err.Error()})
+		}
+		return c.Status(fiber.StatusInternalServerError).Render("admin/blog_editor", h.buildAdminContext(c, "blogs", fiber.Map{
+			"is_edit":    true,
+			"post":       post,
+			"data_error": "Failed to update blog post: " + err.Error(),
+		}))
 	}
+
+	h.flushCaches(c.Context(), "blog:*", "page:home:*", "dashboard:*")
 
 	// Trigger automated search engine indexing notification if published and user consented
 	notifySearchVal := strings.ToLower(strings.TrimSpace(c.FormValue("notify_search_engines")))
@@ -996,7 +1098,7 @@ func (h *AdminHandler) UpdateBlog(c *fiber.Ctx) error {
 		}
 	}
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":   "success",
 			"message":  "Blog article updated successfully",
@@ -1013,11 +1115,9 @@ func (h *AdminHandler) DeleteBlogPost(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.BlogPost{}, id)
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "blog:*", "page:home:*", "dashboard:*")
-	}
+	h.flushCaches(c.Context(), "blog:*", "page:home:*", "dashboard:*")
 
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "Blog post deleted successfully",
@@ -1057,11 +1157,7 @@ func (h *AdminHandler) SaveFAQ(c *fiber.Ctx) error {
 	}
 
 	h.DB.Create(&faq)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
-	}
-
+	h.flushCaches(c.Context(), "faqs:*", "page:home:*")
 	return c.Redirect("/admin/faqs")
 }
 
@@ -1084,11 +1180,7 @@ func (h *AdminHandler) UpdateFAQ(c *fiber.Ctx) error {
 	faq.IsPublished = c.FormValue("is_published") == "on" || c.FormValue("is_published") == "true"
 
 	h.DB.Save(&faq)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
-	}
-
+	h.flushCaches(c.Context(), "faqs:*", "page:home:*")
 	return c.Redirect("/admin/faqs")
 }
 
@@ -1096,12 +1188,9 @@ func (h *AdminHandler) UpdateFAQ(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteFAQ(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.FAQ{}, id)
+	h.flushCaches(c.Context(), "faqs:*", "page:home:*")
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
-	}
-
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "FAQ deleted successfully",
@@ -1114,12 +1203,9 @@ func (h *AdminHandler) DeleteFAQ(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteFAQSubmission(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.FAQSubmission{}, id)
+	h.flushCaches(c.Context(), "faqs:*", "page:home:*")
 
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "faqs:*", "page:home:*")
-	}
-
-	if c.XHR() || strings.Contains(c.Get("Accept"), "application/json") || c.Method() == "DELETE" {
+	if wantsJSONResponse(c) {
 		return c.JSON(fiber.Map{
 			"status":  "success",
 			"message": "Submission deleted successfully",
@@ -1167,11 +1253,7 @@ func (h *AdminHandler) AddService(c *fiber.Ctx) error {
 	}
 
 	h.DB.Create(&service)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
-	}
-
+	h.flushCaches(c.Context(), "services:*", "page:home:*")
 	return c.Redirect("/admin/services")
 }
 
@@ -1204,11 +1286,7 @@ func (h *AdminHandler) UpdateService(c *fiber.Ctx) error {
 	service.IsPublished = c.FormValue("is_published") == "on" || c.FormValue("is_published") == "true"
 
 	h.DB.Save(&service)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
-	}
-
+	h.flushCaches(c.Context(), "services:*", "page:home:*")
 	return c.Redirect("/admin/services")
 }
 
@@ -1216,10 +1294,7 @@ func (h *AdminHandler) UpdateService(c *fiber.Ctx) error {
 func (h *AdminHandler) DeleteService(c *fiber.Ctx) error {
 	id := c.Params("id")
 	h.DB.Delete(&models.Service{}, id)
-
-	if h.Cache != nil {
-		h.Cache.Invalidate(c.Context(), "services:*", "page:home:*")
-	}
+	h.flushCaches(c.Context(), "services:*", "page:home:*")
 
 	return c.JSON(fiber.Map{
 		"status":  "success",

@@ -34,16 +34,36 @@ func VerifyAuthToken(token, secret string) (string, bool) {
 	return "", false
 }
 
+func isAJAXOrAPI(c *fiber.Ctx) bool {
+	p := c.Path()
+	return strings.HasPrefix(p, "/admin/api/") ||
+		c.XHR() ||
+		strings.Contains(c.Get("Accept"), "application/json") ||
+		strings.Contains(c.Get("Content-Type"), "application/json")
+}
+
 func RequireAuth(secret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		cookie := c.Cookies("jo4_session")
 		if cookie == "" {
+			if isAJAXOrAPI(c) {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Session expired or not logged in. Please sign in again.",
+				})
+			}
 			return c.Redirect("/login")
 		}
 
 		username, valid := VerifyAuthToken(cookie, secret)
 		if !valid {
 			c.ClearCookie("jo4_session")
+			if isAJAXOrAPI(c) {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"status":  "error",
+					"message": "Invalid or expired session. Please sign in again.",
+				})
+			}
 			return c.Redirect("/login")
 		}
 
